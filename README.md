@@ -14,6 +14,7 @@ The plugins will be created under ``` target ``` directory
 
 ## Installation
 Optionally, set your appkeys and appsecrets of the plugins, e.g. open dropbox-x.x.jar and edit dropbox.properties
+
 Copy plugin(s) to the autodeploy folder of the (running) BackMeUp Service instance. 
 
 
@@ -21,11 +22,10 @@ Copy plugin(s) to the autodeploy folder of the (running) BackMeUp Service instan
 
 
 ## Support
-See the [issue tracker] () for this project.
-
 More technical and developer information is being made available in the [Wiki] (https://github.com/backmeup/backmeup-prototype/wiki).
 
 
 ## License 
 Please check the individual plugins for their license.
+
 If you are contributing a new plugin, we suggest using [Apache Licence, Version 2.0] (https://www.apache.org/licenses/LICENSE-2.0.html).
