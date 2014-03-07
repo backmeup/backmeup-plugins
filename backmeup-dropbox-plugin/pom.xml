@@ -21,18 +21,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.backmeup</groupId>
-			<artifactId>model</artifactId>
-			<version>0.0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.backmeup</groupId>
-			<artifactId>plugin.api</artifactId>
-			<version>0.0.1</version>
-		</dependency>
-
-		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
 			<version>1.1.1</version>
@@ -60,13 +48,6 @@
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
 			<version>1.1.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.backmeup</groupId>
-			<artifactId>plugin.api.impl</artifactId>
-			<version>0.0.1</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

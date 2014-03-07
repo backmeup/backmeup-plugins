@@ -9,19 +9,6 @@
 	<artifactId>dummy</artifactId>
 	<packaging>bundle</packaging>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.backmeup</groupId>
-			<artifactId>model</artifactId>
-			<version>0.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.backmeup</groupId>
-			<artifactId>plugin.api</artifactId>
-			<version>0.0.1</version>
-		</dependency>
-	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
