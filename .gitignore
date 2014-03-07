@@ -1,0 +1,20 @@
+*/autodeploy/*
+build/*
+*/osgiTmp/*
+.metadata
+RemoteSystemsTempFiles
+
+# Maven
+target/
+
+# IDEA
+.idea/
+*.iml
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Mac OS X
+.DS_Store
