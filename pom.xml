@@ -17,6 +17,7 @@
         <module>backmeup-dropbox-plugin</module>
         <module>backmeup-dummy-plugin</module>
         <module>backmeup-facebook-plugin</module>
+        <module>backmeup-localfs-storage-plugin</module>
         <module>backmeup-mail-plugin</module>
         <module>backmeup-moodle-plugin</module>
         <module>backmeup-skydrive-plugin</module>
@@ -83,7 +84,12 @@
     <dependencies>
         <dependency>
             <groupId>org.backmeup</groupId>
-            <artifactId>backmeup-core</artifactId>
+            <artifactId>backmeup-model</artifactId>
+            <version>${version.backmeup}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.backmeup</groupId>
+            <artifactId>backmeup-plugin-api</artifactId>
             <version>${version.backmeup}</version>
         </dependency>
         <dependency>
