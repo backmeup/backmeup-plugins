@@ -24,6 +24,7 @@
         <module>backmeup-mail-plugin</module>
         <module>backmeup-moodle-plugin</module>
         <module>backmeup-skydrive-plugin</module>
+        <module>backmeup-thumbnail-plugin</module>
         <module>backmeup-twitter-plugin</module>
         <module>backmeup-zip-plugin</module>
     </modules>
