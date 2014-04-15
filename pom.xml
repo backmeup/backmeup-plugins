@@ -16,6 +16,7 @@
         <module>backmeup-discmailing-plugin</module>
         <module>backmeup-dropbox-plugin</module>
         <module>backmeup-dummy-plugin</module>
+        <module>backmeup-encryption-plugin</module>
         <module>backmeup-facebook-plugin</module>
         <module>backmeup-localfs-storage-plugin</module>
         <module>backmeup-mail-plugin</module>
