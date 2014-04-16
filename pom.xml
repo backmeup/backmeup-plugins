@@ -20,7 +20,7 @@
         <module>backmeup-facebook-plugin</module>
         <module>backmeup-filesplitting-plugin</module>
         <module>backmeup-indexing-plugin</module>
-        <module>backmeup-localfs-storage-plugin</module>
+        <module>backmeup-localfsstorage-plugin</module>
         <module>backmeup-mail-plugin</module>
         <module>backmeup-moodle-plugin</module>
         <module>backmeup-skydrive-plugin</module>
