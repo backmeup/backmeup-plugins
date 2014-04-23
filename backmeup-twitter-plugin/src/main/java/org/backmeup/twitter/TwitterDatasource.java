@@ -32,7 +32,6 @@ import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Datasource;
-import org.backmeup.plugin.api.connectors.DatasourceException;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
@@ -60,15 +59,14 @@ import twitter4j.conf.ConfigurationBuilder;
 public class TwitterDatasource implements Datasource {
 	private static final String TWITTER = "twitter";
 
-	private List<Status> states = new LinkedList<Status>();
-	private List<Long> retweets = new LinkedList<Long>();
+	private List<Status> states = new LinkedList<>();
+	private List<Long> retweets = new LinkedList<>();
 	private User user = null;
 	private ConcreteElement ce = new ConcreteElement();
 
 	@Override
 	public void downloadAll(Properties arg0, List<String> options,
-			Storage arg1, Progressable arg2) throws DatasourceException,
-			StorageException {
+			Storage arg1, Progressable arg2) throws StorageException {
 
 		// create new access token
 		AccessToken at = new AccessToken(arg0.getProperty("token"),
@@ -87,14 +85,14 @@ public class TwitterDatasource implements Datasource {
 
 		getThemes(arg1, arg0);
 
-		Document doc = createDocument("Index", "Twitter");
+		Document doc = createDocument("Index");
 		Div applic_content_page = (Div) ce.getElement("applic_content_page");
 
 		Div navlist = (Div) new Div().addAttribute("class", "applic_navlist");
 		UL ul = new UL();
 
 		arg2.progress("Download Benutzer-Information...");
-		String document = downloadUser(twitter, arg1, options);
+		String document = downloadUser(twitter, arg1);
 
 		A profile = new A("profile.html", "Profil");
 		profile.addAttribute("class", "navbutton");
@@ -161,7 +159,7 @@ public class TwitterDatasource implements Datasource {
 	 * @return text with html-link
 	 */
 	private String createLink(String text) {
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 
 		Pattern pattern = Pattern
 				.compile("\\b(((ht|f)tp(s?)\\:\\/\\/|~\\/|\\/)|www.)"
@@ -188,8 +186,8 @@ public class TwitterDatasource implements Datasource {
 		return text;
 	}
 
-	private Document createDocument(String title, String header) {
-		Document doc = (Document) new Document();
+	private Document createDocument(String title) {
+		Document doc = new Document();
 		doc.setCodeset("UTF-8");
 		doc.appendHead("<meta http-equiv='content-type' content='text/html; charset=UTF-8' />");
 		String backmeuplogo = "Themes/backmeuplogo.jpg";
@@ -295,8 +293,6 @@ public class TwitterDatasource implements Datasource {
 
 	/**
 	 * create timeline-file and MetainfoContainer of user
-	 * 
-	 * @param storage
 	 */
 	private void createUser(String document, Storage storage) {
 		try {
@@ -354,8 +350,7 @@ public class TwitterDatasource implements Datasource {
 		}
 	}
 
-	private String downloadUser(Twitter twitter, Storage storage,
-			List<String> options) {
+	private String downloadUser(Twitter twitter, Storage storage) {
 		try {
 			user = twitter.showUser(twitter.getId());
 
@@ -366,7 +361,7 @@ public class TwitterDatasource implements Datasource {
 			List<Status> timeline = twitter.getUserTimeline(paging);
 
 			// create HTML timeline+userID.html
-			Document doc = createDocument("Profile", "Twitter");
+			Document doc = createDocument("Profile");
 
 			Div applic_content_page = (Div) ce
 					.getElement("applic_content_page");
@@ -508,7 +503,7 @@ public class TwitterDatasource implements Datasource {
 			if (type.equals("Favorites"))
 				typeText = "Die letzten Favoriten (max. 3200)";
 			// create HTML type.html
-			Document doc = createDocument(typeText, "Twitter");
+			Document doc = createDocument(typeText);
 
 			Div applic_content_page = (Div) ce
 					.getElement("applic_content_page");
@@ -591,7 +586,7 @@ public class TwitterDatasource implements Datasource {
 
 	private List<Status> getTypeStates(Twitter twitter, String type,
 			Paging paging) {
-		List<Status> download = new LinkedList<Status>();
+		List<Status> download = new LinkedList<>();
 		try {
 			if (type.equals("Favorites"))
 				download = twitter.getFavorites(paging);
@@ -607,7 +602,7 @@ public class TwitterDatasource implements Datasource {
 		}
 	}
 
-	private void downloadList(Twitter twitter, int listId, Storage storage) {
+	private void downloadList(Twitter twitter, long listId, Storage storage) {
 		try {
 
 			MetainfoContainer metadata = new MetainfoContainer();
@@ -631,7 +626,7 @@ public class TwitterDatasource implements Datasource {
 			metadata.addMetainfo(listInfo);
 
 			// create HTML list+listID.html
-			Document doc = createDocument(list.getFullName(), "Twitter");
+			Document doc = createDocument(list.getFullName());
 
 			Div applic_content_page = (Div) ce
 					.getElement("applic_content_page");
@@ -676,7 +671,7 @@ public class TwitterDatasource implements Datasource {
 			detail.addElement(row);
 
 			long cursor = -1;
-			PagableResponseList users;
+			PagableResponseList<User> users;
 
 			if (list.getMemberCount() > 0) {
 
@@ -693,8 +688,7 @@ public class TwitterDatasource implements Datasource {
 
 				do {
 					users = twitter.getUserListMembers(listId, cursor);
-					for (Object objUser : users) {
-						User user = (User) objUser;
+					for (User user : users) {
 						ulMembers.addElement(new LI().addElement("@"
 								+ user.getScreenName()));
 					}
@@ -719,8 +713,7 @@ public class TwitterDatasource implements Datasource {
 				cursor = -1;
 				do {
 					users = twitter.getUserListSubscribers(listId, cursor);
-					for (Object objUser : users) {
-						User user = (User) objUser;
+					for (User user : users) {
 						ulSubscriber.addElement(new LI().addElement("@"
 								+ user.getScreenName()));
 					}
@@ -808,7 +801,7 @@ public class TwitterDatasource implements Datasource {
 
 	private void downloadLists(Twitter twitter, Storage storage) {
 
-		Document doc = createDocument("Listen", "Twitter");
+		Document doc = createDocument("Listen");
 		Div applic_content_page = (Div) ce.getElement("applic_content_page");
 
 		Div navlist = (Div) new Div().addAttribute("class", "applic_navlist");
@@ -840,7 +833,7 @@ public class TwitterDatasource implements Datasource {
 
 	@Override
 	public List<String> getAvailableOptions(Properties accessData) {
-		List<String> twitterBackupOptions = new ArrayList<String>();
+		List<String> twitterBackupOptions = new ArrayList<>();
 		// twitterBackupOptions.add("RetweetsToMe");
 		// twitterBackupOptions.add("RetweetsByMe");
 		twitterBackupOptions.add("RetweetsOfMe");
@@ -850,7 +843,7 @@ public class TwitterDatasource implements Datasource {
 	}
 
 	public void getThemes(Storage storage, Properties props)
-			throws DatasourceException, StorageException {
+			throws StorageException {
 		InputStream is;
 		try {
 			is = this.getClass().getResourceAsStream("/backmeuplogo.jpg");
