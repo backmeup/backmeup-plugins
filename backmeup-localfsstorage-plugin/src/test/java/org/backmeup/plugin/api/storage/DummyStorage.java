@@ -8,7 +8,7 @@ import java.util.List;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.storage.filesystem.FileDataObject;
 
-public class DummyStorage extends Storage {
+public class DummyStorage implements Storage {
 	
 	private List<DataObject> dataObjects = new ArrayList<DataObject>();
 	

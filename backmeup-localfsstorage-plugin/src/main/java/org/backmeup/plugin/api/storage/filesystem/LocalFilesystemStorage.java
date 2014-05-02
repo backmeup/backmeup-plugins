@@ -15,7 +15,7 @@ import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
-public class LocalFilesystemStorage extends Storage {
+public class LocalFilesystemStorage implements Storage {
 	private File rootDir;
 	private long totalStorageSize = 0;
 
