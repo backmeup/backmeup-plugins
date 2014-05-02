@@ -38,8 +38,8 @@
 						<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
 						<Bundle-Name>${project.name}</Bundle-Name>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Import-Package>org.apache.commons.io, org.backmeup.plugin.api*</Import-Package>
-						<Embed-Dependency></Embed-Dependency>
+						<Import-Package>org.backmeup.plugin.api*</Import-Package>
+						<Embed-Dependency>commons-io</Embed-Dependency>
 						<Embed-Transitive>false</Embed-Transitive>
 						<Embed-Directory>lib</Embed-Directory>
 						<Private-Package>org.backmeup.plugin.api.storage.filesystem.*</Private-Package>
@@ -63,12 +63,6 @@
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.artifactId}</artifactId>
 									<version>${project.version}</version>
-									<type>${project.packaging}</type>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.apache.commons</groupId>
-									<artifactId>com.springsource.org.apache.commons.io</artifactId>
-									<version>1.4.0</version>
 									<type>${project.packaging}</type>
 								</artifactItem>
 							</artifactItems>
