@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"	
+	default-activation="lazy">
+	<service id="filegeneratorDescriptorService" ref="filegeneratorDescriptor" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.filegenerator"/>
+		</service-properties>
+	</service>
+	<service id="filegeneratorAuthService" ref="filegeneratorAuthenticator" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.filegenerator"/>
+		</service-properties>
+	</service>
+	<service id="filegeneratorDatasourceService" ref="filegeneratorDatasource" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.filegenerator"/>
+		</service-properties>
+	</service>
+	
+	<service id="filegeneratorValidatorService" ref="filegeneratorValidator" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.filegenerator"/>
+		</service-properties>
+	</service>
+	
+</blueprint>

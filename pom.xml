@@ -18,6 +18,7 @@
         <module>backmeup-dummy-plugin</module>
         <module>backmeup-encryption-plugin</module>
         <module>backmeup-facebook-plugin</module>
+        <module>backmeup-filegenerator-plugin</module>
         <module>backmeup-filesplitting-plugin</module>
         <module>backmeup-indexing-plugin</module>
         <module>backmeup-localfsstorage-plugin</module>
