@@ -15,12 +15,5 @@
 		<service-properties>
 			<entry key="name" value="org.backmeup.filegenerator"/>
 		</service-properties>
-	</service>
-	
-	<service id="filegeneratorValidatorService" ref="filegeneratorValidator" auto-export="interfaces">
-		<service-properties>
-			<entry key="name" value="org.backmeup.filegenerator"/>
-		</service-properties>
-	</service>
-	
+	</service>	
 </blueprint>

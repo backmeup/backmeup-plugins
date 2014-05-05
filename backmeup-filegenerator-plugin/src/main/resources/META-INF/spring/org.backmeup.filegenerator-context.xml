@@ -3,5 +3,4 @@
 	<bean id="filegeneratorDescriptor" class="org.backmeup.filegenerator.FilegeneratorDescriptor"/>
 	<bean id="filegeneratorAuthenticator" class="org.backmeup.filegenerator.FilegeneratorAuthenticator"/>
 	<bean id="filegeneratorDatasource" class="org.backmeup.filegenerator.FilegeneratorDatasource"/>
-	<bean id="filegeneratorValidator" class="org.backmeup.filegenerator.FilegeneratorValidator"/>
 </blueprint>
