@@ -9,6 +9,11 @@ import org.backmeup.filegenerator.generator.Generator;
 public class BinaryGenerator implements Generator {
 	int size;
 	Random random;
+	
+	public BinaryGenerator() {
+		this.size = 1014;
+		this.random = new Random();
+	}
 
 	public BinaryGenerator(int size, Random random) {
 		this.size = size;

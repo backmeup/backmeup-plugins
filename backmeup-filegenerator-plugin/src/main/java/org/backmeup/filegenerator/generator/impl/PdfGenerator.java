@@ -21,6 +21,10 @@ public class PdfGenerator implements Generator {
 	
 	Document document;
 	
+	public PdfGenerator() {
+		this("Lorem Ipsum", new TextGenerator().getParagraphs(1));
+	}
+	
 	public PdfGenerator(String title, String body) {
 		titleFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD);
 		bodyFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.NORMAL);

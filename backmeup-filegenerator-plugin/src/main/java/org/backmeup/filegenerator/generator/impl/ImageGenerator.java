@@ -18,6 +18,12 @@ public class ImageGenerator implements Generator {
 	private int sizeY;
 	private Random random;
 	
+	public ImageGenerator() {
+		this.sizeX = 512;
+		this.sizeY = 512;
+		this.random = new Random();
+	}
+	
 	public ImageGenerator(int sizeX, int sizeY, Random random) {
 		this.sizeX = sizeX;
 		this.sizeY = sizeY;
