@@ -20,17 +20,13 @@ public class FilegeneratorDescriptor implements SourceSinkDescribable {
 
   @Override
   public String getDescription() {
-    return "a plugin for testing purposes that generates files";
+    return "A plugin for testing purposes that generates files";
   }
 
   @Override
   public Properties getMetadata(Properties accessData) {
     Properties props = new Properties();
     props.setProperty(Metadata.BACKUP_FREQUENCY, "daily");
-    props.setProperty("FILE_TYPE", "txt,pdf,jpg");
-    props.setProperty("FILE_SIZE", "50k");
-    props.setProperty("FILE_COUNT", "3");
-    props.setProperty("DURATION", "5s");
     return props;
   }
 

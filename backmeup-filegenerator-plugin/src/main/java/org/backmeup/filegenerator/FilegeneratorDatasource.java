@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import org.backmeup.filegenerator.constants.Constants;
 import org.backmeup.filegenerator.generator.Generator;
 import org.backmeup.filegenerator.generator.impl.BinaryGenerator;
 import org.backmeup.filegenerator.generator.impl.ImageGenerator;
@@ -21,11 +22,6 @@ import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
 public class FilegeneratorDatasource implements Datasource {
-	private static final String PDF_GENERATOR = "pdf";
-	private static final String TEXT_GENERATOR = "text";
-	private static final String IMAGE_GENERATOR = "image";
-	private static final String BINARY_GENERATOR = "binary";
-
 	@Override
 	public void downloadAll(Properties accessData, List<String> options,
 			Storage storage, Progressable progressor)
@@ -33,32 +29,49 @@ public class FilegeneratorDatasource implements Datasource {
 		final Random random = new Random();
 		final ArrayList<Generator> generators = new ArrayList<Generator>();
 
-		String fileTypes = "text,pdf,binary,image";
-		// removes all whitespace and non visible characters
-		fileTypes.replaceAll("\\s", "");
-		String[] fileTypesArray = fileTypes.split(",");
-
-		for (String fileType : fileTypesArray) {
-			if (fileType.equals(TEXT_GENERATOR)) {
-				int txtAmountParagraphs = 100;
+		if (accessData.getProperty(Constants.PROP_TEXT).equals("true")) {
+			String amount = accessData.getProperty(Constants.PROP_TEXT_PARAGRAPHS);
+			if (amount != null) {
+				int txtAmountParagraphs = Integer.parseInt(amount);
 				generators.add(new TextGenerator(txtAmountParagraphs));
-			} else if (fileType.equals(IMAGE_GENERATOR)) {
-				int imgSize = 1024;
+			} else {
+				generators.add(new TextGenerator());
+			}
+		}
+		
+		if (accessData.getProperty(Constants.PROP_IMAGE).equals("true")) {
+			String size = accessData.getProperty(Constants.PROP_IMAGE_SIZE);
+			if (size != null) {
+				int imgSize = Integer.parseInt(size);
 				generators.add(new ImageGenerator(imgSize, imgSize, random));
-			} else if (fileType.equals(PDF_GENERATOR)) {
-				String pdfTitle = "Lorem ipsum";
-				int pdfAmountParagraphs = 100;
+			} else {
+				generators.add(new ImageGenerator());
+			}
+		}
+		
+		if (accessData.getProperty(Constants.PROP_PDF).equals("true")) {
+			String amount = accessData.getProperty(Constants.PROP_PDF_PARAGRAPHS);
+			if (amount != null) {
+				int pdfAmountParagraphs = Integer.parseInt(amount);
 				String pdfText = new TextGenerator().getParagraphs(pdfAmountParagraphs);
+				String pdfTitle = "Lorem ipsum";
 				generators.add(new PdfGenerator(pdfTitle, pdfText));
-			} else if (fileType.equals(BINARY_GENERATOR)) {
-				int binSize = 1024;
+			} else {
+				generators.add(new PdfGenerator());
+			}
+		}
+		
+		if (accessData.getProperty(Constants.PROP_BINARY).equals("true")) {
+			String size = accessData.getProperty(Constants.PROP_BINARY_SIZE);
+			if (size != null) {
+				int binSize = Integer.parseInt(size);
 				generators.add(new BinaryGenerator(binSize, random));
 			} else {
-				throw new RuntimeException("File generator type is not supported: " + fileType);
+				generators.add(new BinaryGenerator());
 			}
 		}
 
-		int maxFiles = 1000;
+		int maxFiles = 10;
 		int currentFiles = 0;
 		int currentGeneratorIndex = 0;
 		int noOfGenerators = generators.size();
