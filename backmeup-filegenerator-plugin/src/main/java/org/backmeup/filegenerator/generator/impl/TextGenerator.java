@@ -12,6 +12,10 @@ public class TextGenerator implements Generator {
 	private int amount;
 	private LoremIpsum loremIpsum;
 	
+	public TextGenerator() {
+		this.amount = 1;
+	}
+	
 	public TextGenerator(int amountInParagraphs) {
 		this.amount = amountInParagraphs;
 		this.loremIpsum = new LoremIpsum();

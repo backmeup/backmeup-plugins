@@ -1,18 +1,17 @@
 package org.backmeup.filegenerator;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
-import javax.imageio.ImageIO;
-
+import org.backmeup.filegenerator.generator.Generator;
+import org.backmeup.filegenerator.generator.impl.BinaryGenerator;
+import org.backmeup.filegenerator.generator.impl.ImageGenerator;
+import org.backmeup.filegenerator.generator.impl.PdfGenerator;
+import org.backmeup.filegenerator.generator.impl.TextGenerator;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Datasource;
@@ -21,72 +20,95 @@ import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
-
-import de.svenjacobs.loremipsum.LoremIpsum;
-
 public class FilegeneratorDatasource implements Datasource {
+	private static final String PDF_GENERATOR = "pdf";
+	private static final String TEXT_GENERATOR = "text";
+	private static final String IMAGE_GENERATOR = "image";
+	private static final String BINARY_GENERATOR = "binary";
+
 	@Override
-	public void downloadAll(Properties accessData, List<String> options, Storage storage, Progressable progressor)
+	public void downloadAll(Properties accessData, List<String> options,
+			Storage storage, Progressable progressor)
 			throws DatasourceException, StorageException {
-		
-		
-		// Plain text ---------------------------------------------------------
-		
-		MetainfoContainer cont = new MetainfoContainer();
-		cont.addMetainfo(createMetainfo("1", "text/plain", "/plain.txt"));
-		LoremIpsum loremIpsum = new LoremIpsum();
-		InputStream is = stringToStream(loremIpsum.getParagraphs(100));
-		storage.addFile(is, "/plain.txt", cont);
-		// ====================================================================
-		
-		// Image --------------------------------------------------------------
-		cont = new MetainfoContainer();
-		cont.addMetainfo(createMetainfo("2", "image/jpeg", "/img.jpg"));
-		BufferedImage image = ImageCreator.generate(1024, 1024, 1);
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		try {
-			ImageIO.write(image, "jpg", os);
-		} catch (IOException e) {
-			e.printStackTrace();
+		final Random random = new Random();
+		final ArrayList<Generator> generators = new ArrayList<Generator>();
+
+		String fileTypes = "text,pdf,binary,image";
+		// removes all whitespace and non visible characters
+		fileTypes.replaceAll("\\s", "");
+		String[] fileTypesArray = fileTypes.split(",");
+
+		for (String fileType : fileTypesArray) {
+			if (fileType.equals(TEXT_GENERATOR)) {
+				int txtAmountParagraphs = 100;
+				generators.add(new TextGenerator(txtAmountParagraphs));
+			} else if (fileType.equals(IMAGE_GENERATOR)) {
+				int imgSize = 1024;
+				generators.add(new ImageGenerator(imgSize, imgSize, random));
+			} else if (fileType.equals(PDF_GENERATOR)) {
+				String pdfTitle = "Lorem ipsum";
+				int pdfAmountParagraphs = 100;
+				String pdfText = new TextGenerator().getParagraphs(pdfAmountParagraphs);
+				generators.add(new PdfGenerator(pdfTitle, pdfText));
+			} else if (fileType.equals(BINARY_GENERATOR)) {
+				int binSize = 1024;
+				generators.add(new BinaryGenerator(binSize, random));
+			} else {
+				throw new RuntimeException("File generator type is not supported: " + fileType);
+			}
 		}
-		is = new ByteArrayInputStream(os.toByteArray());
-		storage.addFile(is, "/img.jpg", cont);
-		// ====================================================================
+
+		int maxFiles = 1000;
+		int currentFiles = 0;
+		int currentGeneratorIndex = 0;
+		int noOfGenerators = generators.size();
+		String filenamePrefix = "file";
+		String filePath = "/";
 		
-		// Pdf ----------------------------------------------------------------
-		cont = new MetainfoContainer();
-		cont.addMetainfo(createMetainfo("1", "text/pdf", "/text.pdf"));
-		Font catFont = new Font(Font.FontFamily.TIMES_ROMAN, 22, Font.BOLD);
+//		long currentTime = new Date().getTime();
+//		long endTime;
 		
-		Document document = new Document();
-		document.open();
-		document.addTitle("Lorem Ipsum");
-	    document.addKeywords("Backmeup, backup, lorem, ipsum");
-	    document.addAuthor("backmeup");
-	    document.addCreator("backmeup-filegenerator-plugin");
-	    
-	    Paragraph content = new Paragraph();
-	    content.add(new Paragraph(" "));
-	    content.add(new Paragraph("Lorem Impsum", catFont));
-	    content.add(new Paragraph(" "));
-	    content.add(new Paragraph(loremIpsum.getParagraphs(100)));
-	    
-	    document.close();
-	    ByteArrayOutputStream osPdf = new ByteArrayOutputStream();
-	    try {
-			PdfWriter.getInstance(document, osPdf);
-		} catch (DocumentException e) {
-			e.printStackTrace();
+		while (currentFiles < maxFiles) {
+			// Select generator
+			currentGeneratorIndex = currentFiles % noOfGenerators;
+			Generator generator = generators.get(currentGeneratorIndex);
+			
+			// Assemble file path
+			String filename = filenamePrefix + currentFiles;
+			
+			// Create metainfo based on the selected generator
+			MetainfoContainer cont = new MetainfoContainer();
+			if(generator instanceof TextGenerator) {
+				String filenameExtension = ".txt";
+				filename = filePath + filename + filenameExtension;
+				cont.addMetainfo(createMetainfo(currentFiles + "", "text/plain", filename));
+				
+			} else if (generator instanceof ImageGenerator) {
+				String filenameExtension = ".jpg";
+				filename = filePath + filename + filenameExtension;
+				cont = new MetainfoContainer();
+				cont.addMetainfo(createMetainfo(currentFiles + "", "image/jpeg", filename));
+			} else if (generator instanceof PdfGenerator) {
+				String filenameExtension = ".pdf";
+				filename = filePath + filename + filenameExtension;
+				cont = new MetainfoContainer();
+				cont.addMetainfo(createMetainfo(currentFiles + "", "application/pdf", filename));
+			} else if (generator instanceof BinaryGenerator) {
+				String filenameExtension = ".bin";
+				filename = filePath + filename + filenameExtension;
+				cont = new MetainfoContainer();
+				cont.addMetainfo(createMetainfo(currentFiles + "", "application/octet-stream", filename));
+			} else {
+				throw new RuntimeException("File generator type is not supported");
+			}
+			
+			InputStream is = generator.generate();
+			storage.addFile(is, filename, cont);
+			
+			progressor.progress(String.format("Generated file %s ...", filename));
+			
+			currentFiles++;
 		}
-		
-		is =  new ByteArrayInputStream(osPdf.toByteArray());
-		storage.addFile(is, "/text.pdf", cont);
-		// ====================================================================
 	}
 
 	@Override
@@ -102,16 +124,6 @@ public class FilegeneratorDatasource implements Datasource {
 		return options;
 	}
 
-	private InputStream stringToStream(String input) {
-		try {
-			InputStream is = new ByteArrayInputStream(input.getBytes("UTF-8"));
-			return is;
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	private Metainfo createMetainfo(String id, String type, String destination) {
 		Metainfo info = new Metainfo();
 		info.setBackupDate(new Date());
@@ -121,5 +133,4 @@ public class FilegeneratorDatasource implements Datasource {
 		info.setType(type);
 		return info;
 	}
-
 }
