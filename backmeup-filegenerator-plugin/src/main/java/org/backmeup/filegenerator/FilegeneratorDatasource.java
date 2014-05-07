@@ -22,6 +22,8 @@ import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
 public class FilegeneratorDatasource implements Datasource {
+	private static final int DEFAULT_MAX_FILES = 10;
+
 	@Override
 	public void downloadAll(Properties accessData, List<String> options,
 			Storage storage, Progressable progressor)
@@ -71,7 +73,7 @@ public class FilegeneratorDatasource implements Datasource {
 			}
 		}
 
-		int maxFiles = 10;
+		int maxFiles;
 		int currentFiles = 0;
 		int currentGeneratorIndex = 0;
 		int noOfGenerators = generators.size();
@@ -80,6 +82,13 @@ public class FilegeneratorDatasource implements Datasource {
 		
 //		long currentTime = new Date().getTime();
 //		long endTime;
+		
+		String files = accessData.getProperty(Constants.PROP_GENERATOR_FILES);
+		if (files != null) {
+			maxFiles = Integer.parseInt(files);
+		} else {
+			maxFiles = DEFAULT_MAX_FILES;
+		}
 		
 		while (currentFiles < maxFiles) {
 			// Select generator

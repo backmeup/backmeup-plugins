@@ -1,6 +1,9 @@
 package org.backmeup.filegenerator.constants;
 
 public class Constants {
+	public static final String PROP_GENERATOR_FILES = "generator.files";
+	public static final String PROP_GENERATOR_FILES_DESC = "Set the maximum number of files that should be generated";
+	
 	public static final String PROP_TEXT = "text";
 	public static final String PROP_TEXT_DESC = "Generate plain text files";
 	public static final String PROP_TEXT_PARAGRAPHS = "text.paragraphs";

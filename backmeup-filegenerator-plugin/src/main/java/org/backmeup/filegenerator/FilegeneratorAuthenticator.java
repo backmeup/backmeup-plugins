@@ -40,6 +40,8 @@ public class FilegeneratorAuthenticator implements InputBased {
 			retValue += ", " + Constants.PROP_BINARY_SIZE + " = " + inputProperties.getProperty(Constants.PROP_BINARY_SIZE);
 		}
 		
+		retValue += ", " + Constants.PROP_GENERATOR_FILES + " = " + inputProperties.getProperty(Constants.PROP_GENERATOR_FILES);
+		
 		return retValue;
 	}
 
@@ -59,6 +61,8 @@ public class FilegeneratorAuthenticator implements InputBased {
 		inputs.add(new RequiredInputField (Constants.PROP_BINARY, Constants.PROP_BINARY, Constants.PROP_BINARY_DESC, true, 6, Type.Bool));
 		inputs.add(new RequiredInputField (Constants.PROP_BINARY_SIZE, Constants.PROP_BINARY_SIZE, Constants.PROP_BINARY_SIZE_DESC, false, 7, Type.Number));
 		
+		inputs.add(new RequiredInputField(Constants.PROP_GENERATOR_FILES, Constants.PROP_GENERATOR_FILES, Constants.PROP_GENERATOR_FILES_DESC, true, 8, Type.Number));
+		
 	    return inputs;
 	}
 
@@ -72,7 +76,8 @@ public class FilegeneratorAuthenticator implements InputBased {
 	    typeMapping.put(Constants.PROP_PDF, Type.Bool);
 	    typeMapping.put(Constants.PROP_PDF_PARAGRAPHS, Type.Number);
 	    typeMapping.put(Constants.PROP_BINARY, Type.Bool);
-	    typeMapping.put(Constants.PROP_BINARY_SIZE, Type.Number); 
+	    typeMapping.put(Constants.PROP_BINARY_SIZE, Type.Number);
+	    typeMapping.put(Constants.PROP_GENERATOR_FILES, Type.Number); 
 	    return typeMapping;
 	}
 
