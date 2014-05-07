@@ -32,11 +32,13 @@
 						<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
 						<Bundle-Name>${project.name}</Bundle-Name>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Import-Package></Import-Package>
+						<Import-Package>*</Import-Package>
+						<Export-Package>org.backmeup.plugin.api.actions.filesplitting</Export-Package>
+						<Private-Package>org.backmeup.plugin.api.actions.filesplitting.*</Private-Package>
 						<Embed-Dependency></Embed-Dependency>
 						<Embed-Transitive>false</Embed-Transitive>
 						<Embed-Directory>lib</Embed-Directory>
-						<Private-Package>org.backmeup.plugin.api.actions.filesplitting.*</Private-Package>
+						
 					</instructions>
 				</configuration>
 			</plugin>
@@ -60,10 +62,9 @@
 									<type>${project.packaging}</type>
 								</artifactItem>
 								<artifactItem>
-									<groupId>org.apache.commons</groupId>
-									<artifactId>com.springsource.org.apache.commons.lang</artifactId>
-									<version>2.6.0</version>
-									<type>${project.packaging}</type>
+									<groupId>commons-lang</groupId>
+									<artifactId>commons-lang</artifactId>
+									<version>${version.commons-lang}</version>
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>../target</outputDirectory>

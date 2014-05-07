@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"	
+	default-activation="lazy">
+	<service id="filesplittDescribableService" ref="filesplittDescribable" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.filesplitting"/>
+		</service-properties>
+	</service>
+	<service id="filesplittActionService" ref="filesplittAction" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.filesplitting"/>
+		</service-properties>
+	</service>
+</blueprint>
