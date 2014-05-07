@@ -13,7 +13,6 @@ import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.actions.Action;
 import org.backmeup.plugin.api.actions.ActionException;
-import org.backmeup.plugin.api.actions.indexing.IndexUtils;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThumbnailAction implements Action {
+	private static final String FIELD_THUMBNAIL_PATH = "thumbnail_path";
 	private static final Logger logger = LoggerFactory.getLogger(ThumbnailAction.class);
 	//private static Configuration config = Configuration.getConfig();
 	
@@ -125,7 +125,7 @@ public class ThumbnailAction implements Action {
 						// Generate thumbnails using GraphicsMagick
 						String thumbPath = convert(tempFile);
 						Metainfo meta = new Metainfo();
-						meta.setAttribute(IndexUtils.FIELD_THUMBNAIL_PATH, thumbPath);
+						meta.setAttribute(FIELD_THUMBNAIL_PATH, thumbPath);
 						MetainfoContainer container = dataobject.getMetainfo();
 						container.addMetainfo(meta);
 						dataobject.setMetainfo(container);

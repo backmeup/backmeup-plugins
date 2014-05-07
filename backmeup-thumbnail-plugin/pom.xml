@@ -17,12 +17,11 @@
 			<artifactId>im4java</artifactId>
 			<version>${version.org.im4java}</version>
 		</dependency> 
-		
-		<dependency>
-			<groupId>org.backmeup</groupId>
-			<artifactId>indexing</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
+				 
+		 <dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${version.org.slf4j}</version>
 		</dependency>
 		
 		<dependency>
@@ -46,11 +45,12 @@
 						<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
 						<Bundle-Name>${project.name}</Bundle-Name>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Import-Package></Import-Package>
-						<Embed-Dependency></Embed-Dependency>
+						<Import-Package>*</Import-Package>
+						<Export-Package>org.backmeup.plugin.api.actions.thumbnail</Export-Package>
+						<Private-Package>org.backmeup.plugin.api.actions.thumbnail.*</Private-Package>
+						<Embed-Dependency>im4java</Embed-Dependency>
 						<Embed-Transitive>false</Embed-Transitive>
 						<Embed-Directory>lib</Embed-Directory>
-						<Private-Package>org.backmeup.plugin.api.actions.thumbnail.*</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -71,12 +71,6 @@
 									<groupId>${project.groupId}</groupId>
 									<artifactId>${project.artifactId}</artifactId>
 									<version>${project.version}</version>
-									<type>${project.packaging}</type>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.apache.commons</groupId>
-									<artifactId>com.springsource.org.apache.commons.lang</artifactId>
-									<version>2.6.0</version>
 									<type>${project.packaging}</type>
 								</artifactItem>
 							</artifactItems>
