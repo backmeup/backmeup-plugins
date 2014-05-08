@@ -13,7 +13,7 @@ public class TextGenerator implements Generator {
 	private LoremIpsum loremIpsum;
 	
 	public TextGenerator() {
-		this.amount = 1;
+		this(1);
 	}
 	
 	public TextGenerator(int amountInParagraphs) {

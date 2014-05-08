@@ -31,14 +31,14 @@ public class PdfGenerator implements Generator {
 		
 		this.title = title;
 		this.body = body;
-		
-		this.document = new Document();
 	}
 	
 	@Override
 	public InputStream generate() {
 		try {
 			ByteArrayOutputStream osPdf = new ByteArrayOutputStream();
+			
+			this.document = new Document();
 			PdfWriter.getInstance(document, osPdf);
 
 			this.document.open();
