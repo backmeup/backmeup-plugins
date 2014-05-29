@@ -1,6 +1,5 @@
 package org.backmeup.moodle;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,7 +20,6 @@ import org.w3c.dom.NodeList;
  * This class validates the stored access data of a moodle profile.
  * 
  * @author florianjungwirth
- * 
  */
 public class MoodleValidator implements Validationable {
 
@@ -88,8 +86,7 @@ public class MoodleValidator implements Validationable {
 		return notes;
 	}
 
-	private int getResponseCode(String urlString) throws MalformedURLException,
-			IOException {
+	private int getResponseCode(String urlString) {
 		try {
 			URL u = new URL(urlString);
 			HttpURLConnection huc = (HttpURLConnection) u.openConnection();

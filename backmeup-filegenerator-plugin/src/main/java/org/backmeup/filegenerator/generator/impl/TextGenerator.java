@@ -9,8 +9,8 @@ import org.backmeup.filegenerator.generator.Generator;
 import de.svenjacobs.loremipsum.LoremIpsum;
 
 public class TextGenerator implements Generator {
-	private int amount;
-	private LoremIpsum loremIpsum;
+	private final int amount;
+	private final LoremIpsum loremIpsum;
 	
 	public TextGenerator() {
 		this(1);

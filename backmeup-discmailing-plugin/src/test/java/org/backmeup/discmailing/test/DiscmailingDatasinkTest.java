@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 
@@ -15,18 +14,9 @@ import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 import org.backmeup.plugin.api.storage.filesystem.LocalFilesystemStorage;
-import org.junit.Test;
 
 public class DiscmailingDatasinkTest {
 	
-	@Test
-	public void testDiscmailing() {
-	    // fail("Not yet implemented");
-	}
-	
-	/**
-	 * @param args
-	 */
 	public static void main(String args[]) throws FileNotFoundException, IOException, StorageException {
 		System.out.println("DiscDatasinkTest");
 		Properties props = new Properties();

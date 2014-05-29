@@ -13,7 +13,8 @@ import com.dropbox.client2.exception.DropboxUnlinkedException;
 import com.dropbox.client2.session.WebAuthSession;
 
 public class DropboxValidator implements Validationable {
-	public ValidationNotes validate(Properties accessData) {
+	@Override
+    public ValidationNotes validate(Properties accessData) {
 		ValidationNotes notes = new ValidationNotes();
 		try {
 			// 1. Make sure authentication / authorization is working well

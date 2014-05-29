@@ -14,12 +14,12 @@ import org.backmeup.plugin.api.storage.DataObject;
 
 public class EncryptionContainer
 {	
-	private String containerpath;
-	private String containername;
-	private String mountpoint;
-	private String password;
-	private long size;
-	private List<DataObject> data;
+	private final String containerpath;
+	private final String containername;
+	private final String mountpoint;
+	private final String password;
+	private final long size;
+	private final List<DataObject> data;
 	
 	public EncryptionContainer (String containername, String containerpath, String mountpoint, String password, long size)
 	{	
@@ -28,7 +28,7 @@ public class EncryptionContainer
 		this.mountpoint = mountpoint;
 		this.password = password;
 		this.size = size;
-		this.data = new LinkedList<DataObject> ();
+		this.data = new LinkedList<> ();
 	}
 
 	private void writeData () throws IOException
@@ -53,10 +53,10 @@ public class EncryptionContainer
 			File dirs = new File (dirpath);
 			dirs.mkdirs ();
 			
-			FileOutputStream fo = new FileOutputStream (fspath);
-			fo.write (daob.getBytes ());
-			fo.flush ();
-			fo.close ();
+			try (FileOutputStream fo = new FileOutputStream (fspath)) {
+			    fo.write (daob.getBytes ());
+			    fo.flush ();
+			}
 		}
 	}
 

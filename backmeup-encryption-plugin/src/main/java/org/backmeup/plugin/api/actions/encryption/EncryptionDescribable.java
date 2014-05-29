@@ -13,7 +13,7 @@ public class EncryptionDescribable extends BaseActionDescribable {
   @Override
   public List<String> getAvailableOptions ()
   {
-    List<String> options = new LinkedList<String> ();    
+    List<String> options = new LinkedList<> ();    
     options.add ("org.backmeup.encryption.password");    
     return options;
   }

@@ -10,8 +10,6 @@ import org.backmeup.plugin.api.Metadata;
  * Note: TWITTER_ID matches the filters stated in the configuration files:
  * META-INF/spring/org.backmeup.twitter-context.xml
  * META-INF/spring/org.backmeup.twitter-osgi-context.xml
- * 
- * @author 
  */
 public class TwitterDescriptor implements SourceSinkDescribable {
 	public static final String TWITTER_ID = "org.backmeup.twitter";

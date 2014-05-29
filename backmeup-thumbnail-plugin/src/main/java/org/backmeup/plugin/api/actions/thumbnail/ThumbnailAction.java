@@ -65,9 +65,6 @@ public class ThumbnailAction implements Action {
 	 * gm convert -size 120x120 original.jpg -resize 120x120 +profile "*" thumbnail.jpg
 	 * 
 	 * @return the name of the thumbnail file
-	 * @throws IM4JavaException 
-	 * @throws InterruptedException 
-	 * @throws IOException 
 	 */
 	private String convert(File original) throws IOException, 
 		InterruptedException, IM4JavaException {
@@ -117,9 +114,9 @@ public class ThumbnailAction implements Action {
 						folder.mkdirs();
 						
 					File tempFile = new File(folder, tempFilename);
-					FileOutputStream fos = new FileOutputStream(tempFile);
-					fos.write(dataobject.getBytes());
-					fos.close();
+					try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+					    fos.write(dataobject.getBytes());
+					}
 					
 					try {
 						// Generate thumbnails using GraphicsMagick

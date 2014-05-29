@@ -80,7 +80,7 @@ public class LocalFileSystemStorageTest {
 		Storage storage = new LocalFilesystemStorage();
 		storage.open(ROOT_PATH);
 		
-		List<DataObject> dataobjects = new ArrayList<DataObject>();
+		List<DataObject> dataobjects = new ArrayList<>();
 		Iterator<DataObject> it = storage.getDataObjects();
 		while (it.hasNext()) 
 			dataobjects.add(it.next());
@@ -89,7 +89,7 @@ public class LocalFileSystemStorageTest {
 		Assert.assertEquals(2, dataobjects.size());
 		
 		// Data Objects should be equal to test texts
-		List<String> expected = new ArrayList<String>();
+		List<String> expected = new ArrayList<>();
 		expected.add(TEST_TXT_1);
 		expected.add(TEST_TXT_2);
 		

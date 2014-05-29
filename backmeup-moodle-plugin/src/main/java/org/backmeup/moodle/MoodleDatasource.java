@@ -45,8 +45,7 @@ public class MoodleDatasource extends FilesystemLikeDatasource {
 				uri.getUri().toURL().openStream();
 				return null;
 			}
-			else
-				return uri.getUri().toURL().openStream();
+            return uri.getUri().toURL().openStream();
 		} catch (Exception e) {
 			throw new PluginException(MoodleDescriptor.MOODLE_ID, String.format("Download failed: \"%s\"", e.getMessage()), e);
 		}
@@ -55,7 +54,7 @@ public class MoodleDatasource extends FilesystemLikeDatasource {
 	@Override
 	public List<FilesystemURI> list(Properties items, List<String> options, FilesystemURI uri) {
 
-		List<FilesystemURI> results = new ArrayList<FilesystemURI>();
+		List<FilesystemURI> results = new ArrayList<>();
 
 		String serverurl = items.getProperty("Moodle Server Url");
 		String username = items.getProperty("Username");
@@ -141,7 +140,7 @@ public class MoodleDatasource extends FilesystemLikeDatasource {
 							while (fileIterator.hasNext()) {
 
 								Element file = fileIterator.next();
-								String mappedPath = (file.getAttribute("path") != null) ? course
+								String mappedPath = file.getAttribute("path") != null ? course
 										.getAttributeValue("name")
 										+ "/"
 										+ file.getAttributeValue("path") + "/"
@@ -223,7 +222,7 @@ public class MoodleDatasource extends FilesystemLikeDatasource {
 
 	@Override
 	public List<String> getAvailableOptions(Properties accessData) {
-		List<String> availableOptions = new ArrayList<String>();
+		List<String> availableOptions = new ArrayList<>();
 		availableOptions.add("Wiki");
 		availableOptions.add("Url");
 		availableOptions.add("Page");
@@ -234,9 +233,6 @@ public class MoodleDatasource extends FilesystemLikeDatasource {
 	}
 	/**
 	 * Used for Conversion into ISO8601 Date Format, which the Indexer needs
-	 * @param input
-	 * @return
-	 * @throws java.text.ParseException
 	 */
     private static Date parse( String input ) throws java.text.ParseException {
 

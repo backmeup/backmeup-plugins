@@ -20,7 +20,7 @@ public class LocalFilesystemStorage implements Storage {
 	private long totalStorageSize = 0;
 
 	@Override
-	public void open(String rootPath) throws StorageException {
+	public void open(String rootPath) {
 		this.rootDir = new File(rootPath);
 		if (!this.rootDir.exists()) 
 			this.rootDir.mkdirs();				
@@ -49,32 +49,35 @@ public class LocalFilesystemStorage implements Storage {
 	/** Read methods **/
 	
 	@Override
-	public int getDataObjectCount() throws StorageException {
-	    final List<DataObject> flatList = new ArrayList<DataObject>(); 
+	public int getDataObjectCount() {
+	    final List<DataObject> flatList = new ArrayList<>(); 
 	    addToList(rootDir, "/", flatList);
 	    return flatList.size();
 	}
 
 	@Override
-	public Iterator<DataObject> getDataObjects() throws StorageException {
-		final List<DataObject> flatList = new ArrayList<DataObject>(); 
+	public Iterator<DataObject> getDataObjects() {
+		final List<DataObject> flatList = new ArrayList<>(); 
 		addToList(rootDir, "/", flatList);
 		
 		return new Iterator<DataObject>() {
 			
 			private int idx = 0;
 			
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return idx < flatList.size();
 			}
 
-			public DataObject next() {
+			@Override
+            public DataObject next() {
 				DataObject obj = flatList.get(idx);
 				idx++;
 				return obj;
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				// Do nothing				
 			}
 			
@@ -99,7 +102,7 @@ public class LocalFilesystemStorage implements Storage {
 	}
 	
 	@Override
-	public boolean existsPath(String path) throws StorageException {
+	public boolean existsPath(String path) {
 		if (path.startsWith("/")||path.startsWith("\\"))
 			path = path.substring(1);
 		
@@ -230,7 +233,7 @@ public class LocalFilesystemStorage implements Storage {
 	}
 
   @Override
-  public long getDataObjectSize() throws StorageException {
+  public long getDataObjectSize() {
     return totalStorageSize;
   }
 

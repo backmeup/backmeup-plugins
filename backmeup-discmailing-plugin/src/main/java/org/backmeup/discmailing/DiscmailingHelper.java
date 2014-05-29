@@ -28,17 +28,17 @@ import com.jcraft.jsch.Session;
 
 public class DiscmailingHelper {
 	
-	private String host;
+	private final String host;
 
-	private String user;
+	private final String user;
 	
-	private String target;
+	private final String target;
 	
-	private String ticketpath;
+	private final String ticketpath;
 	
-	private int port;
+	private final int port;
 	
-	private String sshkey;
+	private final String sshkey;
 	
 	public DiscmailingHelper() {
 		Properties properties = new Properties();

@@ -45,7 +45,7 @@ public class MailAuthenticator implements InputBased {
 
   @Override
   public List<RequiredInputField> getRequiredInputFields() {
-    List<RequiredInputField> inputs = new ArrayList<RequiredInputField>();
+    List<RequiredInputField> inputs = new ArrayList<>();
     
     inputs.add(new RequiredInputField (PROP_USERNAME, PROP_USERNAME, PROP_USERNAME_DESC, true, 0, Type.String));
     inputs.add(new RequiredInputField (PROP_PASSWORD, PROP_PASSWORD, PROP_PASSWORD_DESC, true, 1, Type.Password));
@@ -59,7 +59,7 @@ public class MailAuthenticator implements InputBased {
 
   @Override
   public Map<String, Type> getTypeMapping() {
-    Map<String, Type> typeMapping = new HashMap<String, Type>();
+    Map<String, Type> typeMapping = new HashMap<>();
     typeMapping.put(PROP_SSL, Type.Bool);
     typeMapping.put(PROP_PORT, Type.Number);
     typeMapping.put(PROP_HOST, Type.String);

@@ -27,9 +27,9 @@ public class DropboxHelper {
 	
 	public static final String PROPERTY_SECRET = "secret";
 	
-	private String appKey;
+	private final String appKey;
 	
-	private String appSecret;
+	private final String appSecret;
 	
 	private DropboxHelper() {
 		Properties properties = new Properties();
@@ -65,7 +65,7 @@ public class DropboxHelper {
 		if (!session.isLinked()) {
 			throw new InvalidKeyException("org.backmeup.dropbox", "userToken, userSecret", token + ", " + secret, "dropbox.properties");
 		}
-		return new DropboxAPI<WebAuthSession>(session);
+		return new DropboxAPI<>(session);
 	}
 	
 }

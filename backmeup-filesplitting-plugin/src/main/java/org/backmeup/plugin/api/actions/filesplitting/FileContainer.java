@@ -13,10 +13,10 @@ public class FileContainer
 {
 	private static String PATH_SEPARATOR = "/";
 	
-	private long containermaxsize;
+	private final long containermaxsize;
 	private long containersize;
 	private String containerpath;
-	private List<DataObject> dataobjects;
+	private final List<DataObject> dataobjects;
 	
 	public FileContainer (String containerpath, long containermaxsize)
 	{
@@ -24,20 +24,17 @@ public class FileContainer
 		this.containermaxsize = containermaxsize;
 		this.containersize = 0;
 		
-		dataobjects = new ArrayList<DataObject> ();
+		dataobjects = new ArrayList<> ();
 	}
 	
 	/**
 	 * Tries to add an element to the container.
 	 * If the container is full the function returns false.
 	 * Else the element would be added to the container and true is returned. 
-	 * 
-	 * @param data
-	 * @return
 	 */
 	public boolean addData (DataObject data)
 	{
-		if ((containersize + data.getLength ()) > containermaxsize)
+		if (containersize + data.getLength () > containermaxsize)
 		{
 			return false;
 		}

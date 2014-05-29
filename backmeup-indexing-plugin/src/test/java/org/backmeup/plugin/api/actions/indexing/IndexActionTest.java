@@ -45,7 +45,7 @@ public class IndexActionTest {
 			"\"org.backmeup.dummy\",\"sourceAndOrSink\":\"Sink\"},\"requiredActions\":[]," + 
 			"\"start\":\"1345203377704\",\"delay\":1345203258212}";
 	
-	private Progressable logProgressable = new Progressable() {
+	private final Progressable logProgressable = new Progressable() {
 		@Override
 		public void progress(String message) {
 			System.out.println("PROGRESS: " + message);

@@ -49,7 +49,7 @@ public class ElasticSearchIndexer {
 	
 	private static final String ES_CLUSTER_NAME = "es-backmeup-cluster";
 	
-	private Client client;
+	private final Client client;
 	
 	public ElasticSearchIndexer(String host, int port) {
 		host = NetworkUtils.getLocalAddress().getHostName();

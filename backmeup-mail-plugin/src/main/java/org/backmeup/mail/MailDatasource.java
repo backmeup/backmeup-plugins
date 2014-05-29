@@ -38,7 +38,6 @@ import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Datasource;
-import org.backmeup.plugin.api.connectors.DatasourceException;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
@@ -114,7 +113,7 @@ public class MailDatasource implements Datasource {
     }       
   }
 
-  private SimpleDateFormat folderFormat;  
+  private final SimpleDateFormat folderFormat;  
   
   private static final String MESSAGE_FOLDER_FORMAT = "org.backmeup.mail.MailDatasource.MESSAGE_FOLDER_FORMAT";
   private static final String MESSAGE_HTML_WRAP = "org.backmeup.mail.MailDatasource.MESSAGE_HTML_WRAP";
@@ -123,13 +122,13 @@ public class MailDatasource implements Datasource {
   private static final String INDEX_HTML_WRAP = "org.backmeup.mail.MailDatasource.INDEX_HTML_WRAP";
   private static final String INDEX_HTML_ENTRY = "org.backmeup.mail.MailDatasource.INDEX_HTML_ENTRY";
   
-  private ResourceBundle textBundle = ResourceBundle
+  private final ResourceBundle textBundle = ResourceBundle
       .getBundle(MailDatasource.class.getSimpleName());
   
-  private Pattern bodyRegex = Pattern.compile("<body.*?>(.*?)</body>", Pattern.DOTALL);
-  private Pattern headRegex = Pattern.compile("<head.*?>(.*?)</head>", Pattern.DOTALL);
-  private Pattern htmlRegex = Pattern.compile("<html.*?>(.*?)</html>", Pattern.DOTALL);
-  private Logger logger = Logger.getLogger(MailDatasource.class.getName());
+  private final Pattern bodyRegex = Pattern.compile("<body.*?>(.*?)</body>", Pattern.DOTALL);
+  private final Pattern headRegex = Pattern.compile("<head.*?>(.*?)</head>", Pattern.DOTALL);
+  private final Pattern htmlRegex = Pattern.compile("<html.*?>(.*?)</html>", Pattern.DOTALL);
+  private final Logger logger = Logger.getLogger(MailDatasource.class.getName());
   
   public MailDatasource() {
     this.folderFormat = new SimpleDateFormat(textBundle.getString(MESSAGE_FOLDER_FORMAT));
@@ -215,7 +214,7 @@ public class MailDatasource implements Datasource {
 
   public List<Attachment> getAttachments(Part part) throws MessagingException,
       IOException {
-    List<Attachment> attachments = new ArrayList<Attachment>();
+    List<Attachment> attachments = new ArrayList<>();
     if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
       Attachment a = new Attachment();
       a.filename = MimeUtility.decodeText(part.getFileName());
@@ -232,7 +231,7 @@ public class MailDatasource implements Datasource {
 
   public List<Part> getNestedMessages(Part p) throws MessagingException,
       IOException {
-    List<Part> nested = new ArrayList<Part>();
+    List<Part> nested = new ArrayList<>();
     if (p.isMimeType("multipart/*")) {
       Multipart mp = (Multipart) p.getContent();
       int count = mp.getCount();
@@ -249,8 +248,8 @@ public class MailDatasource implements Datasource {
       return "";
     
     StringBuilder sb = new StringBuilder();
-    for (int i=0; i < arr.length; i++) {
-      sb.append(arr[i]).append(pattern);      
+    for (Object element : arr) {
+      sb.append(element).append(pattern);      
     }
     
     if (arr.length > 0) {
@@ -380,8 +379,8 @@ public class MailDatasource implements Datasource {
   }
 
   private List<Content> getContentIds(Part m) throws MessagingException, IOException {
-    List<Content> contentIds = new ArrayList<Content>();
-    Stack<Part> parts = new Stack<Part>();
+    List<Content> contentIds = new ArrayList<>();
+    Stack<Part> parts = new Stack<>();
     parts.push(m);
     while (!parts.empty()) {
       Part current = parts.pop();
@@ -478,7 +477,7 @@ public class MailDatasource implements Datasource {
 
   @Override
   public void downloadAll(Properties accessData, List<String> options, Storage storage,
-      Progressable progressor) throws DatasourceException, StorageException {
+      Progressable progressor) throws StorageException {
     try {
       Session session = Session.getInstance(accessData);
       Store store = session.getStore();
@@ -486,12 +485,12 @@ public class MailDatasource implements Datasource {
       store.connect(accessData.getProperty("mail.host"),
           accessData.getProperty("mail.user"),
           accessData.getProperty("mail.password"));
-      Set<String> alreadyInspected = new HashSet<String>();
+      Set<String> alreadyInspected = new HashSet<>();
       logger.log(Level.FINE, "Connected! Downloading folders...");
       Folder[] folders = store.getDefaultFolder().list("*");
-      List<MessageInfo> indexDetails = new ArrayList<MessageInfo>();
+      List<MessageInfo> indexDetails = new ArrayList<>();
       if (options.size() > 0) {        
-        List<Folder> toVisit = new ArrayList<Folder>();
+        List<Folder> toVisit = new ArrayList<>();
         for (Folder f : folders) {
           if (options.contains(f.getFullName())) {
             toVisit.add(f);
@@ -520,7 +519,7 @@ public class MailDatasource implements Datasource {
 
   @Override
   public List<String> getAvailableOptions(Properties accessData) {
-    List<String> availOpts = new ArrayList<String>();
+    List<String> availOpts = new ArrayList<>();
     try {
       Session session = Session.getInstance(accessData);
       Store store = session.getStore();

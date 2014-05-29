@@ -15,8 +15,8 @@ public class TwitterHelper {
 	
 	public static final String PROPERTY_SECRET = "secret";
 	
-	private String appKey;
-	private String appSecret;
+	private final String appKey;
+	private final String appSecret;
 	
 	private TwitterHelper() {
 		Properties properties = new Properties();

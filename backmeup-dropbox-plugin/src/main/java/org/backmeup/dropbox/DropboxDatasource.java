@@ -48,9 +48,9 @@ public class DropboxDatasource extends FilesystemLikeDatasource {
 	
 	@Override
 	public List<FilesystemURI> list(Properties items, List<String> options, FilesystemURI uri) {
-		String path = (uri == null) ? "/" : uri.toString();
+		String path = uri == null ? "/" : uri.toString();
 		DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(items);
-		List<FilesystemURI> uris = new ArrayList<FilesystemURI>();
+		List<FilesystemURI> uris = new ArrayList<>();
 		
 		try {
 		  try {
@@ -134,7 +134,7 @@ public class DropboxDatasource extends FilesystemLikeDatasource {
 
   @Override
   public List<String> getAvailableOptions(Properties accessData) {
-    List<String> results = new ArrayList<String>();
+    List<String> results = new ArrayList<>();
     DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(accessData);
     try {
       Entry entry = api.metadata("/", 25000, null, true, null);

@@ -36,7 +36,7 @@ public class FilesplittAction implements Action
 		
 		try
 		{
-			PriorityQueue<DataObject> sorted = new PriorityQueue<DataObject> (storage.getDataObjectCount(), new Comparator<DataObject> ()
+			PriorityQueue<DataObject> sorted = new PriorityQueue<> (storage.getDataObjectCount(), new Comparator<DataObject> ()
 			{
 				@Override
 				public int compare (DataObject do1, DataObject do2)
@@ -60,15 +60,15 @@ public class FilesplittAction implements Action
 						}
 					}
 
-					if ( (date1 == null) && (date2 == null))
+					if ( date1 == null && date2 == null)
 					{
 						return 0;
 					}
-					else if ( (date1 == null) && (date2 != null))
+					else if ( date1 == null && date2 != null)
 					{
 						return -1;
 					}
-					else if ( (date1 != null) && (date2 == null))
+					else if ( date1 != null && date2 == null)
 					{
 						return +1;
 					}

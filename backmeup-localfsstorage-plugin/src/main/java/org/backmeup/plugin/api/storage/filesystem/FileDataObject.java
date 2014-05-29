@@ -11,9 +11,9 @@ import org.backmeup.plugin.api.storage.DataObject;
 
 public class FileDataObject extends DataObject {
 
-	private File file;
+	private final File file;
 	
-	private File metaFile;
+	private final File metaFile;
 
 	private String path;
 

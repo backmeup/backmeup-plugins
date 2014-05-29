@@ -39,7 +39,7 @@ public class MoodleAuthenticator implements InputBased {
 
 	@Override
 	public List<RequiredInputField> getRequiredInputFields() {
-		List<RequiredInputField> requiredFields = new LinkedList<RequiredInputField>();
+		List<RequiredInputField> requiredFields = new LinkedList<>();
 		
 		requiredFields.add(new RequiredInputField ("Username", "Username", "Username", true, 0, Type.String));
 		requiredFields.add(new RequiredInputField ("Password", "Password", "Password", true, 1, Type.Password));
@@ -50,7 +50,7 @@ public class MoodleAuthenticator implements InputBased {
 
 	@Override
 	public Map<String, Type> getTypeMapping() {
-		Map<String, Type> mapping = new TreeMap<String, Type>();
+		Map<String, Type> mapping = new TreeMap<>();
 		mapping.put("Username", Type.String);
 		mapping.put("Password", Type.Password);
 		mapping.put("Moodle Server Url", Type.String);
@@ -79,10 +79,7 @@ public class MoodleAuthenticator implements InputBased {
 			Document doc = docBuilder.parse(authUrl);
 			NodeList nodes = doc.getElementsByTagName("result");
 			Element result = (Element) nodes.item(0);
-			if (result.getTextContent().compareTo("true") == 0)
-				return true;
-			else
-				return false;
+			return result.getTextContent().compareTo("true") == 0;
 		} catch (Exception e) {
 			return false;
 		}

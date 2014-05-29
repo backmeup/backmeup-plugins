@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.backmeup.mail.MailAuthenticator;
-import org.backmeup.plugin.spi.InputBased;
 
 public class MailAuthenticate {
   public static String readLine() {

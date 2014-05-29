@@ -23,7 +23,7 @@ public class ThumbnailActionTest {
 	
 	private static Storage storage;
 
-	private Progressable logProgressable = new Progressable() {
+	private final Progressable logProgressable = new Progressable() {
 		@Override
 		public void progress(String message) {
 			System.out.println("PROGRESS: " + message);

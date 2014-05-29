@@ -12,8 +12,8 @@ public class FileContainers
 	private static String PART_NUM_FORMAT = "%03d";
 	private static final String CONTAINER_CRYPT_EXTENSION = ".tc";
 	
-	private List<FileContainer> filecontainers;
-	private long containermaxsize;
+	private final List<FileContainer> filecontainers;
+	private final long containermaxsize;
 	private FileContainer currcontainer;
 	boolean encrypt;
 	
@@ -22,7 +22,7 @@ public class FileContainers
 		this.containermaxsize = containermaxsize;
 		this.encrypt = encrypt;
 		
-		filecontainers = new LinkedList<FileContainer> ();
+		filecontainers = new LinkedList<> ();
 		currcontainer = null;
 	}
 	

@@ -56,11 +56,11 @@ public class DropboxDatasink implements Datasink {
 
 			try {
 				byte[] data = dataObj.getBytes();
-				ByteArrayInputStream bis = new ByteArrayInputStream(data);
-				String log = String.format("Uploading file %s ...", dataObj.getPath());
-				progressor.progress(log);
-				api.putFile(fileName, bis, data.length, null, null);
-				bis.close();
+				try (ByteArrayInputStream bis = new ByteArrayInputStream(data)) {
+    				String log = String.format("Uploading file %s ...", dataObj.getPath());
+    				progressor.progress(log);
+    				api.putFile(fileName, bis, data.length, null, null);
+				}
 			} catch (Exception e) {
 				throw new PluginException(DropboxDescriptor.DROPBOX_ID, String.format(
 						"An error occurred during upload of file %s", fileName), e);

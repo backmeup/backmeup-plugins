@@ -28,7 +28,7 @@ import org.xml.sax.SAXException;
 public class IndexAction implements Action {
 	private final Logger logger = LoggerFactory.getLogger(IndexAction.class);
 	
-	private Client client;
+	private final Client client;
 	
 	public IndexAction(Client client) {
 		this.client = client;
@@ -70,7 +70,7 @@ public class IndexAction implements Action {
 					
 					// TODO username needs to be available to action
 					logger.debug("Indexing " + dob.getPath());
-					meta = new HashMap<String, String>();
+					meta = new HashMap<>();
 					meta.put(IndexUtils.FIELD_CONTENT_TYPE, mime);
 					if (fulltext != null)
 						meta.put(IndexUtils.FIELD_FULLTEXT, fulltext);

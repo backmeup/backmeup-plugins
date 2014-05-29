@@ -47,7 +47,7 @@ public class FilegeneratorAuthenticator implements InputBased {
 
 	@Override
 	public List<RequiredInputField> getRequiredInputFields() {
-		List<RequiredInputField> inputs = new ArrayList<RequiredInputField>();
+		List<RequiredInputField> inputs = new ArrayList<>();
 		
 		inputs.add(new RequiredInputField (Constants.PROP_TEXT, Constants.PROP_TEXT, Constants.PROP_TEXT_DESC, true, 0, Type.Bool));
 		inputs.add(new RequiredInputField (Constants.PROP_TEXT_PARAGRAPHS, Constants.PROP_TEXT_PARAGRAPHS, Constants.PROP_TEXT_PARAGRAPHS_DESC, false, 1, Type.Number));
@@ -68,7 +68,7 @@ public class FilegeneratorAuthenticator implements InputBased {
 
 	@Override
 	public Map<String, Type> getTypeMapping() {
-		Map<String, Type> typeMapping = new HashMap<String, Type>();
+		Map<String, Type> typeMapping = new HashMap<>();
 		typeMapping.put(Constants.PROP_TEXT, Type.Bool);
 		typeMapping.put(Constants.PROP_TEXT_PARAGRAPHS, Type.Number);
 		typeMapping.put(Constants.PROP_IMAGE, Type.Bool);

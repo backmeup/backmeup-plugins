@@ -19,7 +19,7 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 public class ZipHelper {
-  private Logger logger = Logger.getLogger(ZipDatasink.class.getName());
+  private final Logger logger = Logger.getLogger(ZipDatasink.class.getName());
   
   private String temporaryPath;
   private boolean isRemote;
@@ -31,13 +31,13 @@ public class ZipHelper {
   private String sshkey;    
 
   public ZipHelper() {
-    InputStream is = getClass().getClassLoader().getResourceAsStream(
-        "zip.properties");
-    if (is == null)
-      throw new PluginException(ZipDescriptor.ZIP_ID,
-          "Fatal error: cannot find zip.properties within jar-file!");
+    try (InputStream is = getClass().getClassLoader().getResourceAsStream(
+            "zip.properties");) {
 
-    try {
+      if (is == null)
+            throw new PluginException(ZipDescriptor.ZIP_ID,
+                "Fatal error: cannot find zip.properties within jar-file!");
+      
       Properties properties = new Properties();
       properties.load(is);
       temporaryPath = properties.getProperty("temporaryPath");
@@ -51,13 +51,6 @@ public class ZipHelper {
     } catch (IOException e) {
       throw new PluginException(ZipDescriptor.ZIP_ID,
           "Fatal error: could not load zip.properties: " + e.getMessage(), e);
-    } finally {
-      try {
-        if (is != null)
-          is.close();
-      } catch (Exception ex) {
-        ex.printStackTrace();
-      }
     }
   }
 
@@ -105,7 +98,7 @@ public class ZipHelper {
       try {
         String absolutePath = MessageFormat.format(remoteDirectory, userId);
         File f = new File(absolutePath);
-        Stack<String> paths = new Stack<String>();
+        Stack<String> paths = new Stack<>();
         File current = f;
         while (current != null) {
           if (!current.getAbsolutePath().equals("/"))

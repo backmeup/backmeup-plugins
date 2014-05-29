@@ -29,7 +29,7 @@ public class SkyDriveDatasource extends FilesystemLikeDatasource {
 	public List<FilesystemURI> list(Properties accessData, List<String> options, FilesystemURI uri) {
 		String path = uri == null ? "me/skydrive" : uri.toString();
 		String mappedPath = uri == null ? "" : uri.getMappedUri().toString();
-		List<FilesystemURI> uris = new ArrayList<FilesystemURI>();
+		List<FilesystemURI> uris = new ArrayList<>();
 		Service s = SkyDriveSupport.getService(accessData);
 		for (Entry e : SkyDriveSupport.getFolderContent(s.service, s.accessToken, path)) {
 			try {
@@ -61,7 +61,7 @@ public class SkyDriveDatasource extends FilesystemLikeDatasource {
 
   @Override
   public List<String> getAvailableOptions(Properties accessData) {
-    List<String> options = new ArrayList<String>();
+    List<String> options = new ArrayList<>();
     String path = "me/skydrive";        
     Service s = SkyDriveSupport.getService(accessData);
     for (Entry e : SkyDriveSupport.getFolderContent(s.service, s.accessToken, path)) {

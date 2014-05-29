@@ -89,7 +89,7 @@ public class SkyDriveSupport {
 			path = path.substring(1);
 		}
 		File f = new File(path);
-		List<String> dirs = new LinkedList<String>();
+		List<String> dirs = new LinkedList<>();
 		dirs.add(f.getName());
 		while ((f = f.getParentFile()) != null) {
 			dirs.add(0, f.getName());
@@ -166,7 +166,7 @@ public class SkyDriveSupport {
 	
 	public static List<Entry> getFolderContent(OAuthService service,
 			Token accessToken, String folderId) {
-		List<Entry> result = new ArrayList<Entry>();
+		List<Entry> result = new ArrayList<>();
 		OAuthRequest request = new OAuthRequest(Verb.GET, String.format(FOLDER_URL,
 				folderId));
 		service.signRequest(accessToken, request);
@@ -308,7 +308,7 @@ public class SkyDriveSupport {
 		File f = new File(name);
 		String fileName = f.getName();
 
-		List<String> dirs = new LinkedList<String>();
+		List<String> dirs = new LinkedList<>();
 		while ((f = f.getParentFile()) != null) {
 			dirs.add(0, f.getName());
 		}
@@ -446,7 +446,7 @@ public class SkyDriveSupport {
 		File f = new File(name);
 		String fileName = f.getName();
 
-		List<String> dirs = new LinkedList<String>();
+		List<String> dirs = new LinkedList<>();
 		if (useHead)
 			dirs.add(fileName);
 		while ((f = f.getParentFile()) != null) {

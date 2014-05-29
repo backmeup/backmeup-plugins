@@ -5,23 +5,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URLEncoder;
 import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.backmeup.discmailing.DiscmailingAuthenticator;
-import org.junit.Test;
 
 public class DiscmailingAuthenticatorTest {
 	
-	@Test
-	public void testDiscmailing() {
-	    // fail("Not yet implemented");
-	}
-
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) throws IOException {
 		DiscmailingAuthenticator auth = new DiscmailingAuthenticator();
 		Properties props = new Properties();

@@ -16,7 +16,6 @@ import org.backmeup.filegenerator.generator.impl.TextGenerator;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Datasource;
-import org.backmeup.plugin.api.connectors.DatasourceException;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
@@ -27,9 +26,9 @@ public class FilegeneratorDatasource implements Datasource {
 	@Override
 	public void downloadAll(Properties accessData, List<String> options,
 			Storage storage, Progressable progressor)
-			throws DatasourceException, StorageException {
+			throws StorageException {
 		final Random random = new Random();
-		final ArrayList<Generator> generators = new ArrayList<Generator>();
+		final ArrayList<Generator> generators = new ArrayList<>();
 
 		if (accessData.getProperty(Constants.PROP_TEXT).equals("true")) {
 			String amount = accessData.getProperty(Constants.PROP_TEXT_PARAGRAPHS);
@@ -140,7 +139,7 @@ public class FilegeneratorDatasource implements Datasource {
 
 	@Override
 	public List<String> getAvailableOptions(Properties accessData) {
-		List<String> options = new ArrayList<String>();
+		List<String> options = new ArrayList<>();
 		options.add("option1");
 		options.add("option2");
 		return options;

@@ -41,7 +41,7 @@ public class DiscmailingAuthenticator implements InputBased {
 
 	@Override
 	public List<RequiredInputField> getRequiredInputFields() {
-		List<RequiredInputField> inputs = new ArrayList<RequiredInputField>();
+		List<RequiredInputField> inputs = new ArrayList<>();
 		
 		inputs.add(new RequiredInputField (PROP_FIRSTNAME, PROP_FIRSTNAME, PROP_FIRSTNAME_DESC, true, 0, Type.String));
 		inputs.add(new RequiredInputField (PROP_SURNAME, PROP_SURNAME, PROP_SURNAME_DESC, true, 1, Type.String));
@@ -54,7 +54,7 @@ public class DiscmailingAuthenticator implements InputBased {
 
 	@Override
 	public Map<String, Type> getTypeMapping() {
-		Map<String, Type> typeMapping = new HashMap<String, Type>();
+		Map<String, Type> typeMapping = new HashMap<>();
 		typeMapping.put(PROP_FIRSTNAME, Type.String);
 		typeMapping.put(PROP_SURNAME, Type.String);
 	    typeMapping.put(PROP_STREET, Type.String);

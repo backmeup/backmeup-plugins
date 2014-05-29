@@ -13,7 +13,7 @@ public class FilesplittDescribable extends BaseActionDescribable {
   @Override
   public List<String> getAvailableOptions ()
   {
-	  List<String> options = new LinkedList<String> ();
+	  List<String> options = new LinkedList<> ();
 	  
 	  options.add ("Test Option 1");
 	  options.add ("Test Option 2");

@@ -42,21 +42,11 @@ public class DiscmailingDatasink implements Datasink {
         }
         
         //generate XML Ticket
-    InputStream in = null; 
-		try {
-        	String ticketPath = helper.getTicketpath() + "/ticket-" + jobid + ".xml";
-      		String dataPath = target + "/";
-      		in = helper.generateTicket(items, dataPath);
+		try (InputStream in = helper.generateTicket(items, target + "/")) {
+		    String ticketPath = helper.getTicketpath() + "/ticket-" + jobid + ".xml";
       		sftpChannel.put(in, ticketPath);
       	} catch (Exception e) {
       		throw new PluginException(DiscmailingDescriptor.DISC_ID, "Error during upload of file %s", e);
-      	} finally {
-      	  try {
-      	    if (in != null)
-      	      in.close();
-      	  } catch (Exception ex) {
-      	    ex.printStackTrace();
-      	  }
       	}
 		
 		int i = 1;
@@ -65,22 +55,22 @@ public class DiscmailingDatasink implements Datasink {
 			DataObject dataObj = it.next();
 			try {
 				byte[] data = dataObj.getBytes();
-				InputStream bis = new ByteArrayInputStream(data);
-				String dataPath = target + dataObj.getPath();
-				String log = String.format("Uploading file %s (Number: %d)...", dataPath, i++);
-				System.out.println(log);
-				progressor.progress(log);
-				try {
-					File f = new File(dataObj.getPath());
-					if (!directoryExists(target + f.getParent(), sftpChannel)) {
-						mkdirRec(dataPath, sftpChannel);
-					}
-					sftpChannel.put(bis, escapeChars(dataPath));
+				try (InputStream bis = new ByteArrayInputStream(data)) {
+    				String dataPath = target + dataObj.getPath();
+    				String log = String.format("Uploading file %s (Number: %d)...", dataPath, i++);
+    				System.out.println(log);
+    				progressor.progress(log);
+    				try {
+    					File f = new File(dataObj.getPath());
+    					if (!directoryExists(target + f.getParent(), sftpChannel)) {
+    						mkdirRec(dataPath, sftpChannel);
+    					}
+    					sftpChannel.put(bis, escapeChars(dataPath));
+    				}
+    				catch (SftpException e) {
+                            e.printStackTrace();
+                    }
 				}
-				catch (SftpException e) {
-                        e.printStackTrace();
-                }
-				bis.close();
 			} catch (IOException e) {
 				throw new PluginException(DiscmailingDescriptor.DISC_ID, "Error during upload of file %s", e);
 			}

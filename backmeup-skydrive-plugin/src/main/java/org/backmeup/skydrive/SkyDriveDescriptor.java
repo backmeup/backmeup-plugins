@@ -18,7 +18,8 @@ import org.backmeup.plugin.api.Metadata;
 public class SkyDriveDescriptor implements SourceSinkDescribable {
 	public static final String SKYDRIVE_ID = "org.backmeup.skydrive";
 	
-	public String getTitle() {
+	@Override
+    public String getTitle() {
 		return "SkyDrive";
 	}
 

@@ -12,13 +12,13 @@ public class EncryptionContainers
 {
 	private final String FS_PATH_SEPARATOR = System.getProperty ("file.separator");
 	private final String SYS_TEMP_DIR = System.getProperty ("java.io.tmpdir");
-	private String containers_temp_dir;
+	private final String containers_temp_dir;
 	
 	HashMap<String, EncryptionContainer> containers;
 	
 	public EncryptionContainers (int containercount, long[] containersize, String[] containername, String password)
 	{
-		containers = new HashMap<String, EncryptionContainer> (containercount);
+		containers = new HashMap<> (containercount);
 		
 		containers_temp_dir = RandomStringUtils.randomAlphanumeric (16);
 		
@@ -40,7 +40,7 @@ public class EncryptionContainers
 	
 	public List<EncryptionContainer> getContainers ()
 	{		
-		return new LinkedList<EncryptionContainer> (containers.values ());
+		return new LinkedList<> (containers.values ());
 	}
 	
 	public void cleanupFolders ()

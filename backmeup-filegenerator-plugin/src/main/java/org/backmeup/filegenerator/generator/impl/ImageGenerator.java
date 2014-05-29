@@ -14,9 +14,9 @@ import javax.imageio.ImageIO;
 import org.backmeup.filegenerator.generator.Generator;
 
 public class ImageGenerator implements Generator {
-	private int sizeX;
-	private int sizeY;
-	private Random random;
+	private final int sizeX;
+	private final int sizeY;
+	private final Random random;
 	
 	public ImageGenerator() {
 		this.sizeX = 512;

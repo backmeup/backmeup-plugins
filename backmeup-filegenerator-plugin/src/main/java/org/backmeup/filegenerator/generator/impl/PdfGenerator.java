@@ -13,8 +13,8 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 
 public class PdfGenerator implements Generator {
-	private String title;
-	private String body;
+	private final String title;
+	private final String body;
 	
 	Font titleFont;
 	Font bodyFont;

@@ -14,9 +14,9 @@ import java.util.Properties;
  */
 public class SkyDriveHelper {
 	
-	private String appKey;
+	private final String appKey;
 	
-	private String appSecret;
+	private final String appSecret;
 	
 	private SkyDriveHelper() {
 		Properties properties = new Properties();

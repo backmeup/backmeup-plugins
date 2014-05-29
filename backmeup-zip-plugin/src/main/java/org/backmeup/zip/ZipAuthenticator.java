@@ -26,13 +26,13 @@ public class ZipAuthenticator implements InputBased {
   @Override
   public List<RequiredInputField> getRequiredInputFields() {
     // Empty list will do just fine
-    return new ArrayList<RequiredInputField>();
+    return new ArrayList<>();
   }
 
   @Override
   public Map<String, Type> getTypeMapping() {
     // Empty map will do just fine
-    return new HashMap<String, Type>();
+    return new HashMap<>();
   }
 
   @Override

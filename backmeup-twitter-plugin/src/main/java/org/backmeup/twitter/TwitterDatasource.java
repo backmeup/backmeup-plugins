@@ -59,10 +59,10 @@ import twitter4j.conf.ConfigurationBuilder;
 public class TwitterDatasource implements Datasource {
 	private static final String TWITTER = "twitter";
 
-	private List<Status> states = new LinkedList<>();
-	private List<Long> retweets = new LinkedList<>();
+	private final List<Status> states = new LinkedList<>();
+	private final List<Long> retweets = new LinkedList<>();
 	private User user = null;
-	private ConcreteElement ce = new ConcreteElement();
+	private final ConcreteElement ce = new ConcreteElement();
 
 	@Override
 	public void downloadAll(Properties arg0, List<String> options,

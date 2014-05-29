@@ -2,7 +2,6 @@ package org.backmeup.facebook;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -62,9 +61,9 @@ public class FacebookDatasource implements Datasource {
 
 	private static final boolean DOWNLOAD_NON_FRIEND_USERS = true;
 
-	private List<String> allUsers = new LinkedList<String>();
+	private final List<String> allUsers = new LinkedList<>();
 	private String accessToken = "";
-	private ConcreteElement ce = new ConcreteElement();
+	private final ConcreteElement ce = new ConcreteElement();
 	private String list_point = "Themes/list_point.jpg";
 
 	@Override
@@ -258,8 +257,7 @@ public class FacebookDatasource implements Datasource {
 	 */
 	private MetainfoContainer downloadComments(String id, String destination,
 			String parent, String type, Document doc, FacebookClient client,
-			Storage storage, Progressable progr) throws DatasourceException,
-			StorageException {
+			Storage storage, Progressable progr) throws StorageException {
 
 		Div div = null;
 		if (type.equals("album"))
@@ -333,7 +331,7 @@ public class FacebookDatasource implements Datasource {
 	 */
 	private String downloadLikes(String id, String type, Document doc,
 			FacebookClient client, Storage storage, Progressable progr)
-			throws DatasourceException, StorageException {
+			throws StorageException {
 		String likers = "";
 		Div div = null;
 		Connection<User> likes = client.fetchConnection(id + "/likes",
@@ -375,7 +373,7 @@ public class FacebookDatasource implements Datasource {
 	}
 
 	private void downloadGroups(FacebookClient client, Storage storage,
-			Progressable progr) throws DatasourceException, StorageException {
+			Progressable progr) throws StorageException {
 
 		Document doc = createDocument("Gruppen", "Facebook - Gruppen", false);
 
@@ -403,8 +401,7 @@ public class FacebookDatasource implements Datasource {
 	}
 
 	private void downloadPosts(String id, FacebookClient client,
-			Storage storage, Progressable progr) throws DatasourceException,
-			StorageException {
+			Storage storage, Progressable progr) throws StorageException {
 
 		Document doc = createDocument("Pinwand", "Facebook - Pinwand", false);
 
@@ -450,7 +447,7 @@ public class FacebookDatasource implements Datasource {
 	}
 
 	private void downloadFriends(FacebookClient client, Storage storage,
-			Progressable progr) throws DatasourceException, StorageException {
+			Progressable progr) throws StorageException {
 
 		Document doc = createDocument("Freunde", "Facebook - Freunde", false);
 
@@ -460,7 +457,7 @@ public class FacebookDatasource implements Datasource {
 
 		Connection<User> friends = client.fetchConnection("me/friends",
 				User.class);
-		;
+
 		do {
 			for (User friend : friends.getData()) {
 				if (friend != null && friend.getId() != null
@@ -489,7 +486,7 @@ public class FacebookDatasource implements Datasource {
 	}
 
 	private void downloadFriendlists(FacebookClient client, Storage storage,
-			Progressable progr) throws DatasourceException, StorageException {
+			Progressable progr) throws StorageException {
 
 		Document doc = createDocument("Freundesliste",
 				"Facebook - Freundesliste", false);
@@ -524,7 +521,7 @@ public class FacebookDatasource implements Datasource {
 
 	private String downloadFriendlist(String id, String name,
 			FacebookClient client, Storage storage, Progressable progr)
-			throws DatasourceException, StorageException {
+			throws StorageException {
 
 		MetainfoContainer metainfo = new MetainfoContainer();
 		Metainfo listinfo = new Metainfo();
@@ -612,8 +609,7 @@ public class FacebookDatasource implements Datasource {
 	}
 
 	private String downloadPost(Post post, FacebookClient client,
-			Storage storage, Progressable progr) throws DatasourceException,
-			StorageException {
+			Storage storage, Progressable progr) throws StorageException {
 
 		Metainfo postinfo = new Metainfo();
 		postinfo.setAttribute("author", checkName(post.getFrom().getName()));
@@ -957,7 +953,7 @@ public class FacebookDatasource implements Datasource {
 		detail2.addAttribute("class", "detail_table");
 		applic_photo.addElement(detail2);
 		
-		if ((photo.getTags() != null) && (photo.getTags().size() > 0)) {
+		if (photo.getTags() != null && photo.getTags().size() > 0) {
 			TR taged = new TR();
 			detail2.addElement(taged);
 			taged.addElement(new TD(new H2("Tags").addAttribute("class", "detailhead2")).addAttribute("class", "firstrow"));
@@ -1014,8 +1010,7 @@ public class FacebookDatasource implements Datasource {
 	}
 
 	private String downloadGroup(String id, FacebookClient client,
-			Storage storage, Progressable progr) throws DatasourceException,
-			StorageException {
+			Storage storage, Progressable progr) throws StorageException {
 		Group g = client.fetchObject(id, Group.class);
 		String name = checkName(g.getName());
 
@@ -1111,8 +1106,7 @@ public class FacebookDatasource implements Datasource {
 	}
 
 	private String downloadUser(String id, FacebookClient client,
-			Storage storage, Progressable progr) throws DatasourceException,
-			StorageException {
+			Storage storage, Progressable progr) throws StorageException {
 
 		MetainfoContainer metainfo = new MetainfoContainer();
 		Metainfo userinfo = new Metainfo();
@@ -1222,7 +1216,7 @@ public class FacebookDatasource implements Datasource {
 				detail.addElement(row);
 			}
 
-			if ((u.getLanguages() != null) && (u.getLanguages().size() > 0)) {
+			if (u.getLanguages() != null && u.getLanguages().size() > 0) {
 				String[] languages = new String[u.getLanguages().size()];
 				int i = 0;
 				for (NamedFacebookType language : u.getLanguages()) {
@@ -1236,7 +1230,7 @@ public class FacebookDatasource implements Datasource {
 				row.addElement(new TD(new UL(languages)));
 				detail.addElement(row);
 			}
-			if ((u.getEducation() != null) && (u.getEducation().size() > 0)) {
+			if (u.getEducation() != null && u.getEducation().size() > 0) {
 				String[] edus = new String[u.getEducation().size()];
 				int i = 0;
 				for (Education educ : u.getEducation()) {
@@ -1256,7 +1250,7 @@ public class FacebookDatasource implements Datasource {
 				detail.addElement(row);
 			}
 
-			if ((u.getWork() != null) && (u.getWork().size() > 0)) {
+			if (u.getWork() != null && u.getWork().size() > 0) {
 				String[] works = new String[u.getWork().size()];
 				int i = 0;
 				for (Work work : u.getWork()) {
@@ -1276,8 +1270,8 @@ public class FacebookDatasource implements Datasource {
 				row.addElement(new TD(new UL(works)));
 				detail.addElement(row);
 			}
-			if ((u.getInterestedIn() != null)
-					&& (u.getInterestedIn().size() > 0)) {
+			if (u.getInterestedIn() != null
+					&& u.getInterestedIn().size() > 0) {
 				row = new TR();
 				row.addElement(new TD("Interessiert an:").addAttribute("class",
 						"firstrow"));
@@ -1382,7 +1376,6 @@ public class FacebookDatasource implements Datasource {
 	 * @param storage
 	 *            the StorageWriter which can store the Image
 	 * @return the path to the picture
-	 * @throws StorageException
 	 */
 	private String downloadProfilePicture(String name, String id, String type,
 			Storage storage, Progressable progr) throws StorageException {
@@ -1436,25 +1429,22 @@ public class FacebookDatasource implements Datasource {
 			c = (HttpURLConnection) url.openConnection();
 			c.connect();
 			if(c.getContentType() != null){
-			if (c.getContentType().equals("image/jpeg")) {
-				progr.progress("Download " + path + " nach " + destination);
-				InputStream is = c.getInputStream();
-				storage.addFile(is, destination, metainfo);
-				is.close();
-				return true;
-			} else {
-				progr.progress("Lade alternatives Bild");
-				InputStream isAlt;
-				try {
-					isAlt = this.getClass().getResourceAsStream("/alternative.jpg");
-					storage.addFile(isAlt, destination, null);
-					isAlt.close();
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				} catch (IOException e){
-					e.printStackTrace();
-				}
-			}}
+    			if (c.getContentType().equals("image/jpeg")) {
+    				progr.progress("Download " + path + " nach " + destination);
+    				try (InputStream is = c.getInputStream()) {
+    				    storage.addFile(is, destination, metainfo);
+    				}
+    				return true;
+    			}
+    			
+                progr.progress("Lade alternatives Bild");
+                try (InputStream isAlt = this.getClass().getResourceAsStream("/alternative.jpg")) {
+                	storage.addFile(isAlt, destination, null);
+                	isAlt.close();
+                } catch (IOException e){
+                	e.printStackTrace();
+                }
+            }
 		} catch (IOException e) {
 			if (c != null)
 				c.disconnect();
@@ -1467,7 +1457,7 @@ public class FacebookDatasource implements Datasource {
 	 * 
 	 */
 	private void downloadAccounts(FacebookClient client, Storage storage,
-			Progressable progr) throws DatasourceException, StorageException {
+			Progressable progr) throws StorageException {
 
 		Document doc = createDocument("Seiten", "Facebook - Seiten", false);
 
@@ -1503,7 +1493,7 @@ public class FacebookDatasource implements Datasource {
 			JSONObject json = new JSONObject(content.toString());
 			JSONArray jsonArray = json.getJSONArray("data");
 
-			ArrayList<JSONObject> jsonList = new ArrayList<JSONObject>();
+			ArrayList<JSONObject> jsonList = new ArrayList<>();
 			for (int i = 0; i < jsonArray.length(); i++) {
 				jsonList.add(jsonArray.getJSONObject(i));
 			}
@@ -1534,7 +1524,7 @@ public class FacebookDatasource implements Datasource {
 
 	private String downloadAccount(String id, String name,
 			FacebookClient client, Storage storage, Progressable progr)
-			throws DatasourceException, StorageException {
+			throws StorageException {
 		MetainfoContainer metadata = new MetainfoContainer();
         Metainfo accountinfo = new Metainfo();
         accountinfo.setBackupDate(new Date());
@@ -1632,7 +1622,7 @@ public class FacebookDatasource implements Datasource {
     }
 
 	private Document createDocument(String title, String header, boolean out) {
-		Document doc = (Document) new Document();
+		Document doc = new Document();
 		doc.setCodeset("UTF-8");
 		doc.appendHead("<meta http-equiv='content-type' content='text/html; charset=UTF-8' />");
 		String backmeuplogo = "Themes/backmeuplogo.jpg";
@@ -1701,7 +1691,7 @@ public class FacebookDatasource implements Datasource {
 	}
 
 	private String getGraphUrl(String path, String parameters) {
-		if ((path == null) || (path.length() == 0)) {
+		if (path == null || path.length() == 0) {
 			return null;
 		}
 		String url = "https://graph.facebook.com/" + path;
@@ -1718,7 +1708,7 @@ public class FacebookDatasource implements Datasource {
 	 */
 	private String linkUser(String id, String name, String type,
 			FacebookClient client, Storage storage, Progressable progr)
-			throws DatasourceException, StorageException {
+			throws StorageException {
 
 		String nameUser = name;
 
@@ -1741,7 +1731,6 @@ public class FacebookDatasource implements Datasource {
 	/**
 	 * create a valid filename
 	 * 
-	 * @param str
 	 * @return new string without illegal signs
 	 */
 	private String checkName(String str) {
@@ -1761,9 +1750,9 @@ public class FacebookDatasource implements Datasource {
 				}
 			}
 		}*/
-		for (int i = 0; i < illegal.length; i++) {
-			while (str.contains(illegal[i])) {
-				str = str.replace(illegal[i], " ");
+		for (String element : illegal) {
+			while (str.contains(element)) {
+				str = str.replace(element, " ");
 			}
 		}
 
@@ -1773,7 +1762,7 @@ public class FacebookDatasource implements Datasource {
 	
 	@Override
 	public List<String> getAvailableOptions(Properties accessData) {
-		List<String> facebookBackupOptions = new ArrayList<String>();
+		List<String> facebookBackupOptions = new ArrayList<>();
 		facebookBackupOptions.add("Profile");
 		facebookBackupOptions.add("Friends");
 		facebookBackupOptions.add("Friendslists");
@@ -1786,21 +1775,20 @@ public class FacebookDatasource implements Datasource {
 	}
 
 	public void getThemes(Storage storage, Properties props)
-			throws DatasourceException, StorageException {
-		InputStream is;
+			throws StorageException {
 		try {
-			is = this.getClass().getResourceAsStream("/backmeuplogo.jpg");
-			storage.addFile(is, "Themes/backmeuplogo.jpg", null);
-			is = this.getClass().getResourceAsStream("/facebooklogo.jpg");
-			storage.addFile(is, "Themes/facebooklogo.jpg", null);
-			is = this.getClass().getResourceAsStream("/list_point.jpg");
-			storage.addFile(is, "Themes/list_point.jpg", null);
-			is = this.getClass().getResourceAsStream("/styles.css");
-			storage.addFile(is, "Themes/styles.css", null);
-			if(is!=null)
-			is.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+		    try (InputStream is = this.getClass().getResourceAsStream("/backmeuplogo.jpg")) {
+		        storage.addFile(is, "Themes/backmeuplogo.jpg", null);
+		    }
+            try (InputStream is = this.getClass().getResourceAsStream("/facebooklogo.jpg")) {
+                storage.addFile(is, "Themes/facebooklogo.jpg", null);
+            }
+            try (InputStream is = this.getClass().getResourceAsStream("/list_point.jpg")) {
+                storage.addFile(is, "Themes/list_point.jpg", null);
+            }
+            try (InputStream is = this.getClass().getResourceAsStream("/styles.css")) {
+                storage.addFile(is, "Themes/styles.css", null);
+            }
 		} catch (IOException e){
 			e.printStackTrace();
 		}

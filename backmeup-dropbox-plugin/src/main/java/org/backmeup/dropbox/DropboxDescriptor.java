@@ -57,8 +57,8 @@ public class DropboxDescriptor implements SourceSinkDescribable {
 			if (accessData != null) { 
 				DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(accessData);
 				if (api.getSession().isLinked()) {
-					double quota_limit = ((double) api.accountInfo().quota) / (1024.f * 1024.f);
-					double quota = ((double) api.accountInfo().quotaNormal / (1024.f * 1024.f));
+					double quota_limit = (double) api.accountInfo().quota / (1024.f * 1024.f);
+					double quota = (double) api.accountInfo().quotaNormal / (1024.f * 1024.f);
 					metadata.setProperty(Metadata.QUOTA_LIMIT, Double.toString(quota_limit));
 					metadata.setProperty(Metadata.QUOTA, Double.toString(quota));
 				}
