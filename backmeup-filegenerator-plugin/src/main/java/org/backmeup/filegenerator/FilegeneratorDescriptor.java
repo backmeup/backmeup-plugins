@@ -2,10 +2,10 @@ package org.backmeup.filegenerator;
 
 import java.util.Properties;
 
-import org.backmeup.model.spi.SourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
+import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
-public class FilegeneratorDescriptor implements SourceSinkDescribable {
+public class FilegeneratorDescriptor extends BaseSourceSinkDescribable {
   private static final String FILEGENERATOR_ID = "org.backmeup.filegenerator";
   
   @Override
@@ -31,8 +31,8 @@ public class FilegeneratorDescriptor implements SourceSinkDescribable {
   }
 
   @Override
-  public Type getType() {
-    return Type.Source;
+  public PluginType getType() {
+    return PluginType.Source;
   }
 
   @Override

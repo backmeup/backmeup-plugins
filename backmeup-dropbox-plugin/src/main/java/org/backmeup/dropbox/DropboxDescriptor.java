@@ -2,8 +2,8 @@ package org.backmeup.dropbox;
 
 import java.util.Properties;
 
-import org.backmeup.model.spi.SourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
+import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.session.WebAuthSession;
@@ -16,7 +16,7 @@ import com.dropbox.client2.session.WebAuthSession;
  * 
  * @author fschoeppl
  */
-public class DropboxDescriptor implements SourceSinkDescribable {
+public class DropboxDescriptor extends BaseSourceSinkDescribable {
 	public static final String DROPBOX_ID = "org.backmeup.dropbox";
 
 	@Override
@@ -40,8 +40,8 @@ public class DropboxDescriptor implements SourceSinkDescribable {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.Both;
+	public PluginType getType() {
+		return PluginType.SourceSink;
 	}
 
 	@Override

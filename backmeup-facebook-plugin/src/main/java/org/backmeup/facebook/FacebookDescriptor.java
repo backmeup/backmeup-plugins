@@ -1,8 +1,9 @@
 package org.backmeup.facebook;
 
 import java.util.Properties;
-import org.backmeup.model.spi.SourceSinkDescribable;
+
 import org.backmeup.plugin.api.Metadata;
+import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 /**
  * This class provides all necessary information about the plugin.
@@ -10,7 +11,7 @@ import org.backmeup.plugin.api.Metadata;
  * @author mmurauer
  *
  */
-public class FacebookDescriptor implements SourceSinkDescribable {
+public class FacebookDescriptor extends BaseSourceSinkDescribable {
 	public static final String FACEBOOK_ID = "org.backmeup.facebook";
 
 	@Override
@@ -35,8 +36,8 @@ public class FacebookDescriptor implements SourceSinkDescribable {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.Source;
+	public PluginType getType() {
+		return PluginType.Source;
 	}
 
 	@Override

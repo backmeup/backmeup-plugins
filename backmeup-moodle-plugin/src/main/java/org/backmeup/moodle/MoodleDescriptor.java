@@ -2,8 +2,8 @@ package org.backmeup.moodle;
 
 import java.util.Properties;
 
-import org.backmeup.model.spi.SourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
+import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 /**
  * This class provides all necessary information about the plugin.
@@ -11,7 +11,7 @@ import org.backmeup.plugin.api.Metadata;
  * @author florianjungwirth
  *
  */
-public class MoodleDescriptor implements SourceSinkDescribable {
+public class MoodleDescriptor extends BaseSourceSinkDescribable {
 
 	public static final String MOODLE_ID = "org.backmeup.moodle";
 	
@@ -36,8 +36,8 @@ public class MoodleDescriptor implements SourceSinkDescribable {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.Source;
+	public PluginType getType() {
+		return PluginType.Source;
 	}
 
 	@Override

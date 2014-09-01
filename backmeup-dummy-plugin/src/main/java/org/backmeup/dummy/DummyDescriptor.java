@@ -2,10 +2,10 @@ package org.backmeup.dummy;
 
 import java.util.Properties;
 
-import org.backmeup.model.spi.SourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
+import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
-public class DummyDescriptor implements SourceSinkDescribable{
+public class DummyDescriptor extends BaseSourceSinkDescribable{
   private static final String DUMMY_ID = "org.backmeup.dummy";
   
   @Override
@@ -34,8 +34,8 @@ public class DummyDescriptor implements SourceSinkDescribable{
   }
 
   @Override
-  public Type getType() {
-    return Type.Both;
+  public PluginType getType() {
+    return PluginType.SourceSink;
   }
 
   @Override

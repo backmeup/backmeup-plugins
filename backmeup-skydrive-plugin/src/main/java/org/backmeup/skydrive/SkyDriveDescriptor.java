@@ -2,8 +2,8 @@ package org.backmeup.skydrive;
 
 import java.util.Properties;
 
-import org.backmeup.model.spi.SourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
+import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 /**
  * The SkyDriveDescriptor provides all necessary
  * information about this plugin.
@@ -15,7 +15,7 @@ import org.backmeup.plugin.api.Metadata;
  * @author fschoeppl
  *
  */
-public class SkyDriveDescriptor implements SourceSinkDescribable {
+public class SkyDriveDescriptor extends BaseSourceSinkDescribable {
 	public static final String SKYDRIVE_ID = "org.backmeup.skydrive";
 	
 	@Override
@@ -39,8 +39,8 @@ public class SkyDriveDescriptor implements SourceSinkDescribable {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.Both;
+	public PluginType getType() {
+		return PluginType.SourceSink;
 	}
 
 	@Override

@@ -234,7 +234,6 @@ public class SkyDriveSupport {
 	  service.signRequest(accessToken, request);
 	  Response r = request.send();
 	  if (r.isSuccessful()) {
-	    String result = r.getBody();
 	    String name = parseJSONProperty("name", r.getBody());
 	    return name;
 	  }

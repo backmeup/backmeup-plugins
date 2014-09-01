@@ -2,10 +2,10 @@ package org.backmeup.discmailing;
 
 import java.util.Properties;
 
-import org.backmeup.model.spi.SourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
+import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
-public class DiscmailingDescriptor implements SourceSinkDescribable {
+public class DiscmailingDescriptor extends BaseSourceSinkDescribable {
 	public static final String DISC_ID = "org.backmeup.discmailing";
 	
 	@Override
@@ -27,19 +27,17 @@ public class DiscmailingDescriptor implements SourceSinkDescribable {
 	public Properties getMetadata(Properties accessData) {
 		Properties metadata = new Properties();
 		metadata.setProperty(Metadata.BACKUP_FREQUENCY, "daily");
-		
 		return metadata;
 	}
 
 	@Override
-	public Type getType() {
-		return Type.Sink;
+	public PluginType getType() {
+		return PluginType.Sink;
 	}
 
 	@Override
 	public String getImageURL() {
 		return "https://backmeup.at/dummy.png";
 	}
-
 }
 

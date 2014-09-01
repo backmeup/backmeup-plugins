@@ -2,9 +2,9 @@ package org.backmeup.zip;
 
 import java.util.Properties;
 
-import org.backmeup.model.spi.SourceSinkDescribable;
+import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
-public class ZipDescriptor implements SourceSinkDescribable {
+public class ZipDescriptor extends BaseSourceSinkDescribable {
   public static final String ZIP_ID = "org.backmeup.zip";
 
   @Override
@@ -28,8 +28,8 @@ public class ZipDescriptor implements SourceSinkDescribable {
   }
 
   @Override
-  public Type getType() {
-    return Type.Sink;
+  public PluginType getType() {
+    return PluginType.Sink;
   }
 
   @Override

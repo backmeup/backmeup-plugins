@@ -2,8 +2,8 @@ package org.backmeup.mail;
 
 import java.util.Properties;
 
-import org.backmeup.model.spi.SourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
+import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 /**
  * The DropboxDescriptor provides all necessary information about this plugin.
@@ -13,7 +13,7 @@ import org.backmeup.plugin.api.Metadata;
  * 
  * @author fschoeppl
  */
-public class MailDescriptor implements SourceSinkDescribable {
+public class MailDescriptor extends BaseSourceSinkDescribable {
 	public static final String MAIL_ID = "org.backmeup.mail";
 
 	@Override
@@ -37,8 +37,8 @@ public class MailDescriptor implements SourceSinkDescribable {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.Source;
+	public PluginType getType() {
+		return PluginType.Source;
 	}
 
 	@Override

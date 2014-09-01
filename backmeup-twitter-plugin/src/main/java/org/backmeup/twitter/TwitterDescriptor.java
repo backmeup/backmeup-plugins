@@ -2,8 +2,8 @@ package org.backmeup.twitter;
 
 import java.util.Properties;
 
-import org.backmeup.model.spi.SourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
+import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 /**
  * The TwitterDescriptor provides all necessary information about this plugin.
@@ -11,7 +11,7 @@ import org.backmeup.plugin.api.Metadata;
  * META-INF/spring/org.backmeup.twitter-context.xml
  * META-INF/spring/org.backmeup.twitter-osgi-context.xml
  */
-public class TwitterDescriptor implements SourceSinkDescribable {
+public class TwitterDescriptor extends BaseSourceSinkDescribable {
 	public static final String TWITTER_ID = "org.backmeup.twitter";
 
 	@Override
@@ -35,8 +35,8 @@ public class TwitterDescriptor implements SourceSinkDescribable {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.Source;
+	public PluginType getType() {
+		return PluginType.Source;
 	}
 
 	@Override
