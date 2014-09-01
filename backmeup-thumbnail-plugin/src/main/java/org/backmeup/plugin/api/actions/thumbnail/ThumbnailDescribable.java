@@ -1,9 +1,9 @@
 package org.backmeup.plugin.api.actions.thumbnail;
 
-import org.backmeup.plugin.api.actions.BaseActionDescribable;
+import org.backmeup.plugin.api.connectors.BaseActionDescribable;
 
-public class ThumbnailDescribable extends BaseActionDescribable { 
-  public ThumbnailDescribable() {
-//    super("indexer.properties");
-  }
+public class ThumbnailDescribable extends BaseActionDescribable {
+	public ThumbnailDescribable() {
+		// super("indexer.properties");
+	}
 }

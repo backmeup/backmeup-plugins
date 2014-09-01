@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.Properties;
 
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.actions.ActionException;
+import org.backmeup.plugin.api.connectors.ActionException;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
