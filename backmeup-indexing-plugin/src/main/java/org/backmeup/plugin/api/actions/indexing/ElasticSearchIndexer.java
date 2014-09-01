@@ -85,8 +85,10 @@ public class ElasticSearchIndexer {
 				
 		// There is currently only one source per job!
 		Profile sourceProfile = null;
-		for (ProfileOptions source : job.getSourceProfiles())
-			sourceProfile = source.getProfile();			
+		ProfileOptions source = job.getSourceProfiles();
+		sourceProfile = source.getProfile();	
+		
+		
 		
 		if (sourceProfile != null) {
 			contentBuilder.field(IndexUtils.FIELD_BACKUP_SOURCE_ID, sourceProfile.getProfileId());

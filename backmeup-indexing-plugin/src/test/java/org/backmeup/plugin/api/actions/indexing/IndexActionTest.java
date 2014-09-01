@@ -7,7 +7,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.backmeup.model.BackupJob;
 import org.backmeup.model.serializer.JsonSerializer;
-import org.backmeup.plugin.api.actions.ActionException;
+import org.backmeup.plugin.api.connectors.ActionException;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.DummyStorage;
 import org.backmeup.plugin.api.storage.Storage;
