@@ -26,10 +26,10 @@ import org.apache.ecs.html.TD;
 import org.apache.ecs.html.TR;
 import org.apache.ecs.html.Table;
 import org.apache.ecs.html.UL;
+import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Datasource;
-import org.backmeup.plugin.api.connectors.DatasourceException;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
@@ -50,6 +50,8 @@ import com.restfb.types.Post;
 import com.restfb.types.User;
 import com.restfb.types.User.Education;
 import com.restfb.types.User.Work;
+import com.restfb.types.Location;
+import com.restfb.types.Venue;
 
 /**
  * class FacebookDatasource to download the own profile, friends with photos,
@@ -61,15 +63,13 @@ public class FacebookDatasource implements Datasource {
 
 	private static final boolean DOWNLOAD_NON_FRIEND_USERS = true;
 
-	private final List<String> allUsers = new LinkedList<>();
+	private final List<String> allUsers = new LinkedList<String>();
 	private String accessToken = "";
 	private final ConcreteElement ce = new ConcreteElement();
-	private String list_point = "Themes/list_point.jpg";
 
 	@Override
 	public void downloadAll(Properties props, List<String> options,
-			Storage storage, Progressable progr) throws DatasourceException,
-			StorageException {
+			Storage storage, Progressable progr) throws StorageException {
 
 		accessToken = props.getProperty(FacebookHelper.PROPERTY_TOKEN);
 		FacebookClient client = new DefaultFacebookClient(accessToken);
@@ -143,7 +143,8 @@ public class FacebookDatasource implements Datasource {
 		}
 		navlist.addElement(ul);
 		applic_content_page.addElement(navlist);
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
+		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+				.getBytes());
 		storage.addFile(is, "index.html", new MetainfoContainer());
 
 	}
@@ -154,7 +155,7 @@ public class FacebookDatasource implements Datasource {
 	}
 
 	private void downloadAlbums(FacebookClient client, Storage storage,
-			Progressable progr) throws DatasourceException, StorageException {
+			Progressable progr) throws StorageException {
 
 		Document doc = createDocument("Alben", "Facebook - Alben", false);
 		Div applic_content_page = (Div) ce.getElement("applic_content_page");
@@ -162,38 +163,61 @@ public class FacebookDatasource implements Datasource {
 		Div applic_albums = (Div) new Div().addAttribute("class",
 				"applic_albums clearfix");
 
-		Connection<Album> albums = client.fetchConnection("me/albums",
-				Album.class);
-		do {
-			for (Album album : albums.getData()) {
-				UL ul = new UL();
-				ul.addElement(new LI().addElement(new IMG("Alben/Fotos/"
-						+ album.getCoverPhoto() + ".jpg")));
-				A link = new A(downloadAlbum(album, client, storage, progr),
-						checkName(album.getName()));
-				LI li = (LI) new LI().addAttribute("class", "albums_name");
-				li.addElement(link);
-				ul.addAttribute("class", "clearfix");
-				ul.addElement(li);
-				applic_albums.addElement(ul);
-			}
-		} while (albums.hasNext()
-				&& (albums = client.fetchConnectionPage(
-						albums.getNextPageUrl(), Album.class)) != null);
+		try {
+			Connection<Album> albums = client.fetchConnection("me/albums",
+					Album.class);
+			boolean check = true;
+			do {
+				if (albums.getData() != null) {
+					for (Album album : albums.getData()) {
+						UL ul = new UL();
+						if (album.getCoverPhoto() != null)
+							ul.addElement(new LI().addElement(new IMG(
+									"Alben/Fotos/" + album.getCoverPhoto()
+											+ ".jpg")));
+						if (album.getName() != null) {
+							A link = new A(downloadAlbum(album, client,
+									storage, progr), checkName(album.getName()));
+							LI li = (LI) new LI().addAttribute("class",
+									"albums_name");
+							li.addElement(link);
+							ul.addAttribute("class", "clearfix");
+							ul.addElement(li);
+						}
+						applic_albums.addElement(ul);
+					}
+				}
+				try {
+					albums = client.fetchConnectionPage(
+							albums.getNextPageUrl(), Album.class);
 
-		applic_content_page.addElement(applic_albums);
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
+				} catch (Exception ex) {
+					check = false;
+				}
+			} while (check
+					&& albums.hasNext()
+					&& (albums = client.fetchConnectionPage(
+							albums.getNextPageUrl(), Album.class)) != null);
+			applic_content_page.addElement(applic_albums);
+
+		} catch (Exception e) {
+			progr.progress("Fehler beim Laden der Alben. Fehlerhafte Alben werden übersprungen und Backup wird fortgesetzt.");
+		}
+
+		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+				.getBytes());
 		storage.addFile(is, "albums.html", new MetainfoContainer());
 	}
 
 	private void downloadPhotos(FacebookClient client, Storage storage,
-			Progressable progr) throws DatasourceException, StorageException {
+			Progressable progr) throws StorageException {
 
 		Document doc = createDocument("Fotos", "Facebook - Fotos", false);
 
 		downloadPhotos("me", "", doc, client, storage, progr);
 
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
+		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+				.getBytes());
 		storage.addFile(is, "photos.html", new MetainfoContainer());
 	}
 
@@ -205,48 +229,65 @@ public class FacebookDatasource implements Datasource {
 	 */
 	private void downloadPhotos(String id, String type, Document doc,
 			FacebookClient client, Storage storage, Progressable progr)
-			throws DatasourceException, StorageException {
+			throws StorageException {
 		Div applic_content_page = (Div) ce.getElement("applic_content_page");
-		if(type.equals("site")){
+		if (type.equals("site")) {
 			applic_content_page = (Div) ce.getElement("detail_row2");
 		}
-		
+
 		Div applic_photos = (Div) new Div().addAttribute("class",
 				"applic_photos clearfix");
-		
-		Connection<Photo> photos = client.fetchConnection(id + "/photos",
-				Photo.class);
 
-		String parent = "";
-		if (!id.equals("me"))
-			parent = id;
+		try {
+			Connection<Photo> photos = client.fetchConnection(id + "/photos",
+					Photo.class);
 
-		if (type.equals("album"))
-			applic_content_page = (Div) ce.getElement("applic_friends");
+			String parent = "";
+			if (!id.equals("me"))
+				parent = id;
 
-		do {
-			for (Photo photo : photos.getData()) {
-				String piclink = downloadPhoto(photo, parent, client, storage,
-						progr);
-				if (!id.equals("me"))
-					piclink = piclink.substring(6);
-				if (type.equals("site"))
-					piclink = "../Alben/" + piclink;
-				String imglink = piclink.replace("html", "jpg");
-				UL ul = new UL();
-				ul.addElement(new LI().addElement(new IMG(imglink)));
-				A link = new A(piclink, photo.getName() != null ? photo
-						.getName().split("\n")[0] : "Foto");
-				LI li = (LI) new LI().addAttribute("class", "photo_name");
-				li.addElement(link);
-				ul.addAttribute("class", "clearfix");
-				ul.addElement(li);
-				applic_photos.addElement(ul);
-			}
-		} while (photos.hasNext()
-				&& (photos = client.fetchConnectionPage(
-						photos.getNextPageUrl(), Photo.class)) != null);
-		applic_content_page.addElement(applic_photos);
+			if (type.equals("album"))
+				applic_content_page = (Div) ce.getElement("applic_friends");
+			boolean check = true;
+			do {
+				if (photos.getData() != null) {
+					for (Photo photo : photos.getData()) {
+						String piclink = downloadPhoto(photo, parent, client,
+								storage, progr);
+						if (!id.equals("me"))
+							piclink = piclink.substring(6);
+						if (type.equals("site"))
+							piclink = "../Alben/" + piclink;
+						String imglink = piclink.replace("html", "jpg");
+						UL ul = new UL();
+						ul.addElement(new LI().addElement(new IMG(imglink)));
+
+						A link = new A(piclink, photo.getName() != null ? photo
+								.getName().split("\n")[0] : "Foto");
+						LI li = (LI) new LI().addAttribute("class",
+								"photo_name");
+						li.addElement(link);
+						ul.addAttribute("class", "clearfix");
+						ul.addElement(li);
+
+						applic_photos.addElement(ul);
+					}
+				}
+				try {
+					photos = client.fetchConnectionPage(
+							photos.getNextPageUrl(), Photo.class);
+
+				} catch (Exception ex) {
+					check = false;
+				}
+			} while (check
+					&& photos.hasNext()
+					&& (photos = client.fetchConnectionPage(
+							photos.getNextPageUrl(), Photo.class)) != null);
+			applic_content_page.addElement(applic_photos);
+		} catch (Exception e) {
+			progr.progress("Fehler beim Laden der Fotos. Fehlerhafte Fotos werden übersprungen und Backupg wird fortgesetzt.");
+		}
 	}
 
 	/**
@@ -271,105 +312,93 @@ public class FacebookDatasource implements Datasource {
 		MetainfoContainer metainfo = new MetainfoContainer();
 		if (div != null) {
 			Metainfo commentinfo;
-			Connection<Post> comments = client.fetchConnection(
-					id + "/comments", Post.class);
-			if (comments.getData() == null)
-				return metainfo;
-			if (comments.getData().size() == 0)
-				return metainfo;
-			div.addElement(new H2("Kommentare").addAttribute("class",
-					"detailhead2"));
-			do {
-				for (Post comment : comments.getData()) {
 
-					commentinfo = new Metainfo();
-					commentinfo.setAttribute("destination", destination);
-					commentinfo.setAttribute("author", checkName(comment
-							.getFrom().getName()));
-					commentinfo.setAttribute("message", comment.getMessage());
-					commentinfo.setBackupDate(new Date());
-					commentinfo.setId(comment.getId());
-					if (comment.getCreatedTime() != null)
-						commentinfo.setCreated(comment.getCreatedTime());
-					if (comment.getUpdatedTime() != null)
-						commentinfo.setModified(comment.getUpdatedTime());
-					commentinfo.setParent(parent);
-					commentinfo.setSource("facebook");
-					commentinfo.setType("comment");
+			try {
+				Connection<Post> comments = client.fetchConnection(id
+						+ "/comments", Post.class);
+				if (comments.getData() == null)
+					return metainfo;
+				if (comments.getData().size() == 0)
+					return metainfo;
+				div.addElement(new H2("Kommentare").addAttribute("class",
+						"detailhead2"));
+				boolean check = true;
+				do {
+					if (comments.getData() != null) {
+						for (Post comment : comments.getData()) {
 
-					div.addElement(linkUser(comment.getFrom().getId(),
-							checkName(comment.getFrom().getName()), type,
-							client, storage, progr)
-							+ ":");
-					div.addElement(comment.getMessage());
+							commentinfo = new Metainfo();
+							commentinfo
+									.setAttribute("destination", destination);
+							if (comment.getFrom() != null)
+								commentinfo.setAttribute("author",
+										checkName(comment.getFrom().getName()));
+							if (comment.getMessage() != null)
+								commentinfo.setAttribute("message",
+										comment.getMessage());
 
-					Div likesComments = (Div) new Div().addAttribute("class",
-							"likesComments");
-					ce.addElementToRegistry("likesComments", likesComments);
-					div.addElement(likesComments);
-					String likes = downloadLikes(comment.getId(), "comment",
-							doc, client, storage, progr);
+							commentinfo.setBackupDate(new Date());
+							if (comment.getId() != null)
+								commentinfo.setId(comment.getId());
+							if (comment.getCreatedTime() != null)
+								commentinfo
+										.setCreated(comment.getCreatedTime());
+							if (comment.getUpdatedTime() != null)
+								commentinfo.setModified(comment
+										.getUpdatedTime());
+							commentinfo.setParent(parent);
+							commentinfo.setSource("facebook");
+							commentinfo.setType("comment");
 
-					likesComments.addElement(new BR());
-					if (likes != null)
-						commentinfo.setAttribute("likes", likes);
-					
-					metainfo.addMetainfo(commentinfo);
-				}
-			} while (comments.hasNext()
-					&& (comments = client.fetchConnectionPage(
-							comments.getNextPageUrl(), Post.class)) != null);
+							if (comment.getFrom() != null
+									&& comment.getFrom().getName() != null) {
+								div.addElement(linkUser(comment.getFrom()
+										.getId(), checkName(comment.getFrom()
+										.getName()), type, client, storage,
+										progr)
+										+ ":");
+							} else {
+								div.addElement("Comment:");
+							}
+							if (comment.getMessage() != null)
+								div.addElement(comment.getMessage());
+
+							Div likesComments = (Div) new Div().addAttribute(
+									"class", "likesComments");
+							ce.addElementToRegistry("likesComments",
+									likesComments);
+							div.addElement(likesComments);
+							String likes = "";
+
+							if (comment.getId() != null)
+								likes = downloadLikes(comment.getId(),
+										"comment", doc, client, storage, progr);
+
+							likesComments.addElement(new BR());
+							if (likes != null)
+								commentinfo.setAttribute("likes", likes);
+
+							metainfo.addMetainfo(commentinfo);
+						}
+					}
+					try {
+						comments = client.fetchConnectionPage(
+								comments.getNextPageUrl(), Post.class);
+
+					} catch (Exception ex) {
+						check = false;
+					}
+				} while (check
+						&& comments.hasNext()
+						&& (comments = client.fetchConnectionPage(
+								comments.getNextPageUrl(), Post.class)) != null);
+
+			} catch (Exception e) {
+				progr.progress("Fehler beim Laden der Kommentare. Fehlerhafte Elemente werden übersprungen und Backup wird fortgesetzt.");
+			}
+
 		}
 		return metainfo;
-	}
-
-	/**
-	 * likes are added to the document
-	 * 
-	 * @param id
-	 *            can be anything that has a connection "likes"
-	 */
-	private String downloadLikes(String id, String type, Document doc,
-			FacebookClient client, Storage storage, Progressable progr)
-			throws StorageException {
-		String likers = "";
-		Div div = null;
-		Connection<User> likes = client.fetchConnection(id + "/likes",
-				User.class);
-		if (type.equals("comment"))
-			div = (Div) ce.getElement("likesComments");
-		if (type.equals("post"))
-			div = (Div) ce.getElement("likesPost");
-		if (type.equals("photo"))
-			div = (Div) ce.getElement("likesPhoto");
-		if (type.equals("album"))
-			div = (Div) ce.getElement("likesAlbum");
-		if (div == null)
-			return null;
-		if (likes.getData() == null)
-			return null;
-		if (likes.getData().size() == 0)
-			return null;
-
-		if (type == "comment") {
-			div.addElement("\tLikes:");
-		} else{
-			div.addElement(new BR());
-			div.addElement(new H2("Likes").addAttribute("class", "detailhead2"));
-		}
-
-		do {
-			for (User like : likes.getData()) {
-				div.addElement(linkUser(like.getId(),
-						checkName(like.getName()), type, client, storage, progr));
-				likers += checkName(like.getName())+", ";
-				div.addElement(new BR());
-			}
-		} while (likes.hasNext()
-				&& (likes = client.fetchConnectionPage(likes.getNextPageUrl(),
-						User.class)) != null);
-
-		return likers.substring(0, likers.length()-2);
 	}
 
 	private void downloadGroups(FacebookClient client, Storage storage,
@@ -381,22 +410,40 @@ public class FacebookDatasource implements Datasource {
 		Div navlist = (Div) new Div().addAttribute("class", "applic_navlist");
 		UL ul = new UL();
 
-		Connection<Group> groups = client.fetchConnection("me/groups",
-				Group.class);
-		do {
-			for (Group group : groups.getData()) {
-				A link = new A(downloadGroup(group.getId(), client, storage,
-						progr), checkName(group.getName()));
-				link.addAttribute("class", "navbutton");
-				ul.addElement(new LI().addElement(link));
-			}
-		} while (groups.hasNext()
-				&& (groups = client.fetchConnectionPage(
-						groups.getNextPageUrl(), Group.class)) != null);
+		try {
+			Connection<Group> groups = client.fetchConnection("me/groups",
+					Group.class);
+			boolean check = true;
+			do {
+				if (groups.getData() != null) {
+					for (Group group : groups.getData()) {
+						if (group.getId() != null && group.getName() != null) {
+							A link = new A(downloadGroup(group.getId(), client,
+									storage, progr), checkName(group.getName()));
+							link.addAttribute("class", "navbutton");
+							ul.addElement(new LI().addElement(link));
+						}
+					}
+				}
+				try {
+					groups = client.fetchConnectionPage(
+							groups.getNextPageUrl(), Group.class);
 
-		navlist.addElement(ul);
-		applic_content_page.addElement(navlist);
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
+				} catch (Exception ex) {
+					check = false;
+				}
+			} while (check
+					&& groups.hasNext()
+					&& (groups = client.fetchConnectionPage(
+							groups.getNextPageUrl(), Group.class)) != null);
+
+			navlist.addElement(ul);
+			applic_content_page.addElement(navlist);
+		} catch (Exception e) {
+			progr.progress("Fehler beim Laden der Gruppen. Fehlerhafte Gruppen werden übersprungen und Backup wird fortgesetzt.");
+		}
+		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+				.getBytes());
 		storage.addFile(is, "groups.html", new MetainfoContainer());
 	}
 
@@ -408,41 +455,65 @@ public class FacebookDatasource implements Datasource {
 		Div applic_content_page = (Div) ce.getElement("applic_content_page");
 		Div applic_posts = (Div) new Div().addAttribute("class",
 				"applic_posts clearfix");
+		
+		try {
+			Connection<Post> posts = client.fetchConnection(id + "/feed",
+					Post.class);
+			
+			do {
+				if (posts.getData() != null) {
+					for (Post post : posts.getData()) {
+						if (post.getMessage() == null
+								&& (post.getType() != "video"
+										|| post.getType() != "link" || post
+										.getType() != "photo")) {
+							// ignoring everything which does not have a message
+							// (like
+							// "xy got friend with yz")
+							continue;
+						}
 
-		Connection<Post> posts = client.fetchConnection(id + "/feed",
-				Post.class);
-		do {
-			for (Post post : posts.getData()) {
-				if (post.getMessage() == null
-						&& (post.getType() != "video"
-								|| post.getType() != "link" || post.getType() != "photo")) {
-					// ignoring everything which does not have a message (like
-					// "xy got friend with yz")
-					continue;
+						UL ul = new UL();
+						if (post.getFrom() != null
+								&& post.getFrom().getName() != null) {
+							A link = new A(getUserFilename(checkName(post
+									.getFrom().getName())
+									+ post.getFrom().getId()), checkName(post
+									.getFrom().getName()));
+							ul.addAttribute("class", "clearfix");
+							ul.addElement(new LI().addElement(link));
+						}
+
+						if (post.getCreatedTime() != null) {
+							LI date = (LI) new LI().addAttribute("class",
+									"poststxt_date");
+							date.addElement(post.getCreatedTime().toString());
+							ul.addElement(date);
+						}
+
+						if (post.getMessage() != null) {
+							LI txt = (LI) new LI().addAttribute("class",
+									"poststxt_txt");
+							txt.addElement(new A(downloadPost(post, client,
+									storage, progr), post.getMessage().split(
+									"\n")[0]));
+							ul.addElement(txt);
+						}
+						applic_posts.addElement(ul);
+					}
 				}
-				UL ul = new UL();
-				A link = new A(getUserFilename(checkName(post.getFrom()
-						.getName()) + post.getFrom().getId()), checkName(post
-						.getFrom().getName()));
-				ul.addAttribute("class", "clearfix");
-				ul.addElement(new LI().addElement(link));
-				LI date = (LI) new LI().addAttribute("class", "poststxt_date");
-				date.addElement(post.getCreatedTime().toString());
-				ul.addElement(date);
-				LI txt = (LI) new LI().addAttribute("class", "poststxt_txt");
-				txt.addElement(new A(
-						downloadPost(post, client, storage, progr), post
-								.getMessage().split("\n")[0]));
-				ul.addElement(txt);
-				applic_posts.addElement(ul);
 
-			}
-		} while (posts.hasNext()
-				&& (posts = client.fetchConnectionPage(posts.getNextPageUrl(),
-						Post.class)) != null);
+			} while (posts.hasNext()
+					&& (posts = client.fetchConnectionPage(
+							posts.getNextPageUrl(), Post.class)) != null);
 
-		applic_content_page.addElement(applic_posts);
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
+		} catch (Exception e) {
+			progr.progress("Fehler beim Laden der Posts. Fehlerhafte Posts werden übersprungen und Backup wird fortgesetzt.");
+		}finally{
+			applic_content_page.addElement(applic_posts);
+		}
+		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+				.getBytes());
 		storage.addFile(is, "posts-" + id + ".html", new MetainfoContainer());
 	}
 
@@ -455,33 +526,52 @@ public class FacebookDatasource implements Datasource {
 		Div applic_friends = (Div) new Div().addAttribute("class",
 				"applic_friends clearfix");
 
-		Connection<User> friends = client.fetchConnection("me/friends",
-				User.class);
+		try {
+			Connection<User> friends = client.fetchConnection("me/friends",
+					User.class);
 
-		do {
-			for (User friend : friends.getData()) {
-				if (friend != null && friend.getId() != null
-						&& friend.getName() != null) {
-					UL ul = new UL();
-					ul.addAttribute("class", "clearfix");
-					ul.addElement(new LI().addElement(new IMG("Freunde/Fotos/"
-							+ checkName(friend.getName()) + friend.getId() + ".jpg")));
-					A link = new A(downloadUser(friend.getId(), client,
-							storage, progr), checkName(friend.getName()));
-					LI name = (LI) new LI()
-							.addAttribute("class", "friend_name");
-					name.addElement(link);
-					ul.addElement(name);
+			boolean check = true;
+			do {
+				if (friends.getData() != null) {
+					for (User friend : friends.getData()) {
+						if (friend != null && friend.getId() != null
+								&& friend.getName() != null) {
+							UL ul = new UL();
+							ul.addAttribute("class", "clearfix");
+							ul.addElement(new LI().addElement(new IMG(
+									"Freunde/Fotos/"
+											+ checkName(friend.getName())
+											+ friend.getId() + ".jpg")));
+							A link = new A(downloadUser(friend.getId(), client,
+									storage, progr),
+									checkName(friend.getName()));
+							LI name = (LI) new LI().addAttribute("class",
+									"friend_name");
+							name.addElement(link);
+							ul.addElement(name);
 
-					applic_friends.addElement(ul);
+							applic_friends.addElement(ul);
+						}
+					}
 				}
-			}
-		} while (friends.hasNext()
-				&& (friends = client.fetchConnectionPage(
-						friends.getNextPageUrl(), User.class)) != null);
+				try {
+					friends = client.fetchConnectionPage(
+							friends.getNextPageUrl(), User.class);
 
-		applic_content_page.addElement(applic_friends);
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
+				} catch (Exception ex) {
+					check = false;
+				}
+			} while (check
+					&& friends.hasNext()
+					&& (friends = client.fetchConnectionPage(
+							friends.getNextPageUrl(), User.class)) != null);
+
+			applic_content_page.addElement(applic_friends);
+		} catch (Exception e) {
+			progr.progress("Fehler beim Laden der Freunde. Fehlerhafte Elemente werden übersprungen und Backup wird fortgesetzt.");
+		}
+		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+				.getBytes());
 		storage.addFile(is, "friends.html", new MetainfoContainer());
 	}
 
@@ -495,27 +585,50 @@ public class FacebookDatasource implements Datasource {
 		Div navlist = (Div) new Div().addAttribute("class", "applic_navlist");
 		UL ul = new UL();
 
-		Connection<CategorizedFacebookType> lists = client.fetchConnection(
-				"me/friendlists", CategorizedFacebookType.class);
-		do {
-			for (CategorizedFacebookType friendlist : lists.getData()) {
-				Connection<User> members = client.fetchConnection(
-						friendlist.getId() + "/members", User.class);
+		try {
+			Connection<CategorizedFacebookType> lists = client.fetchConnection(
+					"me/friendlists", CategorizedFacebookType.class);
+			boolean check = true;
+			do {
+				if (lists.getData() != null) {
+					for (CategorizedFacebookType friendlist : lists.getData()) {
+						if (friendlist.getId() != null
+								&& friendlist.getName() != null) {
+							Connection<User> members = client
+									.fetchConnection(friendlist.getId()
+											+ "/members", User.class);
 
-				if (members.getData().size() > 0) {
-					A link = new A(downloadFriendlist(friendlist.getId(),
-							checkName(friendlist.getName()), client, storage,
-							progr), checkName(friendlist.getName()));
-					link.addAttribute("class", "navbutton");
-					ul.addElement(new LI().addElement(link));
+							if (members.getData().size() > 0) {
+								A link = new A(downloadFriendlist(
+										friendlist.getId(),
+										checkName(friendlist.getName()),
+										client, storage, progr),
+										checkName(friendlist.getName()));
+								link.addAttribute("class", "navbutton");
+								ul.addElement(new LI().addElement(link));
+							}
+						}
+					}
 				}
-			}
-		} while (lists.hasNext()
-				&& (lists = client.fetchConnectionPage(lists.getNextPageUrl(),
-						CategorizedFacebookType.class)) != null);
-		navlist.addElement(ul);
-		applic_content_page.addElement(navlist);
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
+				try {
+					lists = client.fetchConnectionPage(lists.getNextPageUrl(),
+							CategorizedFacebookType.class);
+
+				} catch (Exception ex) {
+					check = false;
+				}
+			} while (check
+					&& lists.hasNext()
+					&& (lists = client.fetchConnectionPage(
+							lists.getNextPageUrl(),
+							CategorizedFacebookType.class)) != null);
+			navlist.addElement(ul);
+			applic_content_page.addElement(navlist);
+		} catch (Exception e) {
+			progr.progress("Fehler beim Laden der Freundeslisten. Fehlerhafte Listen werden übersprungen und Backup wird fortgesetzt.");
+		}
+		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+				.getBytes());
 		storage.addFile(is, "friendlists.html", new MetainfoContainer());
 	}
 
@@ -572,537 +685,811 @@ public class FacebookDatasource implements Datasource {
 		Div applic_friends = (Div) new Div().addAttribute("class",
 				"applic_friends clearfix");
 
-		// download members
-		Connection<User> members = client.fetchConnection(id + "/members",
-				User.class);
-		do {
-			for (User member : members.getData()) {
-				UL ul = new UL();
-				ul.addAttribute("class", "clearfix");
-				ul.addElement(new LI().addElement(new IMG("../Freunde/Fotos/"
-						+ checkName(member.getName()) + member.getId() + ".jpg")));
-				A link = new A("../"
-						+ getUserFilename(checkName(member.getName())
-								+ member.getId()), checkName(member.getName()));
-				LI friendname = (LI) new LI().addAttribute("class",
-						"friend_name");
-				friendname.addElement(link);
-				ul.addElement(friendname);
+		try {
+			// download members
+			Connection<User> members = client.fetchConnection(id + "/members",
+					User.class);
+			boolean check = true;
+			do {
+				if (members.getData() != null) {
+					for (User member : members.getData()) {
+						if (member.getId() != null && member.getName() != null) {
+							UL ul = new UL();
+							ul.addAttribute("class", "clearfix");
+							ul.addElement(new LI().addElement(new IMG(
+									"../Freunde/Fotos/"
+											+ checkName(member.getName())
+											+ member.getId() + ".jpg")));
+							A link = new A(
+									"../"
+											+ getUserFilename(checkName(member.getName())
+													+ member.getId()),
+									checkName(member.getName()));
+							LI friendname = (LI) new LI().addAttribute("class",
+									"friend_name");
+							friendname.addElement(link);
+							ul.addElement(friendname);
 
-				applic_friends.addElement(ul);
+							applic_friends.addElement(ul);
 
-				listmembers += checkName(member.getName()) + " ";
-			}
-		} while (members.hasNext()
-				&& (members = client.fetchConnectionPage(
-						members.getNextPageUrl(), User.class)) != null);
+							listmembers += checkName(member.getName()) + " ";
+						}
+					}
+				}
+				try {
+					members = client.fetchConnectionPage(
+							members.getNextPageUrl(), User.class);
 
-		listinfo.setAttribute("members", listmembers);
+				} catch (Exception ex) {
+					check = false;
+				}
+			} while (check
+					&& members.hasNext()
+					&& (members = client.fetchConnectionPage(
+							members.getNextPageUrl(), User.class)) != null);
 
-		applic_user.addElement(applic_friends);
-		applic_content_page.addElement(applic_user);
+			listinfo.setAttribute("members", listmembers);
 
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
+			applic_user.addElement(applic_friends);
+			applic_content_page.addElement(applic_user);
+		} catch (Exception e) {
+			progr.progress("Fehler bei Laden der Mitglieder einer Freundesliste. Fehlerhafte Elemente werden übersprungen und Backup wird fortgesetzt.");
+		}
+		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+				.getBytes());
 		String filename = getFriendlistFilename(name + id);
 		storage.addFile(is, filename, metainfo);
 		return filename;
 	}
 
+	/**
+	 * likes are added to the document
+	 * 
+	 * @param id
+	 *            can be anything that has a connection "likes"
+	 */
+	private String downloadLikes(String id, String type, Document doc,
+			FacebookClient client, Storage storage, Progressable progr)
+			throws StorageException {
+		String likers = "";
+		Div div = null;
+		try {
+			Connection<User> likes = client.fetchConnection(id + "/likes",
+					User.class);
+			if (type.equals("comment"))
+				div = (Div) ce.getElement("likesComments");
+			if (type.equals("post"))
+				div = (Div) ce.getElement("likesPost");
+			if (type.equals("photo"))
+				div = (Div) ce.getElement("likesPhoto");
+			if (type.equals("album"))
+				div = (Div) ce.getElement("likesAlbum");
+			if (div == null)
+				return null;
+			if (likes.getData() == null)
+				return null;
+			if (likes.getData().size() == 0)
+				return null;
+
+			if (type == "comment") {
+				div.addElement("\tLikes:");
+			} else {
+				div.addElement(new BR());
+				div.addElement(new H2("Likes").addAttribute("class",
+						"detailhead2"));
+			}
+			boolean check = true;
+			do {
+				if (likes.getData() != null) {
+					for (User like : likes.getData()) {
+						if (like.getId() != null && like.getName() != null) {
+							div.addElement(linkUser(like.getId(),
+									checkName(like.getName()), type, client,
+									storage, progr));
+							likers += checkName(like.getName()) + ", ";
+							div.addElement(new BR());
+						}
+					}
+				}
+				try {
+					likes = client.fetchConnectionPage(likes.getNextPageUrl(),
+							User.class);
+
+				} catch (Exception ex) {
+					check = false;
+				}
+			} while (check
+					&& likes.hasNext()
+					&& (likes = client.fetchConnectionPage(
+							likes.getNextPageUrl(), User.class)) != null);
+		} catch (Exception e) {
+			progr.progress("Fehler beim Laden der Likes. Fehlerhafte Elemente werden übersprungen und Backup wird fortgesetzt.");
+		}
+		if (likers.equals(""))
+			return null;
+		else
+			return likers.substring(0, likers.length() - 2);
+	}
+
 	private String downloadPost(Post post, FacebookClient client,
 			Storage storage, Progressable progr) throws StorageException {
 
-		Metainfo postinfo = new Metainfo();
-		postinfo.setAttribute("author", checkName(post.getFrom().getName()));
-		postinfo.setAttribute("message", post.getMessage());
-		postinfo.setBackupDate(new Date());
-		postinfo.setDestination(getPostFilename(post.getId()));
-		postinfo.setId(post.getId());
-		postinfo.setSource("facebook");
-		if (post.getCreatedTime() != null)
-			postinfo.setCreated(post.getCreatedTime());
-		if (post.getUpdatedTime() != null)
-			postinfo.setModified(post.getUpdatedTime());
-		postinfo.setType("post");
+		if (post.getId() != null) {
+			Metainfo postinfo = new Metainfo();
+			if (post.getFrom().getName() != null)
+				postinfo.setAttribute("author", checkName(post.getFrom()
+						.getName()));
+			if (post.getMessage() != null)
+				postinfo.setAttribute("message", post.getMessage());
 
-		// create HTML
-		Document doc = createDocument("Post", "Post", true);
-		Div applic_content_page = (Div) ce.getElement("applic_content_page");
+			postinfo.setBackupDate(new Date());
 
-		Div applic_posts = (Div) new Div().addAttribute("class",
-				"applic_posts clearfix");
-	
+			postinfo.setDestination(getPostFilename(post.getId()));
+			postinfo.setId(post.getId());
 
-		Table detail = new Table();
-		detail.addAttribute("class", "detail_table");
+			postinfo.setSource("facebook");
 
+			if (post.getCreatedTime() != null)
+				postinfo.setCreated(post.getCreatedTime());
+			if (post.getUpdatedTime() != null)
+				postinfo.setModified(post.getUpdatedTime());
 
-		TR row = new TR();
-		row.addElement(new TD("Type").addAttribute("class", "firstrow"));
-		row.addElement(new TD(post.getType()));
-		detail.addElement(row);
+			postinfo.setType("post");
 
-		row = new TR();
-		row.addElement(new TD("Sender").addAttribute("class", "firstrow"));
-		row.addElement(new TD(post.getFrom().getName()));
-		detail.addElement(row);
+			// create HTML
+			Document doc = createDocument("Post", "Post", true);
+			Div applic_content_page = (Div) ce
+					.getElement("applic_content_page");
 
-		if (post.getTo() != null) {
-			String to = post.getTo().toString();
-			String[] toArray = to.split("=");
-			if (toArray.length > 2) {
-				int index = toArray[3].lastIndexOf(" ");
-				String toName = checkName(toArray[3].substring(0, index));
-				postinfo.setAttribute("receiver", toName);
+			Div applic_posts = (Div) new Div().addAttribute("class",
+					"applic_posts clearfix");
+
+			Table detail = new Table();
+			detail.addAttribute("class", "detail_table");
+
+			TR row = new TR();
+			row.addElement(new TD("Type").addAttribute("class", "firstrow"));
+			if (post.getType() != null)
+				row.addElement(new TD(post.getType()));
+			detail.addElement(row);
+
+			row = new TR();
+			row.addElement(new TD("Sender").addAttribute("class", "firstrow"));
+			if (post.getFrom().getName() != null)
+				row.addElement(new TD(post.getFrom().getName()));
+			detail.addElement(row);
+
+			if (post.getTo() != null) {
+				String to = post.getTo().toString();
+				String[] toArray = to.split("=");
+				if (toArray.length > 2) {
+					int index = toArray[3].lastIndexOf(" ");
+					String toName = checkName(toArray[3].substring(0, index));
+					postinfo.setAttribute("receiver", toName);
+					row = new TR();
+					row.addElement(new TD("Empfänger").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(toName));
+					detail.addElement(row);
+				}
+			}
+
+			row = new TR();
+			row.addElement(new TD("Zeit").addAttribute("class", "firstrow"));
+			if (post.getCreatedTime() != null)
+				row.addElement(new TD(post.getCreatedTime().toString()));
+			detail.addElement(row);
+
+			row = new TR();
+			row.addElement(new TD("Nachricht")
+					.addAttribute("class", "firstrow"));
+			if (post.getMessage() != null)
+				row.addElement(new TD(post.getMessage()));
+			detail.addElement(row);
+
+			if (post.getName() != null) {
 				row = new TR();
-				row.addElement(new TD("Empfänger").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(toName));
+				row.addElement(new TD("Name").addAttribute("class", "firstrow"));
+				row.addElement(new TD(post.getName()));
 				detail.addElement(row);
 			}
-		}
-
-		row = new TR();
-		row.addElement(new TD("Zeit").addAttribute("class", "firstrow"));
-		row.addElement(new TD(post.getCreatedTime().toString()));
-		detail.addElement(row);
-		row = new TR();
-		row.addElement(new TD("Nachricht").addAttribute("class", "firstrow"));
-		row.addElement(new TD(post.getMessage()));
-		detail.addElement(row);
-		if (post.getName() != null) {
-			row = new TR();
-			row.addElement(new TD("Name").addAttribute("class", "firstrow"));
-			row.addElement(new TD(post.getName()));
-			detail.addElement(row);
-		}
-		if (post.getDescription() != null) {
-			row = new TR();
-			row.addElement(new TD("Beschreibung").addAttribute("class",
-					"firstrow"));
-			row.addElement(new TD(post.getDescription()));
-			detail.addElement(row);
-		}
-		if (post.getLink() != null) {
-			row = new TR();
-			row.addElement(new TD("Link").addAttribute("class", "firstrow"));
-			row.addElement(new TD("<a href=" + post.getLink()
-					+ " target='_blank'>" + post.getLink() + "</a>"));
-			detail.addElement(row);
-		}
-		if (post.getSource() != null) {
-			row = new TR();
-			row.addElement(new TD("Quelle").addAttribute("class", "firstrow"));
-			row.addElement(new TD(post.getSource()));
-			detail.addElement(row);
-		}
-		
-		if(post.getType().equals("photo")){
-			String linkToPic = post.getPicture();
-			String[] picture = linkToPic.split("_");
-			String id = picture[1];
-			String ending = picture[3].split("\\.")[1];
-			downloadPicture(post.getPicture(), "Posts/Fotos/" + id + "."+ending,
-			"",storage, progr, new Metainfo());
+			if (post.getDescription() != null) {
+				row = new TR();
+				row.addElement(new TD("Beschreibung").addAttribute("class",
+						"firstrow"));
+				row.addElement(new TD(post.getDescription()));
+				detail.addElement(row);
+			}
 			
-			row = new TR();
-			row.addElement(new IMG("Fotos/" + id + "."+ending)
-			.addAttribute("width", "200px"));
-			detail.addElement(row);
-		}
-		applic_posts.addElement(detail);
-		
-		Div commentsPost = (Div) new Div()
-				.addAttribute("class", "commentsPost");
-		ce.addElementToRegistry("commentsPost", commentsPost);
+			if (post.getPlace() != null && post.getPlace().getLocation() != null) {
+				Location location = post.getPlace().getLocation();
+				if(location.getStreet() != null){
+					row = new TR();
+					row.addElement(new TD("Straße").addAttribute("class", "firstrow"));
+					row.addElement(new TD(location.getStreet()));
+					detail.addElement(row);
+					postinfo.setAttribute("street", location.getStreet());
+				}
+				if(location.getCity() != null){
+					row = new TR();
+					row.addElement(new TD("Stadt").addAttribute("class", "firstrow"));
+					row.addElement(new TD((location.getZip()!=null)? 
+								location.getZip()+location.getCity():
+								location.getCity()));
+					detail.addElement(row);
+					postinfo.setAttribute("city", location.getCity());
+				}
+				if(location.getZip() != null)
+					postinfo.setAttribute("zip", location.getZip());
+				if(location.getState() != null){
+					row = new TR();
+					row.addElement(new TD("Bundesland").addAttribute("class", "firstrow"));
+					row.addElement(new TD(location.getState()));
+					detail.addElement(row);
+					postinfo.setAttribute("state", location.getState());
+				}
+				if(location.getCountry() != null){
+					row = new TR();
+					row.addElement(new TD("Land").addAttribute("class", "firstrow"));
+					row.addElement(new TD(location.getCountry()));
+					detail.addElement(row);
+					postinfo.setAttribute("country", location.getCountry());
+				}
+				if(location.getLatitude() != null)
+					postinfo.setAttribute("latitude", location.getLatitude().toString());
+				if(location.getLongitude() != null)
+					postinfo.setAttribute("longitude", location.getLongitude().toString());
+			}
+			if (post.getLink() != null) {
+				row = new TR();
+				row.addElement(new TD("Link").addAttribute("class", "firstrow"));
+				row.addElement(new TD("<a href=" + post.getLink()
+						+ " target='_blank'>" + post.getLink() + "</a>"));
+				detail.addElement(row);
+			}
+			if (post.getSource() != null) {
+				row = new TR();
+				row.addElement(new TD("Quelle").addAttribute("class",
+						"firstrow"));
+				row.addElement(new TD(post.getSource()));
+				detail.addElement(row);
+			}
 
-		MetainfoContainer metainfo = downloadComments(post.getId(),
-				getPostFilename(post.getId()), getPostFilename(post.getId()),
-				"post", doc, client, storage, progr);
+			if (post.getType() != null && post.getType().equals("photo")) {
+				//TODO something is wrong here
+				/*if (post.getPicture() != null) {
+					String linkToPic = post.getPicture();
+					String[] picture = linkToPic.split("_");
+					String id = picture[1];
+					String ending = picture[3].split("\\.")[1];
+					downloadPicture(post.getPicture(), "Posts/Fotos/" + id
+							+ "." + ending, "", storage, progr, new Metainfo());
 
-		applic_posts.addElement(commentsPost);
+					row = new TR();
+					row.addElement(new IMG("Fotos/" + id + "." + ending)
+							.addAttribute("width", "200px"));
+					detail.addElement(row);
+				}*/
+			}
+			applic_posts.addElement(detail);
 
-		Div likesPost = (Div) new Div().addAttribute("class", "likesPost");
-		ce.addElementToRegistry("likesPost", likesPost);
+			Div commentsPost = (Div) new Div().addAttribute("class",
+					"commentsPost");
+			ce.addElementToRegistry("commentsPost", commentsPost);
 
-		String likes = downloadLikes(post.getId(), "post", doc, client,
-				storage, progr);
+			MetainfoContainer metainfo = downloadComments(post.getId(),
+					getPostFilename(post.getId()),
+					getPostFilename(post.getId()), "post", doc, client,
+					storage, progr);
 
-		applic_posts.addElement(likesPost);
+			applic_posts.addElement(commentsPost);
 
-		if (likes != null)
-			postinfo.setAttribute("likes", likes);
-		metainfo.addMetainfo(postinfo);
+			Div likesPost = (Div) new Div().addAttribute("class", "likesPost");
+			ce.addElementToRegistry("likesPost", likesPost);
 
-		applic_content_page.addElement(applic_posts);
-		
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
-		String filename = getPostFilename(post.getId());
-		storage.addFile(is, filename, metainfo);
-		return filename;
+			String likes = downloadLikes(post.getId(), "post", doc, client,
+					storage, progr);
+
+			applic_posts.addElement(likesPost);
+
+			if (likes != null)
+				postinfo.setAttribute("likes", likes);
+			metainfo.addMetainfo(postinfo);
+
+			applic_content_page.addElement(applic_posts);
+
+			InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+					.getBytes());
+			String filename = getPostFilename(post.getId());
+			storage.addFile(is, filename, metainfo);
+			
+			return filename;
+		} else
+			throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+					"An error occurred while downloading post");
 	}
 
 	private String downloadAlbum(Album album, FacebookClient client,
-			Storage storage, Progressable progr) throws DatasourceException,
-			StorageException {
-		String name = checkName(album.getName());
+			Storage storage, Progressable progr) throws StorageException {
+		if (album.getId() != null && album.getName() != null) {
+			String name = checkName(album.getName());
 
-		Metainfo albuminfo = new Metainfo();
-		albuminfo.setAttribute("name", name);
-		albuminfo.setBackupDate(new Date());
-		albuminfo.setDestination(getAlbumFilename(name + album.getId()));
-		albuminfo.setId(album.getId());
-		if (album.getCreatedTime() != null)
-			albuminfo.setCreated(album.getCreatedTime());
-		if (album.getUpdatedTime() != null)
-			albuminfo.setModified(album.getUpdatedTime());
-		albuminfo.setSource("facebook");
-		albuminfo.setType("album");
+			Metainfo albuminfo = new Metainfo();
+			albuminfo.setAttribute("name", name);
+			albuminfo.setBackupDate(new Date());
+			if (album.getId() != null) {
+				albuminfo
+						.setDestination(getAlbumFilename(name + album.getId()));
+				albuminfo.setId(album.getId());
+			}
+			if (album.getCreatedTime() != null)
+				albuminfo.setCreated(album.getCreatedTime());
+			if (album.getUpdatedTime() != null)
+				albuminfo.setModified(album.getUpdatedTime());
+			albuminfo.setSource("facebook");
+			albuminfo.setType("album");
 
-		Document doc = createDocument(name, "Facebook - Album", true);
+			Document doc = createDocument(name, "Facebook - Album", true);
 
-		Div applic_content_page = (Div) ce.getElement("applic_content_page");
-		Div applic_user = (Div) new Div().addAttribute("class",
-				"applic_user clearfix");
-		Div detail = (Div) new Div().addAttribute("class", "detail_row2");
+			Div applic_content_page = (Div) ce
+					.getElement("applic_content_page");
+			Div applic_user = (Div) new Div().addAttribute("class",
+					"applic_user clearfix");
+			Div detail = (Div) new Div().addAttribute("class", "detail_row2");
 
-		Table t = (Table) new Table().addAttribute("class", "detail_table");
-		TR tr = new TR();
+			Table t = (Table) new Table().addAttribute("class", "detail_table");
+			TR tr = new TR();
 
-		TD td1 = (TD) new TD().addAttribute("class", "firstrow");
-		td1.addElement("Name:");
-		tr.addElement(td1);
-		TD td2 = new TD().addElement(name);
-		tr.addElement(td2);
-		t.addElement(tr);
-
-		if (album.getDescription() != null) {
-			albuminfo.setAttribute("description", album.getDescription());
-
-			tr = new TR();
-			td1 = (TD) new TD().addAttribute("class", "firstrow");
-			td1.addElement("Beschreibung:");
+			TD td1 = (TD) new TD().addAttribute("class", "firstrow");
+			td1.addElement("Name:");
 			tr.addElement(td1);
-			td2 = new TD().addElement(album.getDescription());
+			TD td2 = new TD().addElement(name);
 			tr.addElement(td2);
 			t.addElement(tr);
-		}
 
-		if (album.getLocation() != null) {
-			tr = new TR();
-			td1 = (TD) new TD().addAttribute("class", "firstrow");
-			td1.addElement("Ort:");
-			tr.addElement(td1);
-			td2 = new TD().addElement(album.getLocation());
-			tr.addElement(td2);
-			t.addElement(tr);
-		}
+			if (album.getDescription() != null) {
+				albuminfo.setAttribute("description", album.getDescription());
 
-		if (album.getCreatedTime() != null) {
-			tr = new TR();
-			td1 = (TD) new TD().addAttribute("class", "firstrow");
-			td1.addElement("Erstellt am ");
-			tr.addElement(td1);
-			td2 = new TD().addElement(album.getCreatedTime().toString());
-			tr.addElement(td2);
-			t.addElement(tr);
-		}
+				tr = new TR();
+				td1 = (TD) new TD().addAttribute("class", "firstrow");
+				td1.addElement("Beschreibung:");
+				tr.addElement(td1);
+				td2 = new TD().addElement(album.getDescription());
+				tr.addElement(td2);
+				t.addElement(tr);
+			}
+			
+			/*if (album.getLocation() != null) {
+				tr = new TR();
+				td1 = (TD) new TD().addAttribute("class", "firstrow");
+				td1.addElement("Ort:");
+				tr.addElement(td1);
+				td2 = new TD().addElement(album.getLocation());
+				tr.addElement(td2);
+				t.addElement(tr);
+				albuminfo.setAttribute("location", album.getLocation());
+			}*/
 
-		if (album.getLink() != null) {
-			tr = new TR();
-			td1 = (TD) new TD().addAttribute("class", "firstrow");
-			td1.addElement("Link:");
-			tr.addElement(td1);
-			td2 = new TD().addElement("<a href=" + album.getLink()
-					+ " target='_blank'>" + album.getLink() + "</a>");
-			tr.addElement(td2);
-			t.addElement(tr);
-		}
+			if (album.getCreatedTime() != null) {
+				tr = new TR();
+				td1 = (TD) new TD().addAttribute("class", "firstrow");
+				td1.addElement("Erstellt am ");
+				tr.addElement(td1);
+				td2 = new TD().addElement(album.getCreatedTime().toString());
+				tr.addElement(td2);
+				t.addElement(tr);
+			}
 
-		detail.addElement(t);
+			if (album.getLink() != null) {
+				tr = new TR();
+				td1 = (TD) new TD().addAttribute("class", "firstrow");
+				td1.addElement("Link:");
+				tr.addElement(td1);
+				td2 = new TD().addElement("<a href=" + album.getLink()
+						+ " target='_blank'>" + album.getLink() + "</a>");
+				tr.addElement(td2);
+				t.addElement(tr);
+			}
 
-		applic_user.addElement(detail);
+			detail.addElement(t);
 
-		applic_user.addElement(new BR());
-		applic_user.addElement(new H2("Fotos").addAttribute("class",
-				"detailhead2"));
+			applic_user.addElement(detail);
 
-		Div applic_friends = (Div) new Div().addAttribute("class",
-				"applic_friends clearfix");
-		applic_friends.addAttribute("id", "applic_friends");
-		ce.addElementToRegistry("applic_friends", applic_friends);
+			applic_user.addElement(new BR());
+			applic_user.addElement(new H2("Fotos").addAttribute("class",
+					"detailhead2"));
 
-		downloadPhotos(album.getId(), "album", doc, client, storage, progr);
+			Div applic_friends = (Div) new Div().addAttribute("class",
+					"applic_friends clearfix");
+			applic_friends.addAttribute("id", "applic_friends");
+			ce.addElementToRegistry("applic_friends", applic_friends);
 
-		Div commentsAlbum = (Div) new Div().addAttribute("class",
-				"commentsAlbum");
-		ce.addElementToRegistry("commentsAlbum", commentsAlbum);
+			downloadPhotos(album.getId(), "album", doc, client, storage, progr);
 
-		MetainfoContainer metainfo = downloadComments(album.getId(),
-				getAlbumFilename(name + album.getId()), getAlbumFilename(name
-						+ album.getId()), "album", doc, client, storage, progr);
+			Div commentsAlbum = (Div) new Div().addAttribute("class",
+					"commentsAlbum");
+			ce.addElementToRegistry("commentsAlbum", commentsAlbum);
 
-		applic_friends.addElement(commentsAlbum);
+			MetainfoContainer metainfo = downloadComments(album.getId(),
+					getAlbumFilename(name + album.getId()),
+					getAlbumFilename(name + album.getId()), "album", doc,
+					client, storage, progr);
 
-		Div likesAlbum = (Div) new Div().addAttribute("class", "likesAlbum");
-		ce.addElementToRegistry("likesAlbum", likesAlbum);
+			applic_friends.addElement(commentsAlbum);
 
-		String likes = downloadLikes(album.getId(), "album", doc, client,
-				storage, progr);
+			Div likesAlbum = (Div) new Div()
+					.addAttribute("class", "likesAlbum");
+			ce.addElementToRegistry("likesAlbum", likesAlbum);
 
-		applic_friends.addElement(likesAlbum);
+			String likes = downloadLikes(album.getId(), "album", doc, client,
+					storage, progr);
 
-		if (likes != null)
-			albuminfo.setAttribute("likes", likes);
+			applic_friends.addElement(likesAlbum);
 
-		metainfo.addMetainfo(albuminfo);
+			if (likes != null)
+				albuminfo.setAttribute("likes", likes);
 
-		applic_user.addElement(applic_friends);
-		applic_content_page.addElement(applic_user);
+			metainfo.addMetainfo(albuminfo);
 
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
-		String filename = getAlbumFilename(name + album.getId());
-		storage.addFile(is, filename, metainfo);
-		return filename;
+			applic_user.addElement(applic_friends);
+			applic_content_page.addElement(applic_user);
+
+			InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+					.getBytes());
+			String filename = getAlbumFilename(name + album.getId());
+			storage.addFile(is, filename, metainfo);
+			return filename;
+		} else
+			throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+					"An error occurred while downloading album");
+
 	}
 
 	private String downloadPhoto(Photo photo, String parent,
 			FacebookClient client, Storage storage, Progressable progr)
-			throws DatasourceException, StorageException {
+			throws StorageException {
 
-		Metainfo photoinfo = new Metainfo();
+		if (photo.getId() != null) {
+			Metainfo photoinfo = new Metainfo();
 
-		photoinfo.setBackupDate(new Date());
-		photoinfo.setId(photo.getId());
-		if(photo.getCreatedTime() != null)
-			photoinfo.setCreated(photo.getCreatedTime());
-		if(photo.getUpdatedTime() != null)
-			photoinfo.setModified(photo.getUpdatedTime());
-		photoinfo.setSource("facebook");
-		photoinfo.setType("photo");
-		if (!parent.equals(""))
-			photoinfo.setParent(parent);
+			photoinfo.setBackupDate(new Date());
+			photoinfo.setId(photo.getId());
+			if (photo.getCreatedTime() != null)
+				photoinfo.setCreated(photo.getCreatedTime());
+			if (photo.getUpdatedTime() != null)
+				photoinfo.setModified(photo.getUpdatedTime());
+			photoinfo.setSource("facebook");
+			photoinfo.setType("photo");
+			if (!parent.equals(""))
+				photoinfo.setParent(parent);
 
-		// create HTML
-		Document doc = createDocument("Foto", "Foto", true);
-		Div applic_content_page = (Div) ce.getElement("applic_content_page");
+			// create HTML
+			Document doc = createDocument("Foto", "Foto", true);
+			Div applic_content_page = (Div) ce
+					.getElement("applic_content_page");
 
-		Div applic_photo = (Div) new Div().addAttribute("class",
-				"applic_photo clearfix");
-		applic_content_page.addElement(applic_photo);
+			Div applic_photo = (Div) new Div().addAttribute("class",
+					"applic_photo clearfix");
+			applic_content_page.addElement(applic_photo);
 
-		String ending = ".jpg";// only jpg supported
-		String sourceFileName = "Alben/Fotos/" + photo.getId() + ending;
+			String ending = ".jpg";// only jpg supported
+			String sourceFileName = "Alben/Fotos/" + photo.getId() + ending;
 
-		photoinfo.setDestination("Alben/Fotos/" + photo.getId() + ".html");
+			photoinfo.setDestination("Alben/Fotos/" + photo.getId() + ".html");
 
-		Div detail_row1 = (Div) new Div().addAttribute("class",
-				"applic_photo_big");
-		detail_row1.addElement(new IMG(sourceFileName.substring(12))
-				.addAttribute("width", "200px"));
+			Div detail_row1 = (Div) new Div().addAttribute("class",
+					"applic_photo_big");
+			detail_row1.addElement(new IMG(sourceFileName.substring(12))
+					.addAttribute("width", "200px"));
 
-		Div detail_row2 = (Div) new Div().addAttribute("class", "detail_row2");
-		Table detail = new Table();
-		detail.addAttribute("class", "detail_table photodetail");
+			Div detail_row2 = (Div) new Div().addAttribute("class",
+					"detail_row2");
+			Table detail = new Table();
+			detail.addAttribute("class", "detail_table photodetail");
 
-		applic_photo.addElement(detail_row1);
-		applic_photo.addElement(detail_row2);
-		detail_row2.addElement(detail);
+			applic_photo.addElement(detail_row1);
+			applic_photo.addElement(detail_row2);
+			detail_row2.addElement(detail);
 
-		if (photo.getName() != null) {
-			TR row = new TR();
-			row.addElement(new TD("Bildunterschrift").addAttribute("class",
-					"firstrow"));
-			row.addElement(new TD(photo.getName()));
-			detail.addElement(row);
+			if (photo.getName() != null) {
+				TR row = new TR();
+				row.addElement(new TD("Bildunterschrift").addAttribute("class",
+						"firstrow"));
+				row.addElement(new TD(photo.getName()));
+				detail.addElement(row);
 
-			photoinfo.setAttribute("name", photo.getName());
-		}
-		if (photo.getFrom() != null) {
-			TR row = new TR();
-			row.addElement(new TD("Von").addAttribute("class", "firstrow"));
-			row.addElement(new TD(photo.getFrom().getName()));
-			detail.addElement(row);
-		}
-		if (photo.getCreatedTime() != null) {
-			TR row = new TR();
-			row.addElement(new TD("Erstellt am").addAttribute("class",
-					"firstrow"));
-			row.addElement(new TD(photo.getCreatedTime().toString()));
-			detail.addElement(row);
-		}
-		if (photo.getLink() != null) {
-			TR row = new TR();
-			row.addElement(new TD("Link").addAttribute("class", "firstrow"));
-			row.addElement(new TD("<a href=" + photo.getLink()
-					+ " target='_blank'>" + photo.getLink() + "</a>"));
-			detail.addElement(row);
-		}
-		if (photo.getSource() == null) {
-			throw new DatasourceException("error while downloading photos");
-		}
-
-		TR row = new TR();
-		row.addElement(new TD("Quelle").addAttribute("class", "firstrow"));
-		row.addElement(new TD("<a href=" + photo.getSource()
-				+ " target='_blank'>" + photo.getSource() + "</a>"));
-		detail.addElement(row);
-
-		String tags = "";
-
-		Table detail2 = new Table();
-		detail2.addAttribute("class", "detail_table");
-		applic_photo.addElement(detail2);
-		
-		if (photo.getTags() != null && photo.getTags().size() > 0) {
-			TR taged = new TR();
-			detail2.addElement(taged);
-			taged.addElement(new TD(new H2("Tags").addAttribute("class", "detailhead2")).addAttribute("class", "firstrow"));
-			UL tagedUsers = new UL();
-			
-			for (Tag tag : photo.getTags()) {
-				if (tag.getName() != null && tag.getId() != null) {
-
-					tagedUsers.addElement(new LI().addElement(linkUser(
-							tag.getId(), checkName(tag.getName()), "photo",
-							client, storage, progr)));
-
-					tags += checkName(tag.getName()) + " ";
-				}
+				photoinfo.setAttribute("name", photo.getName());
 			}
-			taged.addElement(new TD().addElement(tagedUsers));
-		}
-		
-		
-		if (tags != "")
-			photoinfo.setAttribute("tags", tags);
+			if (photo.getFrom() != null && photo.getFrom().getName() != null) {
+				TR row = new TR();
+				row.addElement(new TD("Von").addAttribute("class", "firstrow"));
+				row.addElement(new TD(photo.getFrom().getName()));
+				detail.addElement(row);
+			}
+			if (photo.getCreatedTime() != null) {
+				TR row = new TR();
+				row.addElement(new TD("Erstellt am").addAttribute("class",
+						"firstrow"));
+				row.addElement(new TD(photo.getCreatedTime().toString()));
+				detail.addElement(row);
+			}
+			if (photo.getPlace() != null && photo.getPlace().getLocation() != null) {
+				Location location = photo.getPlace().getLocation();
+				if(location.getStreet() != null){
+					TR row = new TR();
+					row.addElement(new TD("Straße").addAttribute("class", "firstrow"));
+					row.addElement(new TD(location.getStreet()));
+					detail.addElement(row);
+					photoinfo.setAttribute("street", location.getStreet());
+				}
+				if(location.getCity() != null){
+					TR row = new TR();
+					row.addElement(new TD("Stadt").addAttribute("class", "firstrow"));
+					row.addElement(new TD((location.getZip()!=null)? 
+								location.getZip()+location.getCity():
+								location.getCity()));
+					detail.addElement(row);
+					photoinfo.setAttribute("city", location.getCity());
+				}
+				if(location.getZip() != null)
+					photoinfo.setAttribute("zip", location.getZip());
+				
+				if(location.getState() != null){
+					TR row = new TR();
+					row.addElement(new TD("Bundesland").addAttribute("class", "firstrow"));
+					row.addElement(new TD(location.getState()));
+					detail.addElement(row);
+					photoinfo.setAttribute("state", location.getState());
+				}
+				if(location.getCountry() != null){
+					TR row = new TR();
+					row.addElement(new TD("Land").addAttribute("class", "firstrow"));
+					row.addElement(new TD(location.getCountry()));
+					detail.addElement(row);
+					photoinfo.setAttribute("country", location.getCountry());
+				}
+				if(location.getLatitude() != null)
+					photoinfo.setAttribute("latitude", location.getLatitude().toString());
+				if(location.getLongitude() != null)
+					photoinfo.setAttribute("longitude", location.getLongitude().toString());
+				
+			}
+			if (photo.getLink() != null) {
+				TR row = new TR();
+				row.addElement(new TD("Link").addAttribute("class", "firstrow"));
+				row.addElement(new TD("<a href=" + photo.getLink()
+						+ " target='_blank'>" + photo.getLink() + "</a>"));
+				detail.addElement(row);
+			}
+			if (photo.getSource() == null) {
+				throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+						"An error occurred while downloading photos");
+			}
 
-		Div commentsPhoto = (Div) new Div().addAttribute("class",
-				"commentsPhoto");
-		ce.addElementToRegistry("commentsPhoto", commentsPhoto);
+			TR row = new TR();
+			row.addElement(new TD("Quelle").addAttribute("class", "firstrow"));
+			row.addElement(new TD("<a href=" + photo.getSource()
+					+ " target='_blank'>" + photo.getSource() + "</a>"));
+			detail.addElement(row);
 
-		MetainfoContainer metainfo = downloadComments(photo.getId(),
-				getPhotoFilename(photo.getId()),
-				getPhotoFilename(photo.getId()), "photo", doc, client, storage,
-				progr);
+			String tags = "";
 
-		applic_photo.addElement(commentsPhoto);
+			Table detail2 = new Table();
+			detail2.addAttribute("class", "detail_table");
+			applic_photo.addElement(detail2);
 
-		Div likesPhoto = (Div) new Div().addAttribute("class", "likesPhoto");
-		ce.addElementToRegistry("likesPhoto", likesPhoto);
+			if (photo.getTags() != null && photo.getTags().size() > 0) {
+				TR taged = new TR();
+				detail2.addElement(taged);
+				taged.addElement(new TD(new H2("Tags").addAttribute("class",
+						"detailhead2")).addAttribute("class", "firstrow"));
+				UL tagedUsers = new UL();
 
-		String likes = downloadLikes(photo.getId(), "photo", doc, client,
-				storage, progr);
+				for (Tag tag : photo.getTags()) {
+					if (tag.getName() != null && tag.getId() != null) {
 
-		applic_photo.addElement(likesPhoto);
+						tagedUsers.addElement(new LI().addElement(linkUser(
+								tag.getId(), checkName(tag.getName()), "photo",
+								client, storage, progr)));
 
-		if (likes != null)
-			photoinfo.setAttribute("likes", likes);
-		
-		downloadPicture(photo.getSource(), sourceFileName, "", storage, progr,
-				photoinfo);
+						tags += checkName(tag.getName()) + " ";
+					}
+				}
+				taged.addElement(new TD().addElement(tagedUsers));
+			}
 
-		metainfo.addMetainfo(photoinfo);
+			if (tags != "")
+				photoinfo.setAttribute("tags", tags);
 
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
-		String filename = getPhotoFilename(photo.getId());
-		storage.addFile(is, filename, metainfo);
-		return filename;
+			Div commentsPhoto = (Div) new Div().addAttribute("class",
+					"commentsPhoto");
+			ce.addElementToRegistry("commentsPhoto", commentsPhoto);
+
+			MetainfoContainer metainfo = downloadComments(photo.getId(),
+					getPhotoFilename(photo.getId()),
+					getPhotoFilename(photo.getId()), "photo", doc, client,
+					storage, progr);
+
+			applic_photo.addElement(commentsPhoto);
+
+			Div likesPhoto = (Div) new Div()
+					.addAttribute("class", "likesPhoto");
+			ce.addElementToRegistry("likesPhoto", likesPhoto);
+
+			String likes = downloadLikes(photo.getId(), "photo", doc, client,
+					storage, progr);
+
+			applic_photo.addElement(likesPhoto);
+
+			if (likes != null)
+				photoinfo.setAttribute("likes", likes);
+
+			downloadPicture(photo.getSource(), sourceFileName, "", storage,
+					progr, photoinfo);
+
+			metainfo.addMetainfo(photoinfo);
+
+			InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+					.getBytes());
+			String filename = getPhotoFilename(photo.getId());
+			storage.addFile(is, filename, metainfo);
+			return filename;
+		} else
+			throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+					"An error occurred while downloading photo");
 	}
 
 	private String downloadGroup(String id, FacebookClient client,
 			Storage storage, Progressable progr) throws StorageException {
-		Group g = client.fetchObject(id, Group.class);
-		String name = checkName(g.getName());
+		try {
+			Group g = client.fetchObject(id, Group.class);
 
-		MetainfoContainer metainfo = new MetainfoContainer();
-		Metainfo groupinfo = new Metainfo();
-		groupinfo.setAttribute("name", name);
+			if (g.getName() != null && g.getId() != null) {
+				String name = checkName(g.getName());
 
-		groupinfo.setBackupDate(new Date());
-		groupinfo.setDestination(getGroupFilename(name + g.getId()));
-		groupinfo.setId(g.getId());
-		if(g.getUpdatedTime() != null)
-			groupinfo.setModified(g.getUpdatedTime());
-		groupinfo.setSource("facebook");
-		groupinfo.setType("group");
-		metainfo.addMetainfo(groupinfo);
+				MetainfoContainer metainfo = new MetainfoContainer();
+				Metainfo groupinfo = new Metainfo();
+				groupinfo.setAttribute("name", name);
 
-		Document doc = createDocument(name, "Facebook - Gruppe", true);
+				groupinfo.setBackupDate(new Date());
+				groupinfo.setDestination(getGroupFilename(name + g.getId()));
+				groupinfo.setId(g.getId());
+				if (g.getUpdatedTime() != null)
+					groupinfo.setModified(g.getUpdatedTime());
+				groupinfo.setSource("facebook");
+				groupinfo.setType("group");
+				metainfo.addMetainfo(groupinfo);
 
-		Div applic_content_page = (Div) ce.getElement("applic_content_page");
-		Div applic_user = (Div) new Div().addAttribute("class",
-				"applic_user clearfix");
-		Div detail = (Div) new Div().addAttribute("class", "detail_row2");
+				Document doc = createDocument(name, "Facebook - Gruppe", true);
 
-		Table t = (Table) new Table().addAttribute("class", "detail_table");
-		TR tr = new TR();
+				Div applic_content_page = (Div) ce
+						.getElement("applic_content_page");
+				Div applic_user = (Div) new Div().addAttribute("class",
+						"applic_user clearfix");
+				Div detail = (Div) new Div().addAttribute("class",
+						"detail_row2");
 
-		TD td1 = (TD) new TD().addAttribute("class", "firstrow");
-		td1.addElement("Gruppenname:");
-		tr.addElement(td1);
-		TD td2 = new TD().addElement(name);
-		tr.addElement(td2);
-		t.addElement(tr);
+				Table t = (Table) new Table().addAttribute("class",
+						"detail_table");
+				TR tr = new TR();
 
-		if (g.getDescription() != null) {
+				TD td1 = (TD) new TD().addAttribute("class", "firstrow");
+				td1.addElement("Gruppenname:");
+				tr.addElement(td1);
+				TD td2 = new TD().addElement(name);
+				tr.addElement(td2);
+				t.addElement(tr);
 
-			groupinfo.setAttribute("description", g.getDescription());
+				if (g.getDescription() != null) {
 
-			tr = new TR();
-			td1 = (TD) new TD().addAttribute("class", "firstrow");
-			td1.addElement("Beschreibung:");
-			tr.addElement(td1);
-			td2 = new TD().addElement(g.getDescription());
-			tr.addElement(td2);
-			t.addElement(tr);
+					groupinfo.setAttribute("description", g.getDescription());
+
+					tr = new TR();
+					td1 = (TD) new TD().addAttribute("class", "firstrow");
+					td1.addElement("Beschreibung:");
+					tr.addElement(td1);
+					td2 = new TD().addElement(g.getDescription());
+					tr.addElement(td2);
+					t.addElement(tr);
+				}
+
+				if (g.getPrivacy() != null) {
+					tr = new TR();
+					td1 = (TD) new TD().addAttribute("class", "firstrow");
+					td1.addElement("Privatsphäre:");
+					tr.addElement(td1);
+					td2 = new TD().addElement(g.getPrivacy());
+					tr.addElement(td2);
+					t.addElement(tr);
+				}
+
+				ce.addElementToRegistry("applic_user", applic_user);
+
+				if (g.getOwner() != null && g.getOwner().getName() != null
+						&& g.getOwner().getId() != null) {
+					tr = new TR();
+					td1 = (TD) new TD().addAttribute("class", "firstrow");
+					td1.addElement("Inhaber:");
+					tr.addElement(td1);
+					LI li = (LI) new LI().addAttribute("class", "friend_name");
+					li.addElement(linkUser(g.getOwner().getId(), checkName(g
+							.getOwner().getName()), "group", client, storage,
+							progr));
+					td2 = new TD().addElement(li);
+					tr.addElement(td2);
+					t.addElement(tr);
+
+					groupinfo.setAttribute("owner", checkName(g.getOwner()
+							.getName()));
+				}
+				if(g.getVenue() != null){
+					Venue location = g.getVenue();
+					if(location.getStreet() != null){
+						tr = new TR();
+						tr.addElement(new TD("Straße").addAttribute("class", "firstrow"));
+						tr.addElement(new TD(location.getStreet()));
+						detail.addElement(tr);
+						groupinfo.setAttribute("street", location.getStreet());
+					}
+					if(location.getCity() != null){
+						tr = new TR();
+						tr.addElement(new TD("Stadt").addAttribute("class", "firstrow"));
+						tr.addElement(new TD((location.getZip()!=null)? 
+									location.getZip()+location.getCity():
+									location.getCity()));
+						detail.addElement(tr);
+						groupinfo.setAttribute("city", location.getCity());
+					}
+					if(location.getZip() != null)
+						groupinfo.setAttribute("zip", location.getZip());
+					if(location.getState() != null){
+						tr = new TR();
+						tr.addElement(new TD("Bundesland").addAttribute("class", "firstrow"));
+						tr.addElement(new TD(location.getState()));
+						detail.addElement(tr);
+						groupinfo.setAttribute("state", location.getState());
+					}
+					if(location.getCountry() != null){
+						tr = new TR();
+						tr.addElement(new TD("Land").addAttribute("class", "firstrow"));
+						tr.addElement(new TD(location.getCountry()));
+						detail.addElement(tr);
+						groupinfo.setAttribute("country", location.getCountry());
+					}
+					if(location.getLatitude() != null)
+						groupinfo.setAttribute("latitude", location.getLatitude().toString());
+					if(location.getLongitude() != null)
+						groupinfo.setAttribute("longitude", location.getLongitude().toString());
+				}
+				if (g.getLink() != null) {
+					tr = new TR();
+					td1 = (TD) new TD().addAttribute("class", "firstrow");
+					td1.addElement("Link:");
+					tr.addElement(td1);
+					td2 = new TD().addElement("<a href=" + g.getLink()
+							+ " target='_blank'>" + g.getLink() + "</a>");
+					tr.addElement(td2);
+					t.addElement(tr);
+				}
+
+				detail.addElement(t);
+				applic_user.addElement(detail);
+				applic_content_page.addElement(applic_user);
+
+				InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+						.getBytes());
+
+				String filename = getGroupFilename(name + g.getId());
+				storage.addFile(is, filename, metainfo);
+
+				return filename;
+			} else
+				throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+						"An error occurred while downloading group");
+
+		} catch (Exception e) {
+			return null;
 		}
-
-		if (g.getPrivacy() != null) {
-			tr = new TR();
-			td1 = (TD) new TD().addAttribute("class", "firstrow");
-			td1.addElement("Privatsphäre:");
-			tr.addElement(td1);
-			td2 = new TD().addElement(g.getPrivacy());
-			tr.addElement(td2);
-			t.addElement(tr);
-		}
-
-		ce.addElementToRegistry("applic_user", applic_user);
-
-		if (g.getOwner() != null) {
-			tr = new TR();
-			td1 = (TD) new TD().addAttribute("class", "firstrow");
-			td1.addElement("Inhaber:");
-			tr.addElement(td1);
-			LI li = (LI) new LI().addAttribute("class", "friend_name");
-			li.addElement(linkUser(g.getOwner().getId(), checkName(g.getOwner()
-					.getName()), "group", client, storage, progr));
-			td2 = new TD().addElement(li);
-			tr.addElement(td2);
-			t.addElement(tr);
-
-			groupinfo.setAttribute("owner", checkName(g.getOwner().getName()));
-		}
-
-		if (g.getLink() != null) {
-			tr = new TR();
-			td1 = (TD) new TD().addAttribute("class", "firstrow");
-			td1.addElement("Link:");
-			tr.addElement(td1);
-			td2 = new TD().addElement("<a href=" + g.getLink()
-					+ " target='_blank'>" + g.getLink() + "</a>");
-			tr.addElement(td2);
-			t.addElement(tr);
-		}
-
-		detail.addElement(t);
-		applic_user.addElement(detail);
-		applic_content_page.addElement(applic_user);
-
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
-		String filename = getGroupFilename(name + g.getId());
-		storage.addFile(is, filename, metainfo);
-		return filename;
 	}
 
 	private String downloadUser(String id, FacebookClient client,
@@ -1113,232 +1500,254 @@ public class FacebookDatasource implements Datasource {
 		userinfo.setBackupDate(new Date());
 
 		try {
-			
+
 			User u = client.fetchObject(id, User.class);
 
-			String name = checkName(u.getName());
+			if (u.getName() != null && u.getId() != null) {
+				String name = checkName(u.getName());
 
-			userinfo.setAttribute("name", name);
-			userinfo.setDestination(getUserFilename(name + u.getId()));
-			userinfo.setId(name + u.getId());
-			if (u.getUpdatedTime() != null)
-				userinfo.setModified(u.getUpdatedTime());
-			userinfo.setSource("facebook");
-			userinfo.setType("user");
+				userinfo.setAttribute("name", name);
+				userinfo.setDestination(getUserFilename(name + u.getId()));
+				userinfo.setId(name + u.getId());
+				if (u.getUpdatedTime() != null)
+					userinfo.setModified(u.getUpdatedTime());
+				userinfo.setSource("facebook");
+				userinfo.setType("user");
 
-			// get profile picture
-			String pic = downloadProfilePicture(name + u.getId(), u.getId(),
-					"", storage, progr);
+				// get profile picture
+				String pic = downloadProfilePicture(name + u.getId(),
+						u.getId(), "", storage, progr);
 
-			userinfo.setAttribute("profilePicture", "Freunde/" + pic);
-			metainfo.addMetainfo(userinfo);
+				userinfo.setAttribute("profilePicture", "Freunde/" + pic);
 
-			// create HTML
-			Document doc = createDocument("Mein Profil", "User", true);
-			Div applic_content_page = (Div) ce
-					.getElement("applic_content_page");
+				// create HTML
+				Document doc = createDocument("Mein Profil", "User", true);
+				Div applic_content_page = (Div) ce
+						.getElement("applic_content_page");
 
-			Div applic_user = (Div) new Div().addAttribute("class",
-					"applic_user clearfix");
-			applic_content_page.addElement(applic_user);
+				Div applic_user = (Div) new Div().addAttribute("class",
+						"applic_user clearfix");
+				applic_content_page.addElement(applic_user);
 
-			Div detail_row1 = (Div) new Div().addAttribute("class",
-					"detail_row1");
-			detail_row1.addElement(new IMG(pic));
+				Div detail_row1 = (Div) new Div().addAttribute("class",
+						"detail_row1");
+				detail_row1.addElement(new IMG(pic));
 
-			Div detail_row2 = (Div) new Div().addAttribute("class",
-					"detail_row2");
-			Table detail = new Table();
-			detail.addAttribute("class", "detail_table");
+				Div detail_row2 = (Div) new Div().addAttribute("class",
+						"detail_row2");
+				Table detail = new Table();
+				detail.addAttribute("class", "detail_table");
 
-			applic_user.addElement(detail_row1);
-			applic_user.addElement(detail_row2);
-			detail_row2.addElement(detail);
+				applic_user.addElement(detail_row1);
+				applic_user.addElement(detail_row2);
+				detail_row2.addElement(detail);
 
-			TR row = new TR();
-			row.addElement(new TD("Username").addAttribute("class", "firstrow"));
-			row.addElement(new TD(name));
-			detail.addElement(row);
-
-			if (u.getUsername() != null) {
-				row = new TR();
-				row.addElement(new TD("Benutzername").addAttribute("class",
+				TR row = new TR();
+				row.addElement(new TD("Username").addAttribute("class",
 						"firstrow"));
-				row.addElement(new TD(u.getUsername()));
+				row.addElement(new TD(name));
 				detail.addElement(row);
-			}
-			if (u.getEmail() != null) {
-				row = new TR();
-				row.addElement(new TD("E-Mail").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(u.getEmail()));
-				detail.addElement(row);
-			}
 
-			if (u.getAbout() != null) {
-				row = new TR();
-				row.addElement(new TD("&Uuml;ber").addAttribute("class", "firstrow"));
-				row.addElement(new TD(u.getAbout()));
-				detail.addElement(row);
-			}
-			if (u.getBio() != null) {
-				row = new TR();
-				row.addElement(new TD("Bio").addAttribute("class", "firstrow"));
-				row.addElement(new TD(u.getBio()));
-				detail.addElement(row);
-			}
-			if (u.getGender() != null) {
-				row = new TR();
-				row.addElement(new TD("Geschlecht").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(u.getGender()));
-				detail.addElement(row);
-			}
-			if (u.getBirthday() != null) {
-				row = new TR();
-				row.addElement(new TD("Geburtstag").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(u.getBirthday()));
-				detail.addElement(row);
-			}
-			if (u.getHometownName() != null) {
-				row = new TR();
-				row.addElement(new TD("Heimatstadt").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(u.getHometownName()));
-				detail.addElement(row);
-			}
-			if (u.getLocation() != null) {
-				row = new TR();
-				row.addElement(new TD("Derzeitiger Wohnort").addAttribute(
-						"class", "firstrow"));
-				row.addElement(new TD(u.getLocation().getName()));
-				detail.addElement(row);
-			}
-
-			if (u.getLanguages() != null && u.getLanguages().size() > 0) {
-				String[] languages = new String[u.getLanguages().size()];
-				int i = 0;
-				for (NamedFacebookType language : u.getLanguages()) {
-					languages[i] = language.getName();
-					i++;
+				if (u.getUsername() != null) {
+					row = new TR();
+					row.addElement(new TD("Benutzername").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(u.getUsername()));
+					detail.addElement(row);
+					userinfo.setAttribute("username", u.getUsername());
+				}
+				if (u.getEmail() != null) {
+					row = new TR();
+					row.addElement(new TD("E-Mail").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(u.getEmail()));
+					detail.addElement(row);
+					userinfo.setAttribute("mail", u.getEmail());
 				}
 
-				row = new TR();
-				row.addElement(new TD("Sprachen").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(new UL(languages)));
-				detail.addElement(row);
-			}
-			if (u.getEducation() != null && u.getEducation().size() > 0) {
-				String[] edus = new String[u.getEducation().size()];
-				int i = 0;
-				for (Education educ : u.getEducation()) {
-					edus[i] = educ.getType()
-							+ (educ.getSchool() != null ? ": "
-									+ educ.getSchool().getName()
-									+ (educ.getYear() != null ? " until "
-											+ educ.getYear().getName() : "")
-									: "");
-					i++;
+				if (u.getAbout() != null) {
+					row = new TR();
+					row.addElement(new TD("&Uuml;ber").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(u.getAbout()));
+					detail.addElement(row);
+				}
+				if (u.getBio() != null) {
+					row = new TR();
+					row.addElement(new TD("Bio").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(u.getBio()));
+					detail.addElement(row);
+				}
+				if (u.getGender() != null) {
+					row = new TR();
+					row.addElement(new TD("Geschlecht").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(u.getGender()));
+					detail.addElement(row);
+				}
+				if (u.getBirthday() != null) {
+					row = new TR();
+					row.addElement(new TD("Geburtstag").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(u.getBirthday()));
+					detail.addElement(row);
+					userinfo.setAttribute("birthday", u.getBirthday());
+				}
+				if (u.getHometownName() != null) {
+					row = new TR();
+					row.addElement(new TD("Heimatstadt").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(u.getHometownName()));
+					detail.addElement(row);
+					userinfo.setAttribute("hometown", u.getHometownName());
+				}
+				if (u.getLocation() != null
+						&& u.getLocation().getName() != null) {
+					row = new TR();
+					row.addElement(new TD("Derzeitiger Wohnort").addAttribute(
+							"class", "firstrow"));
+					row.addElement(new TD(u.getLocation().getName()));
+					detail.addElement(row);
+					userinfo.setAttribute("location", u.getLocation().getName());
 				}
 
-				row = new TR();
-				row.addElement(new TD("Ausbildung").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(new UL(edus)));
-				detail.addElement(row);
-			}
+				if (u.getLanguages() != null && u.getLanguages().size() > 0) {
+					String[] languages = new String[u.getLanguages().size()];
+					int i = 0;
+					for (NamedFacebookType language : u.getLanguages()) {
+						languages[i] = language.getName();
+						i++;
+					}
 
-			if (u.getWork() != null && u.getWork().size() > 0) {
-				String[] works = new String[u.getWork().size()];
-				int i = 0;
-				for (Work work : u.getWork()) {
-					works[i] = (work.getDescription() != null ? work
-							.getDescription() : "")
-							+ (work.getPosition() != null ? " als "
-									+ work.getPosition().getName() : "")
-							+ (work.getEmployer() != null ? " f&uuml;r "
-									+ work.getEmployer().getName() : "")
-							+ (work.getLocation() != null ? " bei "
-									+ work.getLocation().getName() : "");
-					i++;
+					row = new TR();
+					row.addElement(new TD("Sprachen").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(new UL(languages)));
+					detail.addElement(row);
 				}
-				row = new TR();
-				row.addElement(new TD("Arbeit").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(new UL(works)));
-				detail.addElement(row);
-			}
-			if (u.getInterestedIn() != null
-					&& u.getInterestedIn().size() > 0) {
-				row = new TR();
-				row.addElement(new TD("Interessiert an:").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(new UL(u.getInterestedIn().toArray(
-						new String[0]))));
-				detail.addElement(row);
-			}
-			if (u.getRelationshipStatus() != null) {
-				row = new TR();
-				row.addElement(new TD("Beziehungsstatus").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(u.getRelationshipStatus()));
-				detail.addElement(row);
-			}
-			if (u.getSignificantOther() != null) {
-				row = new TR();
-				row.addElement(new TD("Bedeutende Personen").addAttribute(
-						"class", "firstrow"));
-				row.addElement(new TD(new A("../"
-						+ getUserFilename(checkName(u.getSignificantOther()
-								.getName()) + u.getSignificantOther().getId()),
-						checkName(u.getSignificantOther().getName()))));
-				detail.addElement(row);
-			}
-			if (u.getQuotes() != null) {
-				row = new TR();
-				row.addElement(new TD("Zitate").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(u.getQuotes()));
-				detail.addElement(row);
-			}
-			if (u.getReligion() != null) {
-				row = new TR();
-				row.addElement(new TD("Religion").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(u.getReligion()));
-				detail.addElement(row);
-			}
-			if (u.getPolitical() != null) {
-				row = new TR();
-				row.addElement(new TD("Politische Einstellung").addAttribute(
-						"class", "firstrow"));
-				row.addElement(new TD(u.getPolitical()));
-				detail.addElement(row);
-			}
-			if (u.getWebsite() != null) {
-				row = new TR();
-				row.addElement(new TD("Website").addAttribute("class",
-						"firstrow"));
-				row.addElement(new TD(u.getWebsite()));
-				detail.addElement(row);
-			}
-			if (u.getLink() != null) {
-				row = new TR();
-				row.addElement(new TD("Link").addAttribute("class", "firstrow"));
-				row.addElement(new TD("<a href=" + u.getLink()
-						+ " target='_blank'>" + u.getLink() + "</a>"));
-				detail.addElement(row);
-			}
-			InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
-			String filename = getUserFilename(name + u.getId());
-			storage.addFile(is, filename, metainfo);
+				if (u.getEducation() != null && u.getEducation().size() > 0) {
+					String[] edus = new String[u.getEducation().size()];
+					int i = 0;
+					for (Education educ : u.getEducation()) {
+						edus[i] = educ.getType()
+								+ (educ.getSchool() != null ? ": "
+										+ educ.getSchool().getName()
+										+ (educ.getYear() != null ? " until "
+												+ educ.getYear().getName() : "")
+										: "");
+						i++;
+					}
 
-			allUsers.add(id);
-			return filename;
+					row = new TR();
+					row.addElement(new TD("Ausbildung").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(new UL(edus)));
+					detail.addElement(row);
+				}
+
+				if (u.getWork() != null && u.getWork().size() > 0) {
+					String[] works = new String[u.getWork().size()];
+					int i = 0;
+					for (Work work : u.getWork()) {
+						works[i] = (work.getDescription() != null ? work
+								.getDescription() : "")
+								+ (work.getPosition() != null ? " als "
+										+ work.getPosition().getName() : "")
+								+ (work.getEmployer() != null ? " f&uuml;r "
+										+ work.getEmployer().getName() : "")
+								+ (work.getLocation() != null ? " bei "
+										+ work.getLocation().getName() : "");
+						i++;
+					}
+					row = new TR();
+					row.addElement(new TD("Arbeit").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(new UL(works)));
+					detail.addElement(row);
+				}
+				if (u.getInterestedIn() != null
+						&& u.getInterestedIn().size() > 0) {
+					row = new TR();
+					row.addElement(new TD("Interessiert an:").addAttribute(
+							"class", "firstrow"));
+					row.addElement(new TD(new UL(u.getInterestedIn().toArray(
+							new String[0]))));
+					detail.addElement(row);
+				}
+				if (u.getRelationshipStatus() != null) {
+					row = new TR();
+					row.addElement(new TD("Beziehungsstatus").addAttribute(
+							"class", "firstrow"));
+					row.addElement(new TD(u.getRelationshipStatus()));
+					detail.addElement(row);
+				}
+				if (u.getSignificantOther() != null
+						&& u.getSignificantOther().getId() != null
+						&& u.getSignificantOther().getName() != null) {
+					row = new TR();
+					row.addElement(new TD("Bedeutende Personen").addAttribute(
+							"class", "firstrow"));
+					row.addElement(new TD(new A("../"
+							+ getUserFilename(checkName(u.getSignificantOther()
+									.getName())
+									+ u.getSignificantOther().getId()),
+							checkName(u.getSignificantOther().getName()))));
+					detail.addElement(row);
+				}
+				if (u.getQuotes() != null) {
+					row = new TR();
+					row.addElement(new TD("Zitate").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(u.getQuotes()));
+					detail.addElement(row);
+				}
+				if (u.getReligion() != null) {
+					row = new TR();
+					row.addElement(new TD("Religion").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(u.getReligion()));
+					detail.addElement(row);
+				}
+				if (u.getPolitical() != null) {
+					row = new TR();
+					row.addElement(new TD("Politische Einstellung")
+							.addAttribute("class", "firstrow"));
+					row.addElement(new TD(u.getPolitical()));
+					detail.addElement(row);
+				}
+				if (u.getWebsite() != null) {
+					row = new TR();
+					row.addElement(new TD("Website").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD(u.getWebsite()));
+					detail.addElement(row);
+				}
+				if (u.getLink() != null) {
+					row = new TR();
+					row.addElement(new TD("Link").addAttribute("class",
+							"firstrow"));
+					row.addElement(new TD("<a href=" + u.getLink()
+							+ " target='_blank'>" + u.getLink() + "</a>"));
+					detail.addElement(row);
+				}
+				
+				metainfo.addMetainfo(userinfo);
+				
+				InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+						.getBytes());
+				String filename = getUserFilename(name + u.getId());
+				storage.addFile(is, filename, metainfo);
+
+				allUsers.add(id);
+				return filename;
+			} else
+				throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+						"An error occurred while downloading user (id or name not set)");
 		} catch (FacebookException e) {
-			return null;
+			throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+					"An error occurred while downloading user", e);
+
 		}
 	}
 
@@ -1378,7 +1787,7 @@ public class FacebookDatasource implements Datasource {
 	 * @return the path to the picture
 	 */
 	private String downloadProfilePicture(String name, String id, String type,
-			Storage storage, Progressable progr) throws StorageException {
+			Storage storage, Progressable progr) {
 		String fileName = "";
 		if (type.equals("site"))
 			fileName = "Seiten/Fotos/" + name + ".jpg";
@@ -1402,8 +1811,15 @@ public class FacebookDatasource implements Datasource {
 					null);
 		else
 			uPicLoc = getGraphUrl(id + "/picture", "type=large");
+
 		if (uPicLoc != null) {
-			downloadPicture(uPicLoc, fileName, type, storage, progr, photoinfo);
+			try {
+				downloadPicture(uPicLoc, fileName, type, storage, progr,
+						photoinfo);
+			} catch (StorageException e) {
+				throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+						"An error occurred while download profile picture", e);
+			}
 		} else {
 			progr.progress("no picture URL...");
 		}
@@ -1423,31 +1839,36 @@ public class FacebookDatasource implements Datasource {
 		metainfo.addMetainfo(photoinfo);
 
 		HttpURLConnection c = null;
-		
+
 		try {
 			URL url = new URL(path);
 			c = (HttpURLConnection) url.openConnection();
 			c.connect();
-			if(c.getContentType() != null){
-    			if (c.getContentType().equals("image/jpeg")) {
-    				progr.progress("Download " + path + " nach " + destination);
-    				try (InputStream is = c.getInputStream()) {
-    				    storage.addFile(is, destination, metainfo);
-    				}
-    				return true;
-    			}
-    			
-                progr.progress("Lade alternatives Bild");
-                try (InputStream isAlt = this.getClass().getResourceAsStream("/alternative.jpg")) {
-                	storage.addFile(isAlt, destination, null);
-                	isAlt.close();
-                } catch (IOException e){
-                	e.printStackTrace();
-                }
-            }
+			if (c.getContentType() != null
+					&& c.getContentType().equals("image/jpeg")) {
+				progr.progress("Download " + path + " nach " + destination);
+				InputStream is = c.getInputStream();
+				storage.addFile(is, destination, metainfo);
+				is.close();
+				return true;
+			}
+
+			progr.progress("Lade alternatives Bild");
+			try (InputStream isAlt = this.getClass().getResourceAsStream(
+					"/alternative.jpg")) {
+				storage.addFile(isAlt, destination, null);
+				isAlt.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 		} catch (IOException e) {
 			if (c != null)
 				c.disconnect();
+			/*
+			 * throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+			 * "An error occurred while fetching picture", e);
+			 */
 		}
 		return false;
 	}
@@ -1483,13 +1904,14 @@ public class FacebookDatasource implements Datasource {
 			while ((temp = reader.read()) != -1) {
 				content.append((char) temp);
 			}
-			
+
 			try {
-				  reader.close();
-				} catch(Exception ex) {
-				  ex.printStackTrace();
-				}
-			
+				reader.close();
+			} catch (Exception ex) {
+				throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+						"An error occurred while downloading accounts", ex);
+			}
+
 			JSONObject json = new JSONObject(content.toString());
 			JSONArray jsonArray = json.getJSONArray("data");
 
@@ -1512,12 +1934,16 @@ public class FacebookDatasource implements Datasource {
 			if (c != null) {
 				c.disconnect();
 			}
+			throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+					"An error occurred while downloading accounts", e);
+
 		}
 
 		navlist.addElement(ul);
 		applic_content_page.addElement(navlist);
 
-		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
+		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+				.getBytes());
 		storage.addFile(is, "accounts.html", new MetainfoContainer());
 
 	}
@@ -1526,100 +1952,102 @@ public class FacebookDatasource implements Datasource {
 			FacebookClient client, Storage storage, Progressable progr)
 			throws StorageException {
 		MetainfoContainer metadata = new MetainfoContainer();
-        Metainfo accountinfo = new Metainfo();
-        accountinfo.setBackupDate(new Date());
-        accountinfo.setId(id);
-        accountinfo.setSource("facebook");
-        accountinfo.setType("site");
+		Metainfo accountinfo = new Metainfo();
+		accountinfo.setBackupDate(new Date());
+		accountinfo.setId(id);
+		accountinfo.setSource("facebook");
+		accountinfo.setType("site");
 
+		HttpURLConnection c = null;
+		URL url;
+		Document doc = createDocument(name, "Seite", true);
+		try {
 
-        HttpURLConnection c = null;
-        URL url;
-        Document doc = createDocument(name, "Seite", true);
-        try {
+			url = new URL("https://graph.facebook.com/" + id + "?access_token="
+					+ accessToken);
+			c = (HttpURLConnection) url.openConnection();
+			c.connect();
 
-            url = new URL("https://graph.facebook.com/" + id + "?access_token="
-                    + accessToken);
-            c = (HttpURLConnection) url.openConnection();
-            c.connect();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					c.getInputStream(), Charset.forName("UTF-8")));
+			StringBuilder content = new StringBuilder();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    c.getInputStream(), Charset.forName("UTF-8")));
-            StringBuilder content = new StringBuilder();
+			int temp;
 
-            int temp;
+			while ((temp = reader.read()) != -1) {
+				content.append((char) temp);
+			}
 
-            while ((temp = reader.read()) != -1) {
-                content.append((char) temp);
-            }
-            
-            try {
-  			  reader.close();
-  			} catch (Exception ex) {
-  			  ex.printStackTrace();
-  			}
-            
-            JSONObject json = new JSONObject(content.toString());
-           
-            Div applic_content_page = (Div) ce
-                    .getElement("applic_content_page");
+			try {
+				reader.close();
+			} catch (Exception ex) {
+				throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+						"An error occurred while fetching account", ex);
+			}
 
-            Div applic_user = (Div) new Div().addAttribute("class",
-                    "applic_user clearfix");
-            applic_content_page.addElement(applic_user);
+			JSONObject json = new JSONObject(content.toString());
 
-            String pic = downloadProfilePicture(name + id, id, "site", storage,
-                    progr);
-            Div detail_row1 = (Div) new Div().addAttribute("class",
-                    "detail_row1");
-            detail_row1.addElement(new IMG(pic));
+			Div applic_content_page = (Div) ce
+					.getElement("applic_content_page");
 
-            Div detail_row2 = (Div) new Div().addAttribute("class",
-                    "detail_row2");
-            Table detail = new Table();
-            detail.addAttribute("class", "detail_table");
+			Div applic_user = (Div) new Div().addAttribute("class",
+					"applic_user clearfix");
+			applic_content_page.addElement(applic_user);
 
-            applic_user.addElement(detail_row1);
-            applic_user.addElement(detail_row2);
-            detail_row2.addElement(detail);
-           
-            TR row = new TR();
-            row.addElement(new TD("Name").addAttribute("class", "firstrow"));
-            row.addElement(new TD(name));
-            detail.addElement(row);
-           
-            row = new TR();
-            row.addElement(new TD("Link").addAttribute("class", "firstrow"));
-            row.addElement(new TD(json.getString("link")));
-            detail.addElement(row);
-           
-            downloadPosts(id, client, storage, progr);
-            
-            row = new TR();
-            row.addElement(new TD("Posts").addAttribute("class", "firstrow"));
-            row.addElement(new TD(new A("../" + "posts-" + id + ".html", "Posts")));
-            detail.addElement(row);
-           
-            row = new TR();
-            ce.addElementToRegistry("detail_row2", detail_row2);
-            downloadPhotos(id, "site", doc, client, storage, progr);
-            detail.addElement(row);
-           
-            accountinfo.setId(id);
-            accountinfo.setDestination("Seiten/" + name + id + ".html");
-            accountinfo.setAttribute("name", name);
+			String pic = downloadProfilePicture(name + id, id, "site", storage,
+					progr);
+			Div detail_row1 = (Div) new Div().addAttribute("class",
+					"detail_row1");
+			detail_row1.addElement(new IMG(pic));
 
-        } catch (Exception e) {
-            if (c != null) {
-                c.disconnect();
-            }
-        }
-        metadata.addMetainfo(accountinfo);
-        InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
-        storage.addFile(is, "Seiten/" + name + id + ".html", metadata);
+			Div detail_row2 = (Div) new Div().addAttribute("class",
+					"detail_row2");
+			Table detail = new Table();
+			detail.addAttribute("class", "detail_table");
 
-        return "Seiten/" + name + id + ".html";
-    }
+			applic_user.addElement(detail_row1);
+			applic_user.addElement(detail_row2);
+			detail_row2.addElement(detail);
+
+			TR row = new TR();
+			row.addElement(new TD("Name").addAttribute("class", "firstrow"));
+			row.addElement(new TD(name));
+			detail.addElement(row);
+
+			row = new TR();
+			row.addElement(new TD("Link").addAttribute("class", "firstrow"));
+			row.addElement(new TD(json.getString("link")));
+			detail.addElement(row);
+
+			downloadPosts(id, client, storage, progr);
+
+			row = new TR();
+			row.addElement(new TD("Posts").addAttribute("class", "firstrow"));
+			row.addElement(new TD(new A("../" + "posts-" + id + ".html",
+					"Posts")));
+			detail.addElement(row);
+
+			row = new TR();
+			ce.addElementToRegistry("detail_row2", detail_row2);
+			downloadPhotos(id, "site", doc, client, storage, progr);
+			detail.addElement(row);
+
+			accountinfo.setId(id);
+			accountinfo.setDestination("Seiten/" + name + id + ".html");
+			accountinfo.setAttribute("name", name);
+
+		} catch (Exception e) {
+			if (c != null) {
+				c.disconnect();
+			}
+		}
+		metadata.addMetainfo(accountinfo);
+		InputStream is = new ByteArrayInputStream(doc.toString("UTF-8")
+				.getBytes());
+		storage.addFile(is, "Seiten/" + name + id + ".html", metadata);
+
+		return "Seiten/" + name + id + ".html";
+	}
 
 	private Document createDocument(String title, String header, boolean out) {
 		Document doc = new Document();
@@ -1632,12 +2060,10 @@ public class FacebookDatasource implements Datasource {
 				doc.appendHead("<link rel='stylesheet' type='text/css' href='../../Themes/styles.css'>");
 				backmeuplogo = "../../Themes/backmeuplogo.jpg";
 				facebooklogo = "../../Themes/facebooklogo.jpg";
-				list_point = "../../Themes/list_point.jpg";
 			} else {
 				doc.appendHead("<link rel='stylesheet' type='text/css' href='../Themes/styles.css'>");
 				backmeuplogo = "../Themes/backmeuplogo.jpg";
 				facebooklogo = "../Themes/facebooklogo.jpg";
-				list_point = "../Themes/list_point.jpg";
 			}
 		} else
 			doc.appendHead("<link rel='stylesheet' type='text/css' href='Themes/styles.css'>");
@@ -1652,16 +2078,19 @@ public class FacebookDatasource implements Datasource {
 		top.addElement(topcontent);
 
 		doc.appendBody(top);
-		
-		if(!title.equals("Index")){
-			if(out){
-				if(title.equals("Foto")){
-					doc.appendBody(new A("../../index.html", "zur&uuml;ck zur &Uuml;bersicht"));
-				}else{
-					doc.appendBody(new A("../index.html", "zur&uuml;ck zur &Uuml;bersicht"));
+
+		if (!title.equals("Index")) {
+			if (out) {
+				if (title.equals("Foto")) {
+					doc.appendBody(new A("../../index.html",
+							"zur&uuml;ck zur &Uuml;bersicht"));
+				} else {
+					doc.appendBody(new A("../index.html",
+							"zur&uuml;ck zur &Uuml;bersicht"));
 				}
-			}else{
-				doc.appendBody(new A("index.html", "zur&uuml;ck zur &Uuml;bersicht"));	
+			} else {
+				doc.appendBody(new A("index.html",
+						"zur&uuml;ck zur &Uuml;bersicht"));
 			}
 		}
 		Div content = (Div) new Div().addAttribute("id", "content");
@@ -1707,8 +2136,7 @@ public class FacebookDatasource implements Datasource {
 	 * name)
 	 */
 	private String linkUser(String id, String name, String type,
-			FacebookClient client, Storage storage, Progressable progr)
-			throws StorageException {
+			FacebookClient client, Storage storage, Progressable progr) {
 
 		String nameUser = name;
 
@@ -1719,9 +2147,15 @@ public class FacebookDatasource implements Datasource {
 			if (allUsers.contains(id)) {
 				nameUser = "<a href = '../" + path + "'>" + name + "</a>";
 			} else {
-				if (DOWNLOAD_NON_FRIEND_USERS
-						&& downloadUser(id, client, storage, progr) != null) {
-					nameUser = "<a href = '../" + path + "'>" + name + "</a>";
+				try {
+					if (DOWNLOAD_NON_FRIEND_USERS
+							&& downloadUser(id, client, storage, progr) != null) {
+						nameUser = "<a href = '../" + path + "'>" + name
+								+ "</a>";
+					}
+				} catch (StorageException e) {
+					throw new PluginException(FacebookDescriptor.FACEBOOK_ID,
+							"An error occurred while linking user", e);
 				}
 			}
 		}
@@ -1739,17 +2173,7 @@ public class FacebookDatasource implements Datasource {
 		if (str.equals(".") || str.equals("..")) {
 			str = "facebook";
 		}
-		/*for (int i = 0; i < str.length(); i++) {
-			if ((str.charAt(i) < ' ' || str.charAt(i) > '~')) {
-				// umlauts are allowed
-				if (str.charAt(i) != 228 && str.charAt(i) != 196
-						&& str.charAt(i) != 246 && str.charAt(i) != 214
-						&& str.charAt(i) != 252 && str.charAt(i) != 220
-						&& str.charAt(i) != 223) {
-					str = str.replace(str.charAt(i), '-');
-				}
-			}
-		}*/
+
 		for (String element : illegal) {
 			while (str.contains(element)) {
 				str = str.replace(element, " ");
@@ -1759,7 +2183,6 @@ public class FacebookDatasource implements Datasource {
 		return str;
 	}
 
-	
 	@Override
 	public List<String> getAvailableOptions(Properties accessData) {
 		List<String> facebookBackupOptions = new ArrayList<>();
@@ -1777,19 +2200,23 @@ public class FacebookDatasource implements Datasource {
 	public void getThemes(Storage storage, Properties props)
 			throws StorageException {
 		try {
-		    try (InputStream is = this.getClass().getResourceAsStream("/backmeuplogo.jpg")) {
-		        storage.addFile(is, "Themes/backmeuplogo.jpg", null);
-		    }
-            try (InputStream is = this.getClass().getResourceAsStream("/facebooklogo.jpg")) {
-                storage.addFile(is, "Themes/facebooklogo.jpg", null);
-            }
-            try (InputStream is = this.getClass().getResourceAsStream("/list_point.jpg")) {
-                storage.addFile(is, "Themes/list_point.jpg", null);
-            }
-            try (InputStream is = this.getClass().getResourceAsStream("/styles.css")) {
-                storage.addFile(is, "Themes/styles.css", null);
-            }
-		} catch (IOException e){
+			try (InputStream is = this.getClass().getResourceAsStream(
+					"/backmeuplogo.jpg")) {
+				storage.addFile(is, "Themes/backmeuplogo.jpg", null);
+			}
+			try (InputStream is = this.getClass().getResourceAsStream(
+					"/facebooklogo.jpg")) {
+				storage.addFile(is, "Themes/facebooklogo.jpg", null);
+			}
+			try (InputStream is = this.getClass().getResourceAsStream(
+					"/list_point.jpg")) {
+				storage.addFile(is, "Themes/list_point.jpg", null);
+			}
+			try (InputStream is = this.getClass().getResourceAsStream(
+					"/styles.css")) {
+				storage.addFile(is, "Themes/styles.css", null);
+			}
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
