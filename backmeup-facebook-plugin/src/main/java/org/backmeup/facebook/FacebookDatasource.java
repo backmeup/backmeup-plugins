@@ -957,11 +957,11 @@ public class FacebookDatasource implements Datasource {
 
 			if (post.getType() != null && post.getType().equals("photo")) {
 				//TODO something is wrong here
-				/*if (post.getPicture() != null) {
+				if (post.getPicture() != null) {
 					String linkToPic = post.getPicture();
 					String[] picture = linkToPic.split("_");
 					String id = picture[1];
-					String ending = picture[3].split("\\.")[1];
+					String ending = picture[3].split("\\.")[1].substring(0,3);
 					downloadPicture(post.getPicture(), "Posts/Fotos/" + id
 							+ "." + ending, "", storage, progr, new Metainfo());
 
@@ -969,7 +969,7 @@ public class FacebookDatasource implements Datasource {
 					row.addElement(new IMG("Fotos/" + id + "." + ending)
 							.addAttribute("width", "200px"));
 					detail.addElement(row);
-				}*/
+				}
 			}
 			applic_posts.addElement(detail);
 
