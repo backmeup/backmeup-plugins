@@ -16,59 +16,57 @@ import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
 public class DummyDatasource implements Datasource {
-  private InputStream stringToStream(String input) {
-    try {
-      InputStream is = new ByteArrayInputStream(input.getBytes("UTF-8"));
-      return is;
-    } catch (UnsupportedEncodingException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+
+    private InputStream stringToStream(String input) {
+        try {
+            InputStream is = new ByteArrayInputStream(input.getBytes("UTF-8"));
+            return is;
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("UTF8 is not available?");
+        }
     }
-    return null;
-  }
 
-  private Metainfo create(String id, String type, String destination) {
-    Metainfo info = new Metainfo();
-    info.setBackupDate(new Date());
-    info.setDestination(destination);
-    info.setId(id);
-    info.setSource("dummy");
-    info.setType(type);
-    return info;
-  }
+    private Metainfo create(String id, String type, String destination) {
+        Metainfo info = new Metainfo();
+        info.setBackupDate(new Date());
+        info.setDestination(destination);
+        info.setId(id);
+        info.setSource("dummy");
+        info.setType(type);
+        return info;
+    }
 
-  @Override
-  public void downloadAll(Properties accessData, List<String> options, Storage storage,
-      Progressable progressor) throws StorageException {
-    MetainfoContainer cont = new MetainfoContainer();
-    cont.addMetainfo(create("1", "text/plain", "/plain.txt"));
-    InputStream is = stringToStream("This is an important text file.\nPlease create a backup with this file");
-    storage.addFile(is, "/plain.txt", cont);
+    @Override
+    public void downloadAll(@SuppressWarnings("unused") Properties accessData, List<String> options, Storage storage, Progressable progressor) throws StorageException {
+        MetainfoContainer cont = new MetainfoContainer();
+        cont.addMetainfo(create("1", "text/plain", "/plain.txt"));
+        InputStream is = stringToStream("This is an important text file.\nPlease create a backup with this file");
+        storage.addFile(is, "/plain.txt", cont);
 
-    cont = new MetainfoContainer();
-    cont.addMetainfo(create("2", "text/html", "/html.txt"));
-    is = stringToStream("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\""
-        + "http://www.w3.org/TR/html4/strict.dtd\">"
-        + "<html>"
-        + "<head>"
-        + "    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">"
-        + "    <title>title</title>"
-        + "</head>"
-        + "<body><p>This is one important text file.\nPlease create a backup with this file</p></body></html>");
-    storage.addFile(is, "/html.txt", cont);
-  }
+        cont = new MetainfoContainer();
+        cont.addMetainfo(create("2", "text/html", "/html.txt"));
+        is = stringToStream("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\""
+            + "http://www.w3.org/TR/html4/strict.dtd\">"
+            + "<html>"
+            + "<head>"
+            + "    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">"
+            + "    <title>title</title>"
+            + "</head>"
+            + "<body><p>This is one important text file.\nPlease create a backup with this file</p></body></html>");
+        storage.addFile(is, "/html.txt", cont);
+    }
 
-  @Override
-  public String getStatistics(Properties accesssData) {
-    return "statistics are empty";
-  }
+    @Override
+    public String getStatistics(@SuppressWarnings("unused") Properties accesssData) {
+        return "statistics are empty";
+    }
 
-  @Override
-  public List<String> getAvailableOptions(Properties accessData) {
-    List<String> options = new ArrayList<>();
-    options.add("option1");
-    options.add("option2");
-    return options;
-  }
+    @Override
+    public List<String> getAvailableOptions(@SuppressWarnings("unused") Properties accessData) {
+        List<String> options = new ArrayList<>();
+        options.add("option1");
+        options.add("option2");
+        return options;
+    }
 
 }

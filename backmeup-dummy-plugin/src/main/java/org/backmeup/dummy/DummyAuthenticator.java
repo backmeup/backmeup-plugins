@@ -4,23 +4,24 @@ import java.util.Properties;
 
 import org.backmeup.plugin.spi.OAuthBased;
 
+@SuppressWarnings("unused")
 public class DummyAuthenticator implements OAuthBased {
 
-  @Override
-  public AuthorizationType getAuthType() {
-    return AuthorizationType.OAuth;
-  }
+    @Override
+    public AuthorizationType getAuthType() {
+        return AuthorizationType.OAuth;
+    }
 
-  @Override
-  public String postAuthorize(Properties inputProperties) {
-    // do nothing
-    return null;
-  }
+    @Override
+    public String postAuthorize(Properties inputProperties) {
+        // do nothing
+        return null;
+    }
 
-  @Override
-  public String createRedirectURL(Properties inputProperties, String callbackUrl) {
-    // return anything
-    return "NOT_NEEDED";
-  }
+    @Override
+    public String createRedirectURL(Properties inputProperties, String callbackUrl) {
+        // return anything
+        return "NOT_NEEDED";
+    }
 
 }
