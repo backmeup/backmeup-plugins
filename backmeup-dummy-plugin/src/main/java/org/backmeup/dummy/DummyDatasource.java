@@ -11,7 +11,6 @@ import java.util.Properties;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Datasource;
-import org.backmeup.plugin.api.connectors.DatasourceException;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
@@ -40,7 +39,7 @@ public class DummyDatasource implements Datasource {
 
   @Override
   public void downloadAll(Properties accessData, List<String> options, Storage storage,
-      Progressable progressor) throws DatasourceException, StorageException {
+      Progressable progressor) throws StorageException {
     MetainfoContainer cont = new MetainfoContainer();
     cont.addMetainfo(create("1", "text/plain", "/plain.txt"));
     InputStream is = stringToStream("This is an important text file.\nPlease create a backup with this file");
@@ -66,7 +65,7 @@ public class DummyDatasource implements Datasource {
 
   @Override
   public List<String> getAvailableOptions(Properties accessData) {
-    List<String> options = new ArrayList<String>();
+    List<String> options = new ArrayList<>();
     options.add("option1");
     options.add("option2");
     return options;
