@@ -1,5 +1,6 @@
 package org.backmeup.plugin.api.actions.indexing;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +22,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ElasticSearchIndexClient {
+public class ElasticSearchIndexClient implements Closeable {
 	private final Logger logger = LoggerFactory.getLogger(ElasticSearchIndexClient.class);
 	
 	private static final String INDEX_NAME = "backmeup";
@@ -72,8 +73,9 @@ public class ElasticSearchIndexClient {
 				StringBuffer sb = new StringBuffer("*");
 				for (int i=0; i<tokens.length; i++) {
 					sb.append(tokens[i]);
-					if (i < tokens.length - 1)
+					if (i < tokens.length - 1) {
 						sb.append("* AND *");
+				}
 				}
 				queryString = sb.toString() + "*";
 			}
@@ -109,8 +111,9 @@ public class ElasticSearchIndexClient {
 	public SearchResponse getFileById(String username, String fileId) {
 		// IDs in backmeup are "owner:hash:timestamp"
 		String[] bmuId = fileId.split(":");
-		if (bmuId.length != 3)
+		if (bmuId.length != 3) {
 			throw new IllegalArgumentException("Invalid file ID: " + fileId);
+		}
 		
 		Long owner = Long.parseLong(bmuId[0]);
 		String hash = bmuId[1];
@@ -123,7 +126,8 @@ public class ElasticSearchIndexClient {
 		
 			return client.prepareSearch(INDEX_NAME).setQuery(qBuilder).execute().actionGet();
 	}
-	
+
+	// TODO PK public String getThumbnailPathForFile(Long userId, String fileId) {
 	public String getThumbnailPathForFile(String username, String fileId) {
 		SearchResponse response = getFileById(username, fileId);
 		SearchHit hit = response.getHits().getHits()[0];
@@ -150,8 +154,10 @@ public class ElasticSearchIndexClient {
 			.setQuery(qBuilder).execute().actionGet();
 	}
 	
+	@Override
 	public void close() {
-		if (client != null)
+		if (client != null) {
 			client.close();
+		}
 	}
 }
