@@ -46,6 +46,7 @@
              multiple artefacts of the same groupId are used  "version.<groupId>.<artifactId>"
         -->
         <version.backmeup>2.0.0-SNAPSHOT</version.backmeup>
+        <version.backmeup.indexer>0.0.1-SNAPSHOT</version.backmeup.indexer>
 
         <version.ch.qos.logback>1.0.0</version.ch.qos.logback>
         <version.com.google.code.gson>2.2.2</version.com.google.code.gson>

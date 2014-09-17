@@ -12,6 +12,12 @@
 	<packaging>bundle</packaging>
 	
 	<dependencies>
+        <dependency>
+            <groupId>org.backmeup</groupId>
+            <artifactId>backmeup-indexer-client</artifactId>
+            <version>${version.backmeup.indexer}</version>
+        </dependency>
+
 		<!-- 
 		<dependency>
 			<groupId>org.apache.tika</groupId>
