@@ -13,6 +13,7 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
+import org.backmeup.index.client.IndexUtils;
 import org.backmeup.model.BackupJob;
 import org.backmeup.plugin.api.connectors.Action;
 import org.backmeup.plugin.api.connectors.ActionException;
