@@ -31,7 +31,6 @@ public class FacebookAuthenticator implements OAuthBased {
 
 	@Override
 	public String createRedirectURL(Properties inputProperties, String callback) {
-		 callback = callback.endsWith("/") ? callback : callback + '/';
 		 inputProperties.setProperty("callback", callback);
 		 FacebookHelper fh = FacebookHelper.getInstance();
 		
