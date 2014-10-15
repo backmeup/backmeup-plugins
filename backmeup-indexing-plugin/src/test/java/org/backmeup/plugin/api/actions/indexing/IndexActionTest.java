@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.backmeup.index.utils.file.FileUtils;
+import org.apache.commons.io.FileUtils;
 import org.backmeup.model.BackupJob;
 import org.backmeup.model.serializer.JsonSerializer;
 import org.backmeup.plugin.api.connectors.ActionException;
@@ -47,7 +47,6 @@ public class IndexActionTest {
 			+ "\"start\":\"1345203377704\",\"delay\":1345203258212}";
 
 	private static final String BACKUP_JOB = "{\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"sourceProfiles\":{\"profile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile\",\"description\":\"org.backmeup.source\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Source\"},\"options\":[\"folder1\",\"folder2\"]},\"jobProtocols\":[],\"sinkProfile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile2\",\"description\":\"org.backmeup.sink\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Sink\"},\"requiredActions\":[],\"start\":1413382070010,\"delay\":1413383070010,\"created\":1413382070010,\"modified\":1413382070010,\"jobTitle\":\"TestJob1\",\"reschedule\":false,\"onHold\":false}";
-	private static final String BACKUP_JOB_FAIL = "{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"sourceProfiles\":{\"profile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile\",\"description\":\"org.backmeup.source\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Source\"},\"options\":[\"folder1\",\"folder2\"]},\"jobProtocols\":[],\"sinkProfile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile2\",\"description\":\"org.backmeup.sink\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Sink\"},\"requiredActions\":[],\"start\":1413382070010,\"delay\":1413383070010,\"created\":1413382070010,\"modified\":1413382070010,\"jobTitle\":\"TestJob1\",\"reschedule\":false,\"onHold\":false}";
 
 	private final Progressable logProgressable = new Progressable() {
 		@Override
@@ -77,6 +76,13 @@ public class IndexActionTest {
 		System.out.println("Done.");
 	}
 
+	@After
+	public void tearDown() throws IOException {
+		node.close();
+		// the directory is backmeup-plugins/backmeup-indexing-plugin/data
+		FileUtils.deleteDirectory(new File("data"));
+	}
+
 	@Test
 	public void deserializeBackupJob() {
 
@@ -91,13 +97,6 @@ public class IndexActionTest {
 		} catch (JsonSyntaxException e) {
 			Assert.assertTrue(true);
 		}
-	}
-
-	@After
-	public void tearDown() throws IOException {
-		node.close();
-		// the directory is backmeup-plugins/backmeup-indexing-plugin/data
-		FileUtils.deleteDirectory(new File("data"));
 	}
 
 	@Ignore
