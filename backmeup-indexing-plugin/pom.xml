@@ -31,6 +31,7 @@
 			<version>${version.org.apache.tika}</version>
 		</dependency>
 		
+        <!-- TODO PK remove, use indexer-client -->
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
