@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.backmeup.index.client.ElasticSearchIndexClient;
+import org.backmeup.index.client.IndexClient;
 import org.backmeup.index.client.IndexDocument;
 import org.backmeup.index.client.IndexFields;
 import org.backmeup.model.BackupJob;
@@ -34,15 +34,15 @@ import org.backmeup.plugin.api.storage.DataObject;
  */
 public class ElasticSearchIndexer {
 	
-	private final ElasticSearchIndexClient client;
+	private final IndexClient client;
 	
-	public ElasticSearchIndexer(ElasticSearchIndexClient client) {
+	public ElasticSearchIndexer(IndexClient client) {
 		this.client = client;
 	}
 	
 	public void doIndexing(BackupJob job, DataObject dataObject, Map<String, String> meta, Date timestamp) throws IOException {
 		// Build the index object
-	    IndexDocument document = client.createDocument();
+	    IndexDocument document = new IndexDocument();
 		
 		for (String metaKey : meta.keySet()) {
 			document.field(metaKey, meta.get(metaKey));
@@ -75,7 +75,7 @@ public class ElasticSearchIndexer {
 			while (it.hasNext()) {
 				Properties metainfo = it.next().getAttributes();
 				for (Object key : metainfo.keySet()) {
-					document.longField(key.toString(), metainfo.get(key).toString());
+					document.largeField(key.toString(), metainfo.get(key).toString());
 				}
 			}
 		}

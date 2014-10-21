@@ -13,7 +13,7 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
-import org.backmeup.index.client.ElasticSearchIndexClient;
+import org.backmeup.index.client.IndexClient;
 import org.backmeup.index.client.IndexFields;
 import org.backmeup.model.BackupJob;
 import org.backmeup.plugin.api.connectors.Action;
@@ -29,9 +29,9 @@ import org.xml.sax.SAXException;
 public class IndexAction implements Action {
 	private final Logger logger = LoggerFactory.getLogger(IndexAction.class);
 	
-	private final ElasticSearchIndexClient client;
+	private final IndexClient client;
 	
-	public IndexAction(ElasticSearchIndexClient client) {
+	public IndexAction(IndexClient client) {
 		this.client = client;
 	}
 
