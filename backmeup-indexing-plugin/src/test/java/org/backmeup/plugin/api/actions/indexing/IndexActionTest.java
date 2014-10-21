@@ -1,9 +1,9 @@
 package org.backmeup.plugin.api.actions.indexing;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 
+import org.backmeup.index.client.ElasticSearchIndexClient;
 import org.backmeup.index.utils.file.FileUtils;
 import org.backmeup.model.BackupJob;
 import org.backmeup.model.serializer.JsonSerializer;
@@ -28,10 +28,11 @@ import com.google.gson.JsonSyntaxException;
 
 public class IndexActionTest {
 
-	private static Node node;
+    private static final String ELASTICSEARCH_CLUSTERNAME = "testcluster";
 
-	private static final String ELASTICSEARCH_CLUSTERNAME = "testcluster";
-
+    private static Node node;
+    private ElasticSearchIndexClient client;
+    
 	private static final String BACKUP_JOB_old = "{\"id\":1, \"user\":{\"userId\":1,\"username\":\"TestUser\",\"password\":\"pw\","
 			+ "\"keyRing\":\"k3yr1nG\",\"email\":\"e@ma.il\",\"isActivated\":false,\"properties\":[]},"
 			+ "\"sourceProfiles\":"
@@ -47,7 +48,7 @@ public class IndexActionTest {
 			+ "\"start\":\"1345203377704\",\"delay\":1345203258212}";
 
 	private static final String BACKUP_JOB = "{\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"sourceProfiles\":{\"profile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile\",\"description\":\"org.backmeup.source\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Source\"},\"options\":[\"folder1\",\"folder2\"]},\"jobProtocols\":[],\"sinkProfile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile2\",\"description\":\"org.backmeup.sink\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Sink\"},\"requiredActions\":[],\"start\":1413382070010,\"delay\":1413383070010,\"created\":1413382070010,\"modified\":1413382070010,\"jobTitle\":\"TestJob1\",\"reschedule\":false,\"onHold\":false}";
-	private static final String BACKUP_JOB_FAIL = "{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"sourceProfiles\":{\"profile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile\",\"description\":\"org.backmeup.source\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Source\"},\"options\":[\"folder1\",\"folder2\"]},\"jobProtocols\":[],\"sinkProfile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile2\",\"description\":\"org.backmeup.sink\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Sink\"},\"requiredActions\":[],\"start\":1413382070010,\"delay\":1413383070010,\"created\":1413382070010,\"modified\":1413382070010,\"jobTitle\":\"TestJob1\",\"reschedule\":false,\"onHold\":false}";
+	// private static final String BACKUP_JOB_FAIL = "{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"sourceProfiles\":{\"profile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile\",\"description\":\"org.backmeup.source\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Source\"},\"options\":[\"folder1\",\"folder2\"]},\"jobProtocols\":[],\"sinkProfile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile2\",\"description\":\"org.backmeup.sink\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Sink\"},\"requiredActions\":[],\"start\":1413382070010,\"delay\":1413383070010,\"created\":1413382070010,\"modified\":1413382070010,\"jobTitle\":\"TestJob1\",\"reschedule\":false,\"onHold\":false}";
 
 	private final Progressable logProgressable = new Progressable() {
 		@Override
@@ -58,16 +59,15 @@ public class IndexActionTest {
 
 	@Before
 	public void setup() throws ActionException {
-		node = NodeBuilder.nodeBuilder().local(true)
-				.clusterName(ELASTICSEARCH_CLUSTERNAME).node();
+        node = NodeBuilder.nodeBuilder().local(true)
+                .clusterName(ELASTICSEARCH_CLUSTERNAME).node();
 
-		System.out.println("Setting up test index...");
+        System.out.println("Setting up test index...");
 		// Dummy storage reader on the src/test/resources directory
 		Storage storage = new DummyStorage();
 
-		// Local ElasticSearch node
-		Client client = node.client();
-
+        client = new ElasticSearchIndexClient(1L, node.client());
+		
 		// Index test files on the local ES index
 		IndexAction action = new IndexAction(client);
 
@@ -94,46 +94,47 @@ public class IndexActionTest {
 	}
 
 	@After
-	public void tearDown() throws IOException {
-		node.close();
+	public void tearDown() {
+		client.close();
+        node.close();
 		// the directory is backmeup-plugins/backmeup-indexing-plugin/data
 		FileUtils.deleteDirectory(new File("data"));
 	}
 
-	@Ignore
-	@Test
-	public void verifyIndex() {
-		System.out.println("Verifying indexing content");
-		Client client = node.client();
-		SearchResponse response = client.prepareSearch("backmeup")
-				.setQuery(QueryBuilders.matchAllQuery()).execute().actionGet();
-		SearchHits hits = response.getHits();
-		Assert.assertEquals(3, hits.getHits().length);
+    @Ignore
+    @Test
+    public void verifyIndex() {
+        System.out.println("Verifying indexing content");
+        Client rawClient = node.client();
+        SearchResponse response = rawClient.prepareSearch("backmeup")
+                .setQuery(QueryBuilders.matchAllQuery()).execute().actionGet();
+        SearchHits hits = response.getHits();
+        Assert.assertEquals(3, hits.getHits().length);
 
-		for (SearchHit hit : response.getHits().getHits()) {
-			Map<String, Object> source = hit.getSource();
-			for (String key : source.keySet()) {
-				System.out.println(key + ": " + source.get(key));
+        for (SearchHit hit : response.getHits().getHits()) {
+            Map<String, Object> source = hit.getSource();
+            for (String key : source.keySet()) {
+                System.out.println(key + ": " + source.get(key));
 
-				if (key.equals("owner_name"))
-					Assert.assertEquals("TestUser", source.get(key));
+                if (key.equals("owner_name"))
+                    Assert.assertEquals("TestUser", source.get(key));
 
-				if (key.equals("owner_id"))
-					Assert.assertEquals(1, source.get(key));
+                if (key.equals("owner_id"))
+                    Assert.assertEquals(1, source.get(key));
 
-				if (key.equals("backup_sources"))
-					Assert.assertEquals("org.backmeup.dummy", source.get(key));
+                if (key.equals("backup_sources"))
+                    Assert.assertEquals("org.backmeup.dummy", source.get(key));
 
-				if (key.equals("backup_sink"))
-					Assert.assertEquals("org.backmeup.dummy", source.get(key));
+                if (key.equals("backup_sink"))
+                    Assert.assertEquals("org.backmeup.dummy", source.get(key));
 
-				// if (key.equals("path"))
-				// Assert.assertTrue(source.get(key).toString().startsWith("src"));
-			}
-		}
+                // if (key.equals("path"))
+                // Assert.assertTrue(source.get(key).toString().startsWith("src"));
+            }
+        }
 
-		System.out.println("Done.");
-	}
+        System.out.println("Done.");
+    }
 
 	/*
 	 * @Test public void verifyQuery() {

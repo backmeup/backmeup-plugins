@@ -13,14 +13,14 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
-import org.backmeup.index.client.IndexUtils;
+import org.backmeup.index.client.ElasticSearchIndexClient;
+import org.backmeup.index.client.IndexFields;
 import org.backmeup.model.BackupJob;
 import org.backmeup.plugin.api.connectors.Action;
 import org.backmeup.plugin.api.connectors.ActionException;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
-import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
@@ -29,9 +29,9 @@ import org.xml.sax.SAXException;
 public class IndexAction implements Action {
 	private final Logger logger = LoggerFactory.getLogger(IndexAction.class);
 	
-	private final Client client;
+	private final ElasticSearchIndexClient client;
 	
-	public IndexAction(Client client) {
+	public IndexAction(ElasticSearchIndexClient client) {
 		this.client = client;
 	}
 
@@ -72,9 +72,9 @@ public class IndexAction implements Action {
 					// TODO username needs to be available to action
 					logger.debug("Indexing " + dob.getPath());
 					meta = new HashMap<>();
-					meta.put(IndexUtils.FIELD_CONTENT_TYPE, mime);
+					meta.put(IndexFields.FIELD_CONTENT_TYPE, mime);
 					if (fulltext != null)
-						meta.put(IndexUtils.FIELD_FULLTEXT, fulltext);
+						meta.put(IndexFields.FIELD_FULLTEXT, fulltext);
 					
 					indexer.doIndexing(job, dob, meta, indexingTimestamp);
 				} else {

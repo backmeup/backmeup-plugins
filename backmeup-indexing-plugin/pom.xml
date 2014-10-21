@@ -31,26 +31,24 @@
 			<version>${version.org.apache.tika}</version>
 		</dependency>
 		
-        <!-- TODO PK remove, use indexer-client -->
-		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<version>${version.org.elasticsearch}</version>
-		</dependency>
-				
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>${version.org.slf4j}</version>
 		</dependency>
 		
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${version.org.elasticsearch}</version>
+            <scope>test</scope>
+        </dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${version.commons-io}</version>
 			<scope>test</scope>
 		</dependency>
-		
 		<dependency>
 			<groupId>org.backmeup</groupId>
 			<artifactId>localfsstorage</artifactId>
