@@ -11,7 +11,6 @@ import org.backmeup.index.client.IndexDocument;
 import org.backmeup.index.client.IndexFields;
 import org.backmeup.model.BackupJob;
 import org.backmeup.model.Profile;
-import org.backmeup.model.ProfileOptions;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.storage.DataObject;
@@ -53,19 +52,17 @@ public class ElasticSearchIndexer {
 		document.field(IndexFields.FIELD_FILENAME, getFilename(dataObject.getPath()));
 		document.field(IndexFields.FIELD_PATH, dataObject.getPath());
 		document.field(IndexFields.FIELD_FILE_HASH, dataObject.getMD5Hash());
-		document.field(IndexFields.FIELD_BACKUP_SINK, job.getSinkProfile().getProfileName());
+		document.field(IndexFields.FIELD_BACKUP_SINK, job.getSinkProfile().getName());
 		document.field(IndexFields.FIELD_BACKUP_AT, timestamp.getTime());
 		document.field(IndexFields.FIELD_JOB_ID, job.getId());
 		document.field(IndexFields.FIELD_JOB_NAME, job.getJobTitle());
 				
 		// There is currently only one source per job!
-		Profile sourceProfile = null;
-		ProfileOptions source = job.getSourceProfiles();
-		sourceProfile = source.getProfile();	
+		Profile sourceProfile = job.getSourceProfile();
 		
 		if (sourceProfile != null) {
-			document.field(IndexFields.FIELD_BACKUP_SOURCE_ID, sourceProfile.getProfileId());
-			document.field(IndexFields.FIELD_BACKUP_SOURCE_PLUGIN_NAME, sourceProfile.getDescription());
+			document.field(IndexFields.FIELD_BACKUP_SOURCE_ID, sourceProfile.getId());
+			document.field(IndexFields.FIELD_BACKUP_SOURCE_PLUGIN_NAME, sourceProfile.getPluginId());
 			document.field(IndexFields.FIELD_BACKUP_SOURCE_IDENTIFICATION, sourceProfile.getIdentification());
 		}
 		
