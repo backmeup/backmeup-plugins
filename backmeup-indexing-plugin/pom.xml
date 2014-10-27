@@ -38,9 +38,9 @@
 		</dependency>
 		
         <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>${version.org.elasticsearch}</version>
+            <groupId>org.backmeup</groupId>
+            <artifactId>backmeup-indexer-core</artifactId>
+            <version>${version.backmeup.indexer}</version>
             <scope>test</scope>
         </dependency>
 		<dependency>
