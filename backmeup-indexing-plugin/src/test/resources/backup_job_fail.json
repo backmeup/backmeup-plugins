@@ -1,0 +1,65 @@
+{
+   "userId":1,
+   "username":"john.doe",
+   "firstname":"John",
+   "lastname":"Doe",
+   "email":"Sepp@Mail.at",
+   "password":"John123!#",
+   "activated":false,
+   "protocols":[ ],
+   "properties":[ ]
+},
+"sourceProfiles":{
+   "profile":{
+      "profileId":2,
+      "user":{
+         "userId":1,
+         "username":"john.doe",
+         "firstname":"John",
+         "lastname":"Doe",
+         "email":"Sepp@Mail.at",
+         "password":"John123!#",
+         "activated":false,
+         "protocols":[ ],
+         "properties":[ ]
+      },
+      "profileName":"TestProfile",
+      "description":"org.backmeup.source",
+      "created":1413382070009,
+      "modified":1413382070009,
+      "sourceAndOrSink":"Source"
+   },
+   "options":[
+      "folder1",
+      "folder2"
+   ]
+},
+"jobProtocols":[ ],
+"sinkProfile":{
+   "profileId":2,
+   "user":{
+      "userId":1,
+      "username":"john.doe",
+      "firstname":"John",
+      "lastname":"Doe",
+      "email":"Sepp@Mail.at",
+      "password":"John123!#",
+      "activated":false,
+      "protocols":[ ],
+      "properties":[ ]
+   },
+   "profileName":"TestProfile2",
+   "description":"org.backmeup.sink",
+   "created":1413382070009,
+   "modified":1413382070009,
+   "sourceAndOrSink":"Sink"
+},
+"requiredActions":[ ],
+"start":1413382070010,
+"delay":1413383070010,
+"created":1413382070010,
+"modified":1413382070010,
+"jobTitle":"TestJob1",
+"reschedule":false,
+"onHold":false
+}
