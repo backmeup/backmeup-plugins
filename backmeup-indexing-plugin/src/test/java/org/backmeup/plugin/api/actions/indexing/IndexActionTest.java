@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.backmeup.index.client.ElasticSearchIndexClient;
+import org.backmeup.index.client.IndexClient;
 import org.backmeup.index.utils.file.FileUtils;
 import org.backmeup.model.BackupJob;
 import org.backmeup.model.serializer.JsonSerializer;
@@ -33,7 +34,7 @@ public class IndexActionTest {
     private static final String ELASTICSEARCH_CLUSTERNAME = "testcluster";
 
     private static Node node;
-    private ElasticSearchIndexClient client;
+    private IndexClient client;
     
 	private final String BACKUP_JOB_old = loadJson("backup_job_old.json");
 	private final String BACKUP_JOB = loadJson("backup_job.json");
