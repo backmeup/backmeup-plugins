@@ -24,6 +24,7 @@ import org.elasticsearch.search.SearchHits;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.gson.JsonSyntaxException;
@@ -73,15 +74,6 @@ public class IndexActionTest {
 		action.doAction(null, storage, job, logProgressable);
 		System.out.println("Done.");
 	}
-
-	@After
-	public void tearDown() throws IOException {
-		node.close();
-		// the directory is backmeup-plugins/backmeup-indexing-plugin/data
-		FileUtils.deleteDirectory(new File("data"));
-	}
-
-
 
 	@Test
 	public void deserializeBackupJob() {
