@@ -21,7 +21,6 @@ import org.elasticsearch.search.SearchHits;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.gson.JsonSyntaxException;
@@ -46,7 +45,7 @@ public class IndexActionTest {
 			+ "\"org.backmeup.dummy\",\"sourceAndOrSink\":\"Sink\"},\"requiredActions\":[],"
 			+ "\"start\":\"1345203377704\",\"delay\":1345203258212}";
 
-	private static final String BACKUP_JOB = "{\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"sourceProfiles\":{\"profile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile\",\"description\":\"org.backmeup.source\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Source\"},\"options\":[\"folder1\",\"folder2\"]},\"jobProtocols\":[],\"sinkProfile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile2\",\"description\":\"org.backmeup.sink\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Sink\"},\"requiredActions\":[],\"start\":1413382070010,\"delay\":1413383070010,\"created\":1413382070010,\"modified\":1413382070010,\"jobTitle\":\"TestJob1\",\"reschedule\":false,\"onHold\":false}";
+	private static final String BACKUP_JOB = "{\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"sourceProfiles\":{\"profile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"TestProfile\",\"description\":\"org.backmeup.source\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Source\"},\"options\":[\"folder1\",\"folder2\"]},\"jobProtocols\":[],\"sinkProfile\":{\"profileId\":2,\"user\":{\"userId\":1,\"username\":\"john.doe\",\"firstname\":\"John\",\"lastname\":\"Doe\",\"email\":\"Sepp@Mail.at\",\"password\":\"John123!#\",\"activated\":false,\"protocols\":[],\"properties\":[]},\"profileName\":\"org.backmeup.dummy\",\"description\":\"org.backmeup.sink\",\"created\":1413382070009,\"modified\":1413382070009,\"sourceAndOrSink\":\"Sink\"},\"requiredActions\":[],\"start\":1413382070010,\"delay\":1413383070010,\"created\":1413382070010,\"modified\":1413382070010,\"jobTitle\":\"TestJob1\",\"reschedule\":false,\"onHold\":false}";
 
 	private final Progressable logProgressable = new Progressable() {
 		@Override
@@ -72,6 +71,7 @@ public class IndexActionTest {
 
 		BackupJob job = JsonSerializer.deserialize(BACKUP_JOB, BackupJob.class);
 
+		// now call the actual indexing (Metadata extraction, Tika analysis)
 		action.doAction(null, storage, job, logProgressable);
 		System.out.println("Done.");
 	}
@@ -82,6 +82,8 @@ public class IndexActionTest {
 		// the directory is backmeup-plugins/backmeup-indexing-plugin/data
 		FileUtils.deleteDirectory(new File("data"));
 	}
+
+
 
 	@Test
 	public void deserializeBackupJob() {
@@ -99,7 +101,6 @@ public class IndexActionTest {
 		}
 	}
 
-	@Ignore
 	@Test
 	public void verifyIndex() {
 		System.out.println("Verifying indexing content");
@@ -115,7 +116,7 @@ public class IndexActionTest {
 				System.out.println(key + ": " + source.get(key));
 
 				if (key.equals("owner_name"))
-					Assert.assertEquals("TestUser", source.get(key));
+					Assert.assertEquals("john.doe", source.get(key));
 
 				if (key.equals("owner_id"))
 					Assert.assertEquals(1, source.get(key));
