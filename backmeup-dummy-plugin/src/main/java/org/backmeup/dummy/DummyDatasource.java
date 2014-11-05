@@ -37,7 +37,7 @@ public class DummyDatasource implements Datasource {
     }
 
     @Override
-    public void downloadAll(@SuppressWarnings("unused") Properties accessData, List<String> options, Storage storage, Progressable progressor) throws StorageException {
+    public void downloadAll(Properties accessData, Properties properties, List<String> options, Storage storage, Progressable progressor) throws StorageException {
         MetainfoContainer cont = new MetainfoContainer();
         cont.addMetainfo(create("1", "text/plain", "/plain.txt"));
         InputStream is = stringToStream("This is an important text file.\nPlease create a backup with this file");

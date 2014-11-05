@@ -2,10 +2,9 @@ package org.backmeup.dummy;
 
 import java.util.Properties;
 
-import org.backmeup.plugin.spi.OAuthBased;
+import org.backmeup.plugin.spi.OAuthBasedAuthorizable;
 
-@SuppressWarnings("unused")
-public class DummyAuthenticator implements OAuthBased {
+public class DummyAuthenticator implements OAuthBasedAuthorizable {
 
     @Override
     public AuthorizationType getAuthType() {
@@ -13,7 +12,7 @@ public class DummyAuthenticator implements OAuthBased {
     }
 
     @Override
-    public String postAuthorize(Properties inputProperties) {
+    public String authorize(Properties inputProperties) {
         // do nothing
         return null;
     }
@@ -23,5 +22,4 @@ public class DummyAuthenticator implements OAuthBased {
         // return anything
         return "NOT_NEEDED";
     }
-
 }
