@@ -13,21 +13,10 @@
     </prerequisites>
 
     <modules>
-        <module>backmeup-discmailing-plugin</module>
-        <module>backmeup-dropbox-plugin</module>
         <module>backmeup-dummy-plugin</module>
-        <module>backmeup-encryption-plugin</module>
-        <module>backmeup-facebook-plugin</module>
         <module>backmeup-filegenerator-plugin</module>
-        <module>backmeup-filesplitting-plugin</module>
-        <module>backmeup-indexing-plugin</module>
         <module>backmeup-localfsstorage-plugin</module>
         <module>backmeup-mail-plugin</module>
-        <module>backmeup-moodle-plugin</module>
-        <module>backmeup-skydrive-plugin</module>
-        <module>backmeup-thumbnail-plugin</module>
-        <module>backmeup-twitter-plugin</module>
-        <module>backmeup-zip-plugin</module>
     </modules>
 
     <properties>
