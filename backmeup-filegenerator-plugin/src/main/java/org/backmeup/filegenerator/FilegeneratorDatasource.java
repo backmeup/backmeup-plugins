@@ -24,14 +24,14 @@ public class FilegeneratorDatasource implements Datasource {
 	private static final int DEFAULT_MAX_FILES = 10;
 
 	@Override
-	public void downloadAll(Properties accessData, List<String> options,
+	public void downloadAll(Properties authData, Properties properties, List<String> options,
 			Storage storage, Progressable progressor)
 			throws StorageException {
 		final Random random = new Random();
 		final ArrayList<Generator> generators = new ArrayList<>();
 
-		if (accessData.getProperty(Constants.PROP_TEXT).equals("true")) {
-			String amount = accessData.getProperty(Constants.PROP_TEXT_PARAGRAPHS);
+		if (properties.getProperty(Constants.PROP_TEXT).equals("true")) {
+			String amount = properties.getProperty(Constants.PROP_TEXT_PARAGRAPHS);
 			if (amount != null) {
 				int txtAmountParagraphs = Integer.parseInt(amount);
 				generators.add(new TextGenerator(txtAmountParagraphs));
@@ -40,8 +40,8 @@ public class FilegeneratorDatasource implements Datasource {
 			}
 		}
 		
-		if (accessData.getProperty(Constants.PROP_IMAGE).equals("true")) {
-			String size = accessData.getProperty(Constants.PROP_IMAGE_SIZE);
+		if (properties.getProperty(Constants.PROP_IMAGE).equals("true")) {
+			String size = properties.getProperty(Constants.PROP_IMAGE_SIZE);
 			if (size != null) {
 				int imgSize = Integer.parseInt(size);
 				generators.add(new ImageGenerator(imgSize, imgSize, random));
@@ -50,8 +50,8 @@ public class FilegeneratorDatasource implements Datasource {
 			}
 		}
 		
-		if (accessData.getProperty(Constants.PROP_PDF).equals("true")) {
-			String amount = accessData.getProperty(Constants.PROP_PDF_PARAGRAPHS);
+		if (properties.getProperty(Constants.PROP_PDF).equals("true")) {
+			String amount = properties.getProperty(Constants.PROP_PDF_PARAGRAPHS);
 			if (amount != null) {
 				int pdfAmountParagraphs = Integer.parseInt(amount);
 				String pdfText = new TextGenerator().getParagraphs(pdfAmountParagraphs);
@@ -62,8 +62,8 @@ public class FilegeneratorDatasource implements Datasource {
 			}
 		}
 		
-		if (accessData.getProperty(Constants.PROP_BINARY).equals("true")) {
-			String size = accessData.getProperty(Constants.PROP_BINARY_SIZE);
+		if (properties.getProperty(Constants.PROP_BINARY).equals("true")) {
+			String size = properties.getProperty(Constants.PROP_BINARY_SIZE);
 			if (size != null) {
 				int binSize = Integer.parseInt(size);
 				generators.add(new BinaryGenerator(binSize, random));
@@ -82,7 +82,7 @@ public class FilegeneratorDatasource implements Datasource {
 //		long currentTime = new Date().getTime();
 //		long endTime;
 		
-		String files = accessData.getProperty(Constants.PROP_GENERATOR_FILES);
+		String files = properties.getProperty(Constants.PROP_GENERATOR_FILES);
 		if (files != null) {
 			maxFiles = Integer.parseInt(files);
 		} else {

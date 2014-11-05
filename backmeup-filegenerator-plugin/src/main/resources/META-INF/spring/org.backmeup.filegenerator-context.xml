@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" default-activation="lazy">	
 	<bean id="filegeneratorDescriptor" class="org.backmeup.filegenerator.FilegeneratorDescriptor"/>
-	<bean id="filegeneratorAuthenticator" class="org.backmeup.filegenerator.FilegeneratorAuthenticator"/>
+	<bean id="filegeneratorValidator" class="org.backmeup.filegenerator.FilegeneratorValidator"/>
 	<bean id="filegeneratorDatasource" class="org.backmeup.filegenerator.FilegeneratorDatasource"/>
 </blueprint>
