@@ -46,7 +46,7 @@ public class MailAuthenticate {
 //  		}	
 		}
 		while (!auth.isValid(props));
-		auth.postAuthorize(props);
+		auth.authorize(props);
 		for (Entry<Object, Object> entry: props.entrySet()) {
 			System.out.println(entry.getKey() + ": " + entry.getValue());
 		}

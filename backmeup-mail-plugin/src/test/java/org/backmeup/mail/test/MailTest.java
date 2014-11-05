@@ -2,6 +2,7 @@ package org.backmeup.mail.test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.backmeup.mail.MailDatasource;
@@ -13,13 +14,16 @@ import org.backmeup.plugin.api.storage.filesystem.LocalFilesystemStorage;
 public class MailTest {
   public static void main(String[] args) throws Exception {
  // Use the properties saved during DropboxAuthenticate to download all files from Dropbox
+    Properties authProps = new Properties();
+    authProps.load(MailTest.class.getClassLoader().getResourceAsStream("auth.props"));    
+    
     Properties props = new Properties();
-    props.load(MailTest.class.getClassLoader().getResourceAsStream("auth.props"));    
+    List<String> options = new ArrayList<>();
     
     MailDatasource source = new MailDatasource();
     Storage storage = new LocalFilesystemStorage();
     storage.open("C:/TEMP/TEST/");
-    source.downloadAll(props, new ArrayList<String>(), storage, new Progressable() {
+    source.downloadAll(authProps, props, options, storage, new Progressable() {
       @Override
       public void progress(String message) {}
     });

@@ -476,7 +476,7 @@ public class MailDatasource implements Datasource {
   }
 
   @Override
-  public void downloadAll(Properties accessData, List<String> options, Storage storage,
+  public void downloadAll(Properties accessData, Properties properties, List<String> options, Storage storage,
       Progressable progressor) throws StorageException {
     try {
       Session session = Session.getInstance(accessData);
