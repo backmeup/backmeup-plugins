@@ -14,7 +14,7 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.backmeup.index.client.IndexClient;
-import org.backmeup.index.client.IndexFields;
+import org.backmeup.index.model.IndexFields;
 import org.backmeup.model.BackupJob;
 import org.backmeup.plugin.api.connectors.Action;
 import org.backmeup.plugin.api.connectors.ActionException;
