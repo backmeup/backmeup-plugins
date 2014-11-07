@@ -15,6 +15,7 @@
     <modules>
         <module>backmeup-dummy-plugin</module>
         <module>backmeup-filegenerator-plugin</module>
+        <module>backmeup-indexing-plugin</module>
         <module>backmeup-localfsstorage-plugin</module>
         <module>backmeup-mail-plugin</module>
     </modules>

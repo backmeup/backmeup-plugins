@@ -75,7 +75,7 @@ public class IndexActionTest {
 				BackupJob.class);
 
 		// now call the actual indexing (Metadata extraction, Tika analysis)
-		action.doAction(null, storage, job, this.logProgressable);
+		action.doAction(null, null, null, storage, job, this.logProgressable);
 		System.out.println("Done.");
 	}
 

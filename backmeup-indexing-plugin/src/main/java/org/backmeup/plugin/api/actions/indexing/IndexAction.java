@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -42,7 +43,7 @@ public class IndexAction implements Action {
 	private static final String INDEX_PROCESS_COMPLETE = "Indexing complete";
 	
 	@Override
-	public void doAction(Properties parameters, Storage storage, BackupJob job, Progressable progressor)
+	public void doAction(Properties authData, Properties properties, List<String> options, Storage storage, BackupJob job, Progressable progressor)
 			throws ActionException {
 		
 		logger.debug("Starting file analysis...");
