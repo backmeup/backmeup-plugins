@@ -17,16 +17,22 @@ import org.backmeup.plugin.spi.InputBasedAuthorizable;
 
 public class MailAuthenticator implements InputBasedAuthorizable {
 	private static final String PROP_SSL = "SSL";
+	private static final String PROP_SSL_DEFAULT = "true";
 	private static final String PROP_SSL_DESC = "Use SSL (encrypted connection)";
 	private static final String PROP_PORT = "Port";
+	private static final String PROP_PORT_DEFAULT = "993";
 	private static final String PROP_PORT_DESC = "The port on which the plugin should connect to the E-Mail server";
 	private static final String PROP_HOST = "Host";
+	private static final String PROP_HOST_DEFAULT = "imap.gmail.com";
 	private static final String PROP_HOST_DESC = "The hostname of your E-Mail server";
 	private static final String PROP_USERNAME = "Username";
+	private static final String PROP_USERNAME_DEFAULT = "me@gmail.com";
 	private static final String PROP_USERNAME_DESC = "The username of your E-Mail account";
 	private static final String PROP_PASSWORD = "Password";
+	private static final String PROP_PASSWORD_DEFAULT = "";
 	private static final String PROP_PASSWORD_DESC = "The password of your E-Mail account";
 	private static final String PROP_TYPE = "Type";
+	private static final String PROP_TYPE_DEFAULT = "imap,pop3";
 	private static final String PROP_TYPE_DESC = "IMAP or POP3";
  
 	@Override
@@ -46,13 +52,12 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 	public List<RequiredInputField> getRequiredInputFields() {
 		List<RequiredInputField> inputs = new ArrayList<>();
 
-		inputs.add(new RequiredInputField(PROP_USERNAME, PROP_USERNAME, PROP_USERNAME_DESC, true, 0, Type.String));
-		inputs.add(new RequiredInputField(PROP_PASSWORD, PROP_PASSWORD, PROP_PASSWORD_DESC, true, 1, Type.Password));
-		// TODO: Add choices imap/pop3... also provide default values
-		inputs.add(new RequiredInputField(PROP_TYPE, PROP_TYPE, PROP_TYPE_DESC, true, 2, Type.String));
-		inputs.add(new RequiredInputField(PROP_HOST, PROP_HOST, PROP_HOST_DESC, true, 3, Type.String));
-		inputs.add(new RequiredInputField(PROP_PORT, PROP_PORT, PROP_PORT_DESC, true, 4, Type.Number));
-		inputs.add(new RequiredInputField(PROP_SSL, PROP_SSL, PROP_SSL_DESC, true, 5, Type.Bool));
+		inputs.add(new RequiredInputField(PROP_USERNAME, PROP_USERNAME, PROP_USERNAME_DESC, true, 0, Type.String, PROP_USERNAME_DEFAULT));
+		inputs.add(new RequiredInputField(PROP_PASSWORD, PROP_PASSWORD, PROP_PASSWORD_DESC, true, 1, Type.Password, PROP_PASSWORD_DEFAULT));
+		inputs.add(new RequiredInputField(PROP_TYPE, PROP_TYPE, PROP_TYPE_DESC, true, 2, Type.Enum, PROP_TYPE_DEFAULT));
+		inputs.add(new RequiredInputField(PROP_HOST, PROP_HOST, PROP_HOST_DESC, true, 3, Type.String, PROP_HOST_DEFAULT));
+		inputs.add(new RequiredInputField(PROP_PORT, PROP_PORT, PROP_PORT_DESC, true, 4, Type.Number, PROP_PORT_DEFAULT));
+		inputs.add(new RequiredInputField(PROP_SSL, PROP_SSL, PROP_SSL_DESC, true, 5, Type.Bool, PROP_SSL_DEFAULT));
 
 		return inputs;
 	}
