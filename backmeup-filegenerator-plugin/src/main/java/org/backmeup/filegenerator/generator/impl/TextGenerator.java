@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
+import org.backmeup.filegenerator.constants.Constants;
 import org.backmeup.filegenerator.generator.Generator;
 
 import de.svenjacobs.loremipsum.LoremIpsum;
@@ -13,7 +14,7 @@ public class TextGenerator implements Generator {
 	private final LoremIpsum loremIpsum;
 	
 	public TextGenerator() {
-		this(1);
+		this(Integer.parseInt(Constants.PROP_TEXT_PARAGRAPHS_DEFAULT));
 	}
 	
 	public TextGenerator(int amountInParagraphs) {

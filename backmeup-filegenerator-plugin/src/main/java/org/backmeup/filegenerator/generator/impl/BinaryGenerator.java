@@ -4,14 +4,15 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Random;
 
+import org.backmeup.filegenerator.constants.Constants;
 import org.backmeup.filegenerator.generator.Generator;
 
 public class BinaryGenerator implements Generator {
-	int size;
-	Random random;
+	private final int size;
+	private final Random random;
 	
 	public BinaryGenerator() {
-		this.size = 1014;
+		this.size = Integer.parseInt(Constants.PROP_BINARY_SIZE_DEFAULT);
 		this.random = new Random();
 	}
 

@@ -21,7 +21,7 @@ import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
 public class FilegeneratorDatasource implements Datasource {
-	private static final int DEFAULT_MAX_FILES = 10;
+	private static final int DEFAULT_MAX_FILES = Integer.parseInt(Constants.PROP_GENERATOR_FILES_DEFAULT);
 
 	@Override
 	public void downloadAll(Properties authData, Properties properties, List<String> options,

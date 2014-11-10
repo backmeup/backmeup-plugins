@@ -11,6 +11,7 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
+import org.backmeup.filegenerator.constants.Constants;
 import org.backmeup.filegenerator.generator.Generator;
 
 public class ImageGenerator implements Generator {
@@ -19,8 +20,9 @@ public class ImageGenerator implements Generator {
 	private final Random random;
 	
 	public ImageGenerator() {
-		this.sizeX = 512;
-		this.sizeY = 512;
+		int defaultSize = Integer.parseInt(Constants.PROP_IMAGE_SIZE_DEFAULT);
+		this.sizeX = defaultSize;
+		this.sizeY = defaultSize;
 		this.random = new Random();
 	}
 	
