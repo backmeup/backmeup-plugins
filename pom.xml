@@ -39,7 +39,7 @@
         <version.backmeup.indexer>0.0.1-SNAPSHOT</version.backmeup.indexer>
 
         <version.ch.qos.logback>1.0.0</version.ch.qos.logback>
-        <version.com.google.code.gson>2.2.2</version.com.google.code.gson>
+        <version.com.google.code.gson>2.2.4</version.com.google.code.gson>
         <version.com.jayway.restassured>2.0.1</version.com.jayway.restassured>
         <version.com.rabbitmq>2.8.6</version.com.rabbitmq>
         <version.com.typesafe.akka>2.0.3</version.com.typesafe.akka>
