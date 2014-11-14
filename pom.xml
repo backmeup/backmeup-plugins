@@ -18,6 +18,7 @@
         <module>backmeup-indexing-plugin</module>
         <module>backmeup-localfsstorage-plugin</module>
         <module>backmeup-mail-plugin</module>
+        <module>backmeup-storage-plugin</module>
     </modules>
 
     <properties>
