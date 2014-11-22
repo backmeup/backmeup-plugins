@@ -6,9 +6,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.backmeup.index.model.IndexClient;
+import org.backmeup.index.api.IndexClient;
+import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.model.IndexDocument;
-import org.backmeup.index.model.IndexFields;
 import org.backmeup.model.BackupJob;
 import org.backmeup.model.Profile;
 import org.backmeup.plugin.api.Metainfo;

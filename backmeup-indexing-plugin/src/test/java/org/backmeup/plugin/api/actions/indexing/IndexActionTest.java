@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.backmeup.data.dummy.ElasticSearchIndexClient;
-import org.backmeup.index.model.IndexClient;
+import org.backmeup.index.api.IndexClient;
 import org.backmeup.index.utils.file.FileUtils;
 import org.backmeup.model.BackupJob;
 import org.backmeup.model.serializer.JsonSerializer;
