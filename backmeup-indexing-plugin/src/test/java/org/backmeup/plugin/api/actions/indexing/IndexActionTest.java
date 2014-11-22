@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.backmeup.index.client.ElasticSearchIndexClient;
-import org.backmeup.index.client.IndexClient;
+import org.backmeup.data.dummy.ElasticSearchIndexClient;
+import org.backmeup.index.model.IndexClient;
 import org.backmeup.index.utils.file.FileUtils;
 import org.backmeup.model.BackupJob;
 import org.backmeup.model.serializer.JsonSerializer;

@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.backmeup.index.client.IndexClient;
+import org.backmeup.index.model.IndexClient;
 import org.backmeup.index.model.IndexDocument;
 import org.backmeup.index.model.IndexFields;
 import org.backmeup.model.BackupJob;
