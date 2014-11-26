@@ -15,6 +15,7 @@ import org.backmeup.plugin.api.storage.StorageException;
 import org.backmeup.plugin.storage.Constants.Constants;
 import org.backmeup.storage.client.BackmeupStorageClient;
 import org.backmeup.storage.client.StorageClient;
+import org.backmeup.storage.client.StorageConnectionStringBuilder;
 
 /**
  * The BackmeupStorageDatasink class uploads all elements from the StorageReader up to
@@ -24,21 +25,17 @@ import org.backmeup.storage.client.StorageClient;
 public class BackmeupStorageDatasink implements Datasink {
 
 	@Override
-	public String upload(Properties authData, Properties properties, List<String> options, Storage storage, Progressable progressor) throws StorageException {
-		StorageClient client = null;
-		try {
-		client = new BackmeupStorageClient();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
+	public String upload(Properties authData, Properties properties, List<String> options, Storage storage, Progressable progressor) throws StorageException {		
 		String tmpDir = authData.getProperty("org.backmeup.tmpdir");
 		if (tmpDir == null) {
 		  tmpDir = "";
 		}
 		
 		String connectionString = authData.getProperty(Constants.PROP_CONNECTION_STRING);
-		String accessToken = connectionString;
+		StorageConnectionStringBuilder builder = new StorageConnectionStringBuilder(connectionString);
+		String accessToken = builder.getProperty("Token");
+		
+		StorageClient client = new BackmeupStorageClient(builder.getUrl());
 		
 		Iterator<DataObject> it = storage.getDataObjects();		
 		int i = 1;
