@@ -16,6 +16,7 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.backmeup.index.api.IndexClient;
 import org.backmeup.index.api.IndexFields;
+import org.backmeup.index.client.IndexClientFactory;
 import org.backmeup.model.BackupJob;
 import org.backmeup.plugin.api.connectors.Action;
 import org.backmeup.plugin.api.connectors.ActionException;
@@ -30,7 +31,7 @@ import org.xml.sax.SAXException;
 public class IndexAction implements Action {
     private final Logger logger = LoggerFactory.getLogger(IndexAction.class);
 
-    private final IndexClient client;
+    private IndexClient client;
 
     public IndexAction(IndexClient client) {
         this.client = client;
@@ -69,6 +70,8 @@ public class IndexAction implements Action {
                     }
 
                     progressor.progress(INDEXING + dob.getPath());
+
+                    initIndexClient(job.getUser().getUserId());
                     ElasticSearchIndexer indexer = new ElasticSearchIndexer(this.client);
 
                     // TODO ?? remove? username needs to be available to action
@@ -119,5 +122,11 @@ public class IndexAction implements Action {
         return handler.toString();
     }
     */
+
+    private void initIndexClient(Long userId) {
+        if (this.client == null) {
+            this.client = new IndexClientFactory().getIndexClient(userId);
+        }
+    }
 
 }
