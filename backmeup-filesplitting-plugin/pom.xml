@@ -67,7 +67,7 @@
 									<version>${version.commons-lang}</version>
 								</artifactItem>
 							</artifactItems>
-							<outputDirectory>../target</outputDirectory>
+							<outputDirectory>${config.localBuildArtefactDirectory}</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>

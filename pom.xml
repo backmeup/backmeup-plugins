@@ -31,6 +31,8 @@
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
+		
+		<config.localBuildArtefactDirectory>../autodeploy</config.localBuildArtefactDirectory>
 
         <!-- Dependency versions
              Please keep alphabetical
