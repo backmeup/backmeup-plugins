@@ -19,6 +19,7 @@
         <module>backmeup-localfsstorage-plugin</module>
         <module>backmeup-mail-plugin</module>
         <module>backmeup-storage-plugin</module>
+		<module>backmeup-thumbnail-plugin</module>
     </modules>
 
     <properties>
@@ -30,6 +31,8 @@
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
+		
+		<config.localBuildArtefactDirectory>../autodeploy</config.localBuildArtefactDirectory>
 
         <!-- Dependency versions
              Please keep alphabetical
