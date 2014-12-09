@@ -10,8 +10,8 @@ import org.backmeup.index.api.IndexClient;
 import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.model.IndexDocument;
 import org.backmeup.index.serializer.Json;
-import org.backmeup.model.BackupJob;
-import org.backmeup.model.Profile;
+import org.backmeup.model.dto.BackupJobDTO;
+import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.storage.DataObject;
@@ -39,7 +39,7 @@ public class ElasticSearchIndexer {
         this.client = client;
     }
 
-    public void doIndexing(BackupJob job, DataObject dataObject, Map<String, String> meta, Date timestamp)
+    public void doIndexing(BackupJobDTO job, DataObject dataObject, Map<String, String> meta, Date timestamp)
             throws IOException {
         // Build the index object
         IndexDocument document = new IndexDocument();
@@ -53,18 +53,18 @@ public class ElasticSearchIndexer {
         document.field(IndexFields.FIELD_FILENAME, getFilename(dataObject.getPath()));
         document.field(IndexFields.FIELD_PATH, dataObject.getPath());
         document.field(IndexFields.FIELD_FILE_HASH, dataObject.getMD5Hash());
-        document.field(IndexFields.FIELD_BACKUP_SINK, job.getSinkProfile().getName());
+        document.field(IndexFields.FIELD_BACKUP_SINK, job.getSink().getTitle());
         document.field(IndexFields.FIELD_BACKUP_AT, timestamp.getTime());
-        document.field(IndexFields.FIELD_JOB_ID, job.getId());
+        document.field(IndexFields.FIELD_JOB_ID, job.getJobId());
         document.field(IndexFields.FIELD_JOB_NAME, job.getJobTitle());
 
         // There is currently only one source per job!
-        Profile sourceProfile = job.getSourceProfile();
+        PluginProfileDTO sourceProfile = job.getSource();
 
         if (sourceProfile != null) {
-            document.field(IndexFields.FIELD_BACKUP_SOURCE_ID, sourceProfile.getId());
-            document.field(IndexFields.FIELD_BACKUP_SOURCE_PLUGIN_NAME, sourceProfile.getPluginId());
-            document.field(IndexFields.FIELD_BACKUP_SOURCE_IDENTIFICATION, sourceProfile.getIdentification());
+            document.field(IndexFields.FIELD_BACKUP_SOURCE_ID, sourceProfile.getPluginId());
+            document.field(IndexFields.FIELD_BACKUP_SOURCE_PLUGIN_NAME, sourceProfile.getTitle());
+            document.field(IndexFields.FIELD_BACKUP_SOURCE_IDENTIFICATION, sourceProfile.getProfileId());
         }
 
         MetainfoContainer metainfoContainer = dataObject.getMetainfo();

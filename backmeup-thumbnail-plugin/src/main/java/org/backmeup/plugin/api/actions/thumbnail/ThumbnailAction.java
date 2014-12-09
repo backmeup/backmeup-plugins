@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.backmeup.model.BackupJob;
+import org.backmeup.model.dto.BackupJobDTO;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Action;
@@ -82,8 +82,8 @@ public class ThumbnailAction implements Action {
     }
 
     @Override
-    public void doAction(Properties authData, Properties properties, List<String> options, Storage storage,
-            BackupJob job, Progressable progressor) throws ActionException {
+    public void doAction(Properties accessData, Properties properties, List<String> options, Storage storage,
+            BackupJobDTO job, Progressable progressor) throws ActionException {
 
         progressor.progress("Starting thumbnail rendering");
 
@@ -108,7 +108,7 @@ public class ThumbnailAction implements Action {
 
                     tempFilename = System.currentTimeMillis() + "_"
                             + tempFilename.replace("/", "$").replace(" ", "_").replace("#", "_");
-                    File folder = new File(TEMP_DIR, job.getId().toString());
+                    File folder = new File(TEMP_DIR, job.getJobId().toString());
                     if (!folder.exists())
                         folder.mkdirs();
 
@@ -137,5 +137,4 @@ public class ThumbnailAction implements Action {
 
         progressor.progress("Thumbnail rendering complete");
     }
-
 }

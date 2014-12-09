@@ -17,7 +17,7 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.backmeup.index.api.IndexClient;
 import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.client.IndexClientFactory;
-import org.backmeup.model.BackupJob;
+import org.backmeup.model.dto.BackupJobDTO;
 import org.backmeup.plugin.api.connectors.Action;
 import org.backmeup.plugin.api.connectors.ActionException;
 import org.backmeup.plugin.api.connectors.Progressable;
@@ -44,8 +44,8 @@ public class IndexAction implements Action {
     private static final String INDEX_PROCESS_COMPLETE = "Indexing complete";
 
     @Override
-    public void doAction(Properties authData, Properties properties, List<String> options, Storage storage,
-            BackupJob job, Progressable progressor) throws ActionException {
+    public void doAction(Properties accessData, Properties parameters, List<String> options, Storage storage,
+            BackupJobDTO job, Progressable progressor) throws ActionException {
 
         this.logger.debug("Starting file analysis...");
         progressor.progress(START_INDEX_PROCESS);
