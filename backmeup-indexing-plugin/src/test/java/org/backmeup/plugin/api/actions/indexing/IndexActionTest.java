@@ -9,6 +9,7 @@ import org.backmeup.data.dummy.ElasticSearchIndexClient;
 import org.backmeup.index.api.IndexClient;
 import org.backmeup.index.utils.file.FileUtils;
 import org.backmeup.model.BackupJob;
+import org.backmeup.model.dto.BackupJobDTO;
 import org.backmeup.model.serializer.JsonSerializer;
 import org.backmeup.plugin.api.connectors.ActionException;
 import org.backmeup.plugin.api.connectors.Progressable;
@@ -38,6 +39,8 @@ public class IndexActionTest {
 
     private final String BACKUP_JOB_old = loadJson("backup_job_old.json");
     private final String BACKUP_JOB = loadJson("backup_job.json");
+    //TODO AL switch to BackupJobDTO within this class
+    private final String BACKUP_JOB_DTO = loadJson("backup_job_dto.json");
 
     // private static final String BACKUP_JOB_FAIL =
     // loadJson("backup_job_fail.json");
@@ -69,7 +72,9 @@ public class IndexActionTest {
         // Index test files on the local ES index
         IndexAction action = new IndexAction(this.client);
 
-        BackupJob job = JsonSerializer.deserialize(this.BACKUP_JOB, BackupJob.class);
+        //TODO AL save a BackupJobDTO to use within this test.
+        // BackupJob job = JsonSerializer.deserialize(this.BACKUP_JOB, BackupJob.class);
+        BackupJobDTO job = JsonSerializer.deserialize(this.BACKUP_JOB_DTO, BackupJobDTO.class);
 
         // now call the actual indexing (Metadata extraction, Tika analysis)
         action.doAction(null, null, null, storage, job, this.logProgressable);
