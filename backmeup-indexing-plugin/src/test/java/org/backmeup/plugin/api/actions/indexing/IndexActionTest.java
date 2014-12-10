@@ -82,9 +82,16 @@ public class IndexActionTest {
     }
 
     @Test
+    @Ignore("outdated test, interface changed to BackupJobDTO")
     public void deserializeBackupJob() {
         BackupJob job = JsonSerializer.deserialize(this.BACKUP_JOB, BackupJob.class);
         Assert.assertNotNull("Object deserialization failed, probably outdated BACKUP_JOB", job);
+    }
+
+    @Test
+    public void deserializeBackupJobDTO() {
+        BackupJobDTO job = JsonSerializer.deserialize(this.BACKUP_JOB_DTO, BackupJobDTO.class);
+        Assert.assertNotNull("Object deserialization failed, probably outdated BACKUP_JOB_DTO", job);
     }
 
     @Ignore("fails but maybe we do not care")
@@ -116,7 +123,7 @@ public class IndexActionTest {
                 System.out.println(key + ": " + source.get(key));
 
                 if (key.equals("owner_name"))
-                    Assert.assertEquals("john.doe", source.get(key));
+                    Assert.assertEquals("JohnDoe", source.get(key));
 
                 if (key.equals("owner_id"))
                     Assert.assertEquals(1, source.get(key));
