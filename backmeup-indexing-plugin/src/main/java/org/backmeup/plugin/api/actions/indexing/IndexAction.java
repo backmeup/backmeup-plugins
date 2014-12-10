@@ -17,6 +17,7 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.backmeup.index.api.IndexClient;
 import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.client.IndexClientFactory;
+import org.backmeup.index.serializer.Json;
 import org.backmeup.model.dto.BackupJobDTO;
 import org.backmeup.plugin.api.connectors.Action;
 import org.backmeup.plugin.api.connectors.ActionException;
@@ -33,6 +34,19 @@ public class IndexAction implements Action {
 
     private IndexClient client;
 
+    /**
+     * This class must be public and have a public default constructor for it to be usable by the osgi Service Component
+     */
+    public IndexAction() {
+        this.logger.debug("initialized IndexAction default constructor");
+    }
+
+    /**
+     * This constructor is used for junit testing to inject a IndexClient to overwrite the client obtained within
+     * initIndexClient(long userId);
+     * 
+     * @param client
+     */
     public IndexAction(IndexClient client) {
         this.client = client;
     }
@@ -49,6 +63,13 @@ public class IndexAction implements Action {
 
         this.logger.debug("Starting file analysis...");
         progressor.progress(START_INDEX_PROCESS);
+
+        //TODO AL extract BackupJobDTO for Tests
+        String jsonDocument = Json.serialize(job);
+        //for testing just output to the logfile
+        System.out.println("-----start backupjobdto json ------");
+        System.out.println(jsonDocument);
+        System.out.println("-----end backupjobdto json ------");
 
         TikaAnalyzer analyzer = new TikaAnalyzer();
 
@@ -71,10 +92,10 @@ public class IndexAction implements Action {
 
                     progressor.progress(INDEXING + dob.getPath());
 
-                    initIndexClient(job.getUser().getUserId());
+                    //TODO when accessing job, we're getting java.lang.LinkageError: loader constraint violation: loader (instance of org/apache/felix/framework/BundleWiringImpl$BundleClassLoaderJava5) previously initiated loading for a different type with name "org/backmeup/model/dto/BackupJobDTO"
+                    initIndexClient(job.getUser().getUserId()); //TODO AL continue here: getting invocation target exception
                     ElasticSearchIndexer indexer = new ElasticSearchIndexer(this.client);
 
-                    // TODO ?? remove? username needs to be available to action
                     this.logger.debug("Indexing " + dob.getPath());
                     meta = new HashMap<>();
                     meta.put(IndexFields.FIELD_CONTENT_TYPE, mime);

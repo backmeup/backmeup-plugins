@@ -84,7 +84,9 @@ public class ElasticSearchIndexer {
         //TODO AL Persist document for later ingestion instead pushing to ES.
         String jsonDocument = Json.serialize(document);
         //for testing just output to the logfile
+        System.out.println("-----start IndexDocument json------");
         System.out.println(jsonDocument);
+        System.out.println("-----end IndexDocument json ------");
 
     }
 
