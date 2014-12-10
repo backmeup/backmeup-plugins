@@ -73,7 +73,7 @@
 						<Import-Package>*</Import-Package>
 						<Export-Package>org.backmeup.plugin.api.actions.indexing</Export-Package>
 						<Private-Package>org.backmeup.plugin.api.actions.indexing.*</Private-Package>
-						<Embed-Dependency>tika-core,elasticsearch</Embed-Dependency>
+						<Embed-Dependency>tika-core</Embed-Dependency>
 						<Embed-Transitive>false</Embed-Transitive>
 						<Embed-Directory>lib</Embed-Directory>
 					</instructions>
