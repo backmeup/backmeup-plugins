@@ -106,8 +106,10 @@ public class ThumbnailAction implements Action {
                     if (tempFilename.startsWith("/"))
                         tempFilename = tempFilename.substring(1);
 
+                    //TODO AL continue debugging here. we're getting an InvocationTargetException
                     tempFilename = System.currentTimeMillis() + "_"
                             + tempFilename.replace("/", "$").replace(" ", "_").replace("#", "_");
+                    //java.lang.LinkageError: org/backmeup/model/dto/BackupJobDTO
                     File folder = new File(TEMP_DIR, job.getJobId().toString());
                     if (!folder.exists())
                         folder.mkdirs();
