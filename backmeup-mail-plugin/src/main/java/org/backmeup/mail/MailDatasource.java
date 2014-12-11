@@ -483,14 +483,17 @@ public class MailDatasource implements Datasource {
     	// TODO remove this debug block
     	if (accessData == null) {
     		logger.log(Level.WARNING, "accessdata is null!");
+    		System.out.println("accessdata is null!");
     	} else {
     		logger.log(Level.WARNING, "accessData length: " + accessData.size());
+    		System.out.println("accessData length: " + accessData.size());
     		
     		for (Enumeration e = accessData.keys();e.hasMoreElements();) {
     			  String key = (String) e.nextElement();
     			  String value = (String) accessData.get(key);  
 
     			  logger.log(Level.WARNING, "accessData[" + key + "]: " + value);
+    			  System.out.println("accessData[" + key + "]: " + value);
     		}
     	}
     	
