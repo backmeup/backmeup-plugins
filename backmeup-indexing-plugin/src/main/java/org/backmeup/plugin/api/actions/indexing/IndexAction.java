@@ -91,9 +91,7 @@ public class IndexAction implements Action {
                     }
 
                     progressor.progress(INDEXING + dob.getPath());
-
-                    //TODO when accessing job, we're getting java.lang.LinkageError: loader constraint violation: loader (instance of org/apache/felix/framework/BundleWiringImpl$BundleClassLoaderJava5) previously initiated loading for a different type with name "org/backmeup/model/dto/BackupJobDTO"
-                    initIndexClient(job.getUser().getUserId()); //TODO AL continue here: getting invocation target exception
+                    initIndexClient(job.getUser().getUserId());
                     ElasticSearchIndexer indexer = new ElasticSearchIndexer(this.client);
 
                     this.logger.debug("Indexing " + dob.getPath());
