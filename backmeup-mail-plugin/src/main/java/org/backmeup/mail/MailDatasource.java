@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -479,6 +480,23 @@ public class MailDatasource implements Datasource {
   public void downloadAll(Properties accessData, Properties properties, List<String> options, Storage storage,
       Progressable progressor) throws StorageException {
     try {
+    	// TODO remove this debug block
+    	if (accessData == null) {
+    		logger.log(Level.WARNING, "accessdata is null!");
+    		System.out.println("accessdata is null!");
+    	} else {
+    		logger.log(Level.WARNING, "accessData length: " + accessData.size());
+    		System.out.println("accessData length: " + accessData.size());
+    		
+    		for (Enumeration e = accessData.keys();e.hasMoreElements();) {
+    			  String key = (String) e.nextElement();
+    			  String value = (String) accessData.get(key);  
+
+    			  logger.log(Level.WARNING, "accessData[" + key + "]: " + value);
+    			  System.out.println("accessData[" + key + "]: " + value);
+    		}
+    	}
+    	
       Session session = Session.getInstance(accessData);
       Store store = session.getStore();
       logger.log(Level.FINE, "Connecting to mail provider " + accessData.getProperty("mail.host"));
