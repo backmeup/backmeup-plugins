@@ -23,39 +23,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThumbnailAction implements Action {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ThumbnailAction.class);
+	
     private static final String FIELD_THUMBNAIL_PATH = "thumbnail_path";
-    private static final Logger logger = LoggerFactory.getLogger(ThumbnailAction.class);
-    //private static Configuration config = Configuration.getConfig();
-
+    
+    private static final String THUMBNAIL_PATH_EXTENSION = "_thumb.jpg";
     private static final String THUMBNAIL_TEMP_DIR = "thumbnails";
+    
     private static final Integer THUMBNAIL_DIMENSIONS = 120;
-
+    private static final Double THUMBNAIL_QUALITY = 80.0;
+    
+    private static final List<String> UNSUPPORTED_TYPES = Arrays.asList("css", "html", "xml");
+    
     private static File TEMP_DIR;
-    //private static Integer THUMBNAIL_DIMENSIONS;
-
-    private static List<String> UNSUPPORTED_TYPES = Arrays.asList("css", "html", "xml");
 
     static {
-        try {
-            //String path = config.getProperty("thumbnail.temp.dir");
-            String path = THUMBNAIL_TEMP_DIR;
-            if (!path.endsWith("/"))
-                path = path + "/";
-
-            TEMP_DIR = new File(path);
-        } catch (Throwable t) {
-            TEMP_DIR = new File("tmp/thumbnails/");
-            logger.debug("Thumbnail rendering temp dir not set - defaulting to 'tmp/thumbnails'");
+        String path = THUMBNAIL_TEMP_DIR;
+        if (!path.endsWith("/")) {
+            path = path + "/";
         }
 
-        try {
-            //THUMBNAIL_DIMENSIONS = Integer.valueOf(Integer.parseInt(config.getProperty("thumbnail.dimensions")));
-        } catch (Throwable t) {
-            logger.debug("Thumbnail dimensions not set - defaulting to 120px");
-        }
-
-        if (!TEMP_DIR.exists())
+        TEMP_DIR = new File(path);
+        if (!TEMP_DIR.exists()) {
             TEMP_DIR.mkdirs();
+        }
     }
 
     /**
@@ -67,15 +58,17 @@ public class ThumbnailAction implements Action {
      */
     private String convert(File original) throws IOException, InterruptedException, IM4JavaException {
 
-        String thumbnailPath = original.getAbsolutePath() + "_thumb.jpg";
+        String thumbnailPath = original.getAbsolutePath() + THUMBNAIL_PATH_EXTENSION;
 
         IMOperation op = new IMOperation();
         op.size(THUMBNAIL_DIMENSIONS, THUMBNAIL_DIMENSIONS);
-        op.quality(80.0);
+        op.quality(THUMBNAIL_QUALITY);
         op.resize(THUMBNAIL_DIMENSIONS, THUMBNAIL_DIMENSIONS);
         op.p_profile("*");
+        
         op.addImage(original.getAbsolutePath() + "[0]");
         op.addImage(thumbnailPath);
+        
         new ConvertCmd(true).run(op);
 
         return thumbnailPath;
@@ -106,10 +99,9 @@ public class ThumbnailAction implements Action {
                     if (tempFilename.startsWith("/"))
                         tempFilename = tempFilename.substring(1);
 
-                    //TODO AL continue debugging here. we're getting an InvocationTargetException
                     tempFilename = System.currentTimeMillis() + "_"
                             + tempFilename.replace("/", "$").replace(" ", "_").replace("#", "_");
-                    //java.lang.LinkageError: org/backmeup/model/dto/BackupJobDTO
+                    
                     File folder = new File(TEMP_DIR, job.getJobId().toString());
                     if (!folder.exists())
                         folder.mkdirs();
@@ -128,8 +120,8 @@ public class ThumbnailAction implements Action {
                         container.addMetainfo(meta);
                         dataobject.setMetainfo(container);
                     } catch (Throwable t) {
-                        logger.debug("Failed to render thumbnail for: " + dataobject.getPath());
-                        logger.debug(t.getClass().getName() + ": " + t.getMessage());
+                        LOGGER.debug("Failed to render thumbnail for: " + dataobject.getPath());
+                        LOGGER.debug(t.getClass().getName() + ": " + t.getMessage());
                     }
                 }
             }
