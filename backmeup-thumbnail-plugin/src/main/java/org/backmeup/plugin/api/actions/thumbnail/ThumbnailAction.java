@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.SystemUtils;
 import org.backmeup.model.dto.BackupJobDTO;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
@@ -76,7 +77,13 @@ public class ThumbnailAction implements Action {
         op.p_profile("*");
         op.addImage(original.getAbsolutePath() + "[0]");
         op.addImage(thumbnailPath);
-        new ConvertCmd(true).run(op);
+
+        ConvertCmd cmd = new ConvertCmd(true);
+        if (SystemUtils.IS_OS_WINDOWS) {
+            //TODO move the configuration into a property file
+            cmd.setSearchPath("C:/Program Files/GraphicsMagick-1.3.20-Q8");
+        }
+        cmd.run(op);
 
         return thumbnailPath;
     }
