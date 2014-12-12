@@ -3,5 +3,4 @@
 	<bean id="facebookDescriptor" class="org.backmeup.facebook.FacebookDescriptor"/>
 	<bean id="facebookAuthenticator" class="org.backmeup.facebook.FacebookAuthenticator"/>
 	<bean id="facebookDatasource" class="org.backmeup.facebook.FacebookDatasource"/>	
-	<bean id="facebookValidator" class="org.backmeup.facebook.FacebookValidator"/>
 </blueprint>

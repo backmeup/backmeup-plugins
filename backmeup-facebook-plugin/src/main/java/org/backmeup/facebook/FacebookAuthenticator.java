@@ -5,8 +5,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.Properties;
 
+import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.spi.OAuthBasedAuthorizable;
 
@@ -98,4 +100,30 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
 			throw new PluginException(FacebookDescriptor.FACEBOOK_ID, "An error occurred while retrieving authentication information", e);
 		}
 	}
+	
+//	@Override
+//	public ValidationNotes validateProperties(Map<String, String> properties) {
+//		ValidationNotes notes = new ValidationNotes();
+//		try {
+//			// Make sure authentication / authorization and API is working well
+//			String accessToken = properties.get(FacebookHelper.PROPERTY_TOKEN);
+//			if (accessToken == null)
+//				notes.addValidationEntry(ValidationExceptionType.AuthException, FacebookDescriptor.FACEBOOK_ID);
+//
+//			FacebookClient client = new DefaultFacebookClient(accessToken);
+//			
+//			// Just to be sure about API is working well, catch user information
+//			User user = client.fetchObject("me", User.class);
+//			user.getId();
+//
+//		} catch (FacebookNetworkException e) {
+//			notes.addValidationEntry(ValidationExceptionType.APIException, FacebookDescriptor.FACEBOOK_ID, e);
+//		} catch (FacebookOAuthException e) {
+//			notes.addValidationEntry(ValidationExceptionType.AuthException, FacebookDescriptor.FACEBOOK_ID, e);
+//		} catch (FacebookGraphException e) {
+//			notes.addValidationEntry(ValidationExceptionType.APIException, FacebookDescriptor.FACEBOOK_ID, e);
+//		}
+//		
+//		return notes;
+//	}
 }
