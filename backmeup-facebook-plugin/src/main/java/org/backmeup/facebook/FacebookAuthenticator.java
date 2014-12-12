@@ -8,7 +8,7 @@ import java.nio.charset.Charset;
 import java.util.Properties;
 
 import org.backmeup.model.exceptions.PluginException;
-import org.backmeup.plugin.spi.OAuthBased;
+import org.backmeup.plugin.spi.OAuthBasedAuthorizable;
 
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
@@ -22,7 +22,7 @@ import com.restfb.types.User;
  * @author mmurauer
  * 
  */
-public class FacebookAuthenticator implements OAuthBased {
+public class FacebookAuthenticator implements OAuthBasedAuthorizable {
 
 	@Override
 	public AuthorizationType getAuthType() {
@@ -49,7 +49,7 @@ public class FacebookAuthenticator implements OAuthBased {
 	}
 
 	@Override
-	public String postAuthorize(Properties inputProperties) {
+	public String authorize(Properties inputProperties) {
 		String code = inputProperties.getProperty("code");
 		String callback = inputProperties.getProperty("callback");
 		String accessToken = "";
