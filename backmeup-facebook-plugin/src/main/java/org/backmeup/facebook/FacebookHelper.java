@@ -12,6 +12,7 @@ import java.util.Properties;
  */
 public class FacebookHelper {
 	public static final String PROPERTY_TOKEN = "token";
+	public static final String PROPERTY_TOKEN_DESC = "The Facebook access token";
 	
 	public static final String PROPERTY_SECRET = "secret";
 	
