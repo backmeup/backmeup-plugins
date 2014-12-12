@@ -12,7 +12,7 @@ import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
-import org.backmeup.plugin.storage.Constants.Constants;
+import org.backmeup.plugin.storage.constants.Constants;
 import org.backmeup.storage.client.BackmeupStorageClient;
 import org.backmeup.storage.client.StorageClient;
 import org.backmeup.storage.client.StorageConnectionStringBuilder;
