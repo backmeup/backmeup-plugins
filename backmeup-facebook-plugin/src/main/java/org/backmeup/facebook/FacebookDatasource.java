@@ -68,13 +68,13 @@ public class FacebookDatasource implements Datasource {
 	private final ConcreteElement ce = new ConcreteElement();
 
 	@Override
-	public void downloadAll(Properties props, List<String> options,
+	public void downloadAll(Properties authData, Properties properties, List<String> options,
 			Storage storage, Progressable progr) throws StorageException {
 
-		accessToken = props.getProperty(FacebookHelper.PROPERTY_TOKEN);
+		accessToken = authData.getProperty(FacebookHelper.PROPERTY_TOKEN);
 		FacebookClient client = new DefaultFacebookClient(accessToken);
 
-		getThemes(storage, props);
+		getThemes(storage, authData);
 
 		Document doc = createDocument("Index", "Facebook", false);
 		Div applic_content_page = (Div) ce.getElement("applic_content_page");
