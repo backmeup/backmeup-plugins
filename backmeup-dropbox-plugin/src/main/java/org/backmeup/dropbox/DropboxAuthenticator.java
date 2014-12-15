@@ -3,7 +3,7 @@ package org.backmeup.dropbox;
 import java.util.Properties;
 
 import org.backmeup.model.exceptions.PluginException;
-import org.backmeup.plugin.spi.OAuthBased;
+import org.backmeup.plugin.spi.OAuthBasedAuthorizable;
 
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AccessTokenPair;
@@ -19,7 +19,7 @@ import com.dropbox.client2.session.WebAuthSession.WebAuthInfo;
  * @author fschoeppl
  *
  */
-public class DropboxAuthenticator implements OAuthBased {
+public class DropboxAuthenticator implements OAuthBasedAuthorizable {
 
 	@Override
 	public AuthorizationType getAuthType() {
@@ -42,7 +42,7 @@ public class DropboxAuthenticator implements OAuthBased {
 	}
 
 	@Override
-	public String postAuthorize(Properties inputProperties) {
+	public String authorize(Properties inputProperties) {
 		// Retrieve auth info from DB
 		try {
 			WebAuthSession session = DropboxHelper.getInstance().getWebAuthSession();
