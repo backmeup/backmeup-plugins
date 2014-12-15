@@ -30,8 +30,7 @@ public class DropboxAuthenticator implements OAuthBasedAuthorizable {
 	public String createRedirectURL(Properties inputProperties, String callback) {
 		WebAuthInfo authInfo;
 		try {
-			authInfo = DropboxHelper.getInstance().getWebAuthSession()
-					.getAuthInfo();		
+			authInfo = DropboxHelper.getInstance().getWebAuthSession().getAuthInfo();		
 			RequestTokenPair rtp = authInfo.requestTokenPair;
 			inputProperties.setProperty(DropboxHelper.PROPERTY_TOKEN, rtp.key);
 			inputProperties.setProperty(DropboxHelper.PROPERTY_SECRET, rtp.secret);
@@ -55,8 +54,7 @@ public class DropboxAuthenticator implements OAuthBasedAuthorizable {
 			// Update access token in DB
 			AccessTokenPair atp = session.getAccessTokenPair();
 			inputProperties.setProperty(DropboxHelper.PROPERTY_TOKEN, atp.key);
-			inputProperties.setProperty(DropboxHelper.PROPERTY_SECRET,
-					atp.secret);
+			inputProperties.setProperty(DropboxHelper.PROPERTY_SECRET, atp.secret);
 			
 			return DropboxHelper.getApi(inputProperties).accountInfo().displayName;
 			

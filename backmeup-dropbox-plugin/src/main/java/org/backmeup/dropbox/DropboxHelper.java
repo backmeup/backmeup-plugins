@@ -57,9 +57,9 @@ public class DropboxHelper {
 		return new WebAuthSession(appKeys, AccessType.DROPBOX);
 	}
 	
-	public static DropboxAPI<WebAuthSession> getApi(Properties items) {		
-		String token = items.getProperty(DropboxHelper.PROPERTY_TOKEN);
-		String secret = items.getProperty(DropboxHelper.PROPERTY_SECRET);
+	public static DropboxAPI<WebAuthSession> getApi(Properties accessData) {		
+		String token = accessData.getProperty(DropboxHelper.PROPERTY_TOKEN);
+		String secret = accessData.getProperty(DropboxHelper.PROPERTY_SECRET);
 		WebAuthSession session = DropboxHelper.getInstance().getWebAuthSession();
 		session.setAccessTokenPair(new AccessTokenPair(token, secret));
 		if (!session.isLinked()) {
