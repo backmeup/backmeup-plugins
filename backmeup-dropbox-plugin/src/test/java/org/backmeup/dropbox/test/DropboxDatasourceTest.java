@@ -23,7 +23,7 @@ public class DropboxDatasourceTest {
 		DropboxDatasource source = new DropboxDatasource();
 		Storage storage = new LocalFilesystemStorage();
 		storage.open("C:/TEMP/TEST/");
-		source.downloadAll(props, new ArrayList<String>(), storage, new Progressable() {
+		source.downloadAll(props, new Properties(), new ArrayList<String>(), storage, new Progressable() {
 			@Override
 			public void progress(String message) {}
 		});

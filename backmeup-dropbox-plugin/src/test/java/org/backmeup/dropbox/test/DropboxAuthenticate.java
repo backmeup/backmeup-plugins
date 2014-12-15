@@ -23,7 +23,7 @@ public class DropboxAuthenticate {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		String code = reader.readLine();
 		props.setProperty("code", code);
-		auth.postAuthorize(props);
+		auth.authorize(props);
 		for (Entry<Object, Object> entry: props.entrySet()) {
 			System.out.println(entry.getKey() + ": " + entry.getValue());
 		}
