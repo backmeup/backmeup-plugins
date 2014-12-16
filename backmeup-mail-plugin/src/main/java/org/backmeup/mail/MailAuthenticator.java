@@ -62,7 +62,7 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 		return inputs;
 	}
 
-	private Properties convertInputPropertiesToAuthProperties(Properties inputs) {
+	protected static Properties convertInputPropertiesToAuthProperties(Properties inputs) {
 		Properties authProperties = new Properties();
 		String storeType = inputs.getProperty(PROP_TYPE);
 		String prefix = "mail." + storeType + ".";
