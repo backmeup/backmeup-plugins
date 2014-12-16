@@ -3,8 +3,11 @@ package org.backmeup.dropbox;
 import java.util.Properties;
 
 import org.backmeup.model.exceptions.PluginException;
+import org.backmeup.model.spi.ValidationExceptionType;
 import org.backmeup.plugin.spi.OAuthBasedAuthorizable;
 
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AccessTokenPair;
 import com.dropbox.client2.session.RequestTokenPair;
@@ -55,6 +58,16 @@ public class DropboxAuthenticator implements OAuthBasedAuthorizable {
 			AccessTokenPair atp = session.getAccessTokenPair();
 			inputProperties.setProperty(DropboxHelper.PROPERTY_TOKEN, atp.key);
 			inputProperties.setProperty(DropboxHelper.PROPERTY_SECRET, atp.secret);
+			
+			DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(inputProperties);
+            if (!api.getSession().isLinked()) {
+                throw new PluginException(DropboxDescriptor.DROPBOX_ID, "An error occurred during post authorization");          
+            }
+            
+            // 2. Crawl metadata via the API so that we can be sure that the API is working as expected.
+            // Note: This does not ensure that all API calls work.
+            Entry entry = api.metadata("/", 100, null, true, null);
+            entry.contents.size();
 			
 			return DropboxHelper.getApi(inputProperties).accountInfo().displayName;
 			

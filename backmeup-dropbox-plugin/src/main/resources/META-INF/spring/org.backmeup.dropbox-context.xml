@@ -4,5 +4,4 @@
 	<bean id="dropboxAuthenticator" class="org.backmeup.dropbox.DropboxAuthenticator"/>
 	<bean id="dropboxDatasource" class="org.backmeup.dropbox.DropboxDatasource"/>
 	<bean id="dropboxDatasink" class="org.backmeup.dropbox.DropboxDatasink"/>
-	<bean id="dropboxValidator" class="org.backmeup.dropbox.DropboxValidator"/>
 </blueprint>
