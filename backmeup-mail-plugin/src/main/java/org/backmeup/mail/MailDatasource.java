@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -19,8 +18,6 @@ import java.util.ResourceBundle;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -115,7 +112,7 @@ public class MailDatasource implements Datasource {
   }
 
   private final SimpleDateFormat folderFormat;  
-  
+    
   private static final String MESSAGE_FOLDER_FORMAT = "org.backmeup.mail.MailDatasource.MESSAGE_FOLDER_FORMAT";
   private static final String MESSAGE_HTML_WRAP = "org.backmeup.mail.MailDatasource.MESSAGE_HTML_WRAP";
   private static final String MESSAGE_HTML_ATTACHMENT_ENTRY = "org.backmeup.mail.MailDatasource.MESSAGE_HTML_ATTACHMENT_ENTRY";
@@ -129,7 +126,7 @@ public class MailDatasource implements Datasource {
   private final Pattern bodyRegex = Pattern.compile("<body.*?>(.*?)</body>", Pattern.DOTALL);
   private final Pattern headRegex = Pattern.compile("<head.*?>(.*?)</head>", Pattern.DOTALL);
   private final Pattern htmlRegex = Pattern.compile("<html.*?>(.*?)</html>", Pattern.DOTALL);
-  private final Logger logger = Logger.getLogger(MailDatasource.class.getName());
+
   
   public MailDatasource() {
     this.folderFormat = new SimpleDateFormat(textBundle.getString(MESSAGE_FOLDER_FORMAT));
@@ -259,7 +256,7 @@ public class MailDatasource implements Datasource {
     return sb.toString();
   }
     
-  private void handlePart(Part m, String folderName, Storage storage, Set<String> alreadyInspected, List<MessageInfo> indexDetails) throws StorageException, MessagingException, IOException {
+  private void handlePart(Part m, String folderName, Storage storage, Set<String> alreadyInspected, List<MessageInfo> indexDetails, Progressable progressor) throws StorageException, MessagingException, IOException {
     
     
     String from="N/A";
@@ -310,7 +307,7 @@ public class MailDatasource implements Datasource {
         if (matcher.find()) {
           appendToBody = matcher.group(1);
         } else {
-          logger.warning("Couldn't find html element / falling back to content of string");
+        	progressor.progress("Couldn't find html element / falling back to content of string");
           appendToBody = text.text;
         }
       }
@@ -326,18 +323,18 @@ public class MailDatasource implements Datasource {
     
     for (Attachment a : attachments) {
       attachmentLinks.append(MessageFormat.format(textBundle.getString(MESSAGE_HTML_ATTACHMENT_ENTRY), "attachments" + msgNmbr + "/" + a.filename, a.filename));
-      logger.fine("Downloading attachment " + a.filename);
+      progressor.progress("Downloading attachment " + a.filename);
       storage.addFile(a.stream, attachmentFolder + a.filename, new MetainfoContainer());
-      logger.fine("Done.");
+      progressor.progress("Done.");
     }
     
     // get embedded images
     List<Content> contentIds = getContentIds(m);
     for (Content c : contentIds) {
-      logger.fine("Downloading embedded resources " + c.filename);
+      progressor.progress("Downloading embedded resources " + c.filename);
       appendToBody = appendToBody.replace("cid:" + c.contentId, "attachments" + msgNmbr + "/" + c.filename);
       storage.addFile(c.content, attachmentFolder + c.filename, new MetainfoContainer());
-      logger.fine("Done.");
+      progressor.progress("Done.");
     }
     
     String attachmentString = attachmentLinks.length() == 0 ? "" : MessageFormat.format(textBundle.getString(MESSAGE_HTML_ATTACHMENT_WRAP), attachmentLinks.toString());
@@ -375,7 +372,7 @@ public class MailDatasource implements Datasource {
     // handle nested messages
     List<Part> nested = getNestedMessages(m);
     for (int i=0; i < nested.size(); i++) {
-      handlePart(nested.get(i), folderName + "/nested/", storage, alreadyInspected, indexDetails);
+      handlePart(nested.get(i), folderName + "/nested/", storage, alreadyInspected, indexDetails, progressor);
     }
   }
 
@@ -412,50 +409,49 @@ public class MailDatasource implements Datasource {
     return contentIds;
   }
 
-  private void handleFolder(Folder folder, Storage storage, Set<String> alreadyInspected, List<MessageInfo> indexDetails, int retryCount)
+  private void handleFolder(Folder folder, Storage storage, Set<String> alreadyInspected, List<MessageInfo> indexDetails, int retryCount, Progressable progressor)
       throws IOException, MessagingException, StorageException {
     try {
       folder.open(Folder.READ_ONLY);
-      
-      Message[] messages = folder.getMessages();
-      logger.fine("Folder: " + folder.getFullName());      
+      Message[] messages = folder.getMessages();   
       double prev = 0;
       for (int i=0; i < messages.length; i++) {      
         String folderName = folder.getFullName() + "/"
             + folderFormat.format(messages[i].getReceivedDate()) + "/";
         
-        handlePart(messages[i], folderName, storage, alreadyInspected, indexDetails);
+        handlePart(messages[i], folderName, storage, alreadyInspected, indexDetails, progressor);
         double percent = i * 100 / (double)messages.length;
         if (percent - 10 > prev) {         
-          logger.fine(String.format("%3.2f%%", percent));          
+          progressor.progress(String.format("%3.2f%%", percent));          
           prev = percent;
         }
       }
       folder.close(false);
     } catch (FolderClosedException fce) {
-      logger.log(Level.WARNING, "Retrying folder " + folder, fce);
+    	progressor.progress("Retrying folder " + folder.toString());
       if (retryCount < 10) {        
-        handleFolder(folder, storage, alreadyInspected, indexDetails, retryCount + 1);
+        handleFolder(folder, storage, alreadyInspected, indexDetails, retryCount + 1, progressor);
       } else {
         throw new PluginException(MailDescriptor.MAIL_ID, "Failed to download folder", fce);
       }
     } catch (MessagingException me) {
-      logger.log(Level.FINE, me.getMessage(), me);    
+    	progressor.progress(me.toString());
+    	progressor.progress(me.getMessage());    
     } 
   }
 
   public void handleDownloadAll(Folder current, Properties accessData,
-      Storage storage, Set<String> alreadyInspected, List<MessageInfo> indexDetails) throws IOException, MessagingException,
+      Storage storage, Set<String> alreadyInspected, List<MessageInfo> indexDetails, Progressable progressor) throws IOException, MessagingException,
       StorageException {
     if (alreadyInspected.contains(current.getFullName()))
       return;
     int retryCount = 0;
-    handleFolder(current, storage, alreadyInspected, indexDetails, retryCount);
+    handleFolder(current, storage, alreadyInspected, indexDetails, retryCount, progressor);
     alreadyInspected.add(current.getFullName());
 
     Folder[] subFolders = current.list("*");
     for (Folder sub : subFolders) {
-      handleDownloadAll(sub, accessData, storage, alreadyInspected, indexDetails);
+      handleDownloadAll(sub, accessData, storage, alreadyInspected, indexDetails, progressor);
     }
   }
   
@@ -482,13 +478,18 @@ public class MailDatasource implements Datasource {
     try {
       Session session = Session.getInstance(accessData);
       Store store = session.getStore();
-      logger.log(Level.FINE, "Connecting to mail provider " + accessData.getProperty("mail.host"));
+      progressor.progress("Connecting to mail provider " + accessData.getProperty("mail.host"));
       store.connect(accessData.getProperty("mail.host"),
     		  accessData.getProperty("mail.user"),
     		  accessData.getProperty("mail.password"));
+      progressor.progress("Connection successfull");
+      
       Set<String> alreadyInspected = new HashSet<>();
-      logger.log(Level.FINE, "Connected! Downloading folders...");
+      
+      progressor.progress("Get list of folders");
       Folder[] folders = store.getDefaultFolder().list("*");
+      progressor.progress("No. of folders retrieved: " + folders.length);
+      
       List<MessageInfo> indexDetails = new ArrayList<>();
       if (options.size() > 0) {        
         List<Folder> toVisit = new ArrayList<>();
@@ -498,22 +499,26 @@ public class MailDatasource implements Datasource {
           }
         }
         folders = toVisit.toArray(new Folder[]{});
-      }      
+      }    
+      
       for (Folder folder : folders) {
-        handleDownloadAll(folder, accessData, storage, alreadyInspected, indexDetails);
+        handleDownloadAll(folder, accessData, storage, alreadyInspected, indexDetails, progressor);
       }
-      logger.log(Level.FINE, "Download completed; creating index...");
+      progressor.progress("Download completed; creating index...");
       // generate index based on message info structs
       generateIndex(storage, indexDetails);
       store.close();
     } catch (NoSuchProviderException e) {
-      logger.log(Level.SEVERE, e.getMessage(), e);
+      progressor.progress(e.toString());
+      progressor.progress(e.getMessage());
       throw new PluginException(MailDescriptor.MAIL_ID, "No such provider", e);
     } catch (MessagingException e) {
-      logger.log(Level.SEVERE, e.getMessage(), e);
+    	progressor.progress(e.toString());
+        progressor.progress(e.getMessage());
       throw new PluginException(MailDescriptor.MAIL_ID, "An error occured during the backup", e);
     } catch (IOException e) {
-      logger.log(Level.SEVERE, e.getMessage(), e);
+    	progressor.progress(e.toString());
+        progressor.progress(e.getMessage());
       throw new PluginException(MailDescriptor.MAIL_ID, "An error occured during the backup", e);
     }
   }
