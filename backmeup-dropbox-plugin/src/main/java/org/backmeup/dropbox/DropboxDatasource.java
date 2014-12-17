@@ -47,9 +47,9 @@ public class DropboxDatasource extends FilesystemLikeDatasource {
 	}
 	
 	@Override
-	public List<FilesystemURI> list(Properties items, List<String> options, FilesystemURI uri) {
+	public List<FilesystemURI> list(Properties accessData, List<String> options, FilesystemURI uri) {
 		String path = uri == null ? "/" : uri.toString();
-		DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(items);
+		DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(accessData);
 		List<FilesystemURI> uris = new ArrayList<>();
 		
 		try {
@@ -95,7 +95,7 @@ public class DropboxDatasource extends FilesystemLikeDatasource {
 	}
 
 	@Override
-	public InputStream getFile(Properties items, List<String> options, FilesystemURI uri) {
+	public InputStream getFile(Properties accessData, List<String> options, FilesystemURI uri) {
 		String path = "";
 		try {
 		  try {
@@ -103,7 +103,7 @@ public class DropboxDatasource extends FilesystemLikeDatasource {
 		  } catch (Exception ex) {
 		    ex.printStackTrace();
 		  }
-			return DropboxHelper.getApi(items).getFileStream(path, null);
+			return DropboxHelper.getApi(accessData).getFileStream(path, null);
 		} catch (DropboxServerException e) {
 			// Handle undocumented error 460 (Restricted).
 			// https://forums.dropbox.com/topic.php?id=97208
@@ -122,10 +122,10 @@ public class DropboxDatasource extends FilesystemLikeDatasource {
 	}
 
 	@Override
-	public String getStatistics(Properties items) {
+	public String getStatistics(Properties accessData) {
 		StringBuffer html = new StringBuffer();
 		html.append("<ul>");
-		for (FilesystemURI uri : list(items, new ArrayList<String>())) {
+		for (FilesystemURI uri : list(accessData, new ArrayList<String>())) {
 			html.append("<li>" + uri.toString() + "</li>");
 		}
 		html.append("</ul>");

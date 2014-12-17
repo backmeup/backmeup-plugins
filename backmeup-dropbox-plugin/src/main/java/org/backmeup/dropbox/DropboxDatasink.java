@@ -2,6 +2,7 @@ package org.backmeup.dropbox;
 
 import java.io.ByteArrayInputStream;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.backmeup.model.exceptions.PluginException;
@@ -22,11 +23,10 @@ import com.dropbox.client2.session.WebAuthSession;
  * 
  */
 public class DropboxDatasink implements Datasink {
-
 	@Override
-	public String upload(Properties items, Storage storage,
+	public String upload(Properties accessData, Properties properties, List<String> options, Storage storage,
 			Progressable progressor) throws StorageException {
-		DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(items);
+		DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(accessData);
 		Iterator<DataObject> it = storage.getDataObjects();
 		while (it.hasNext()) {
 			DataObject dataObj = it.next();
@@ -36,9 +36,10 @@ public class DropboxDatasink implements Datasink {
 			fileName = fileName.replace("\\", "/").replace("//", "/");
 			
 			String tmpDir;
-			if (items.containsKey ("org.backmeup.tmpdir") == true)
+			//TODO: do we really get this in properties (before it was "items")?
+			if (properties.containsKey ("org.backmeup.tmpdir") == true)
 			{
-				tmpDir = items.getProperty ("org.backmeup.tmpdir");
+				tmpDir = properties.getProperty ("org.backmeup.tmpdir");
 			}
 			else
 			{
@@ -68,5 +69,4 @@ public class DropboxDatasink implements Datasink {
 		}
 		return null;
 	}
-
 }
