@@ -15,6 +15,7 @@
     <modules>
         <module>backmeup-dummy-plugin</module>
         <module>backmeup-facebook-plugin</module>
+        <module>backmeup-dropbox-plugin</module>
         <module>backmeup-filegenerator-plugin</module>
         <module>backmeup-indexing-plugin</module>
         <module>backmeup-localfsstorage-plugin</module>
