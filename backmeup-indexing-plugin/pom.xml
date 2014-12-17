@@ -70,11 +70,11 @@
 						<Bundle-Name>${project.name}</Bundle-Name>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Import-Package>*</Import-Package>
-						<Export-Package>org.backmeup.plugin.api.actions.indexing</Export-Package>
-						<Private-Package>org.backmeup.plugin.api.actions.indexing.*</Private-Package>
-						<Embed-Dependency>tika-core, tika-parsers</Embed-Dependency>
+						<Embed-Dependency>!slf4j-api,!gson,!backmeup-*,*;scope=compile|runtime</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 						<Embed-Directory>lib</Embed-Directory>
+						<Export-Package>org.backmeup.plugin.api.actions.indexing</Export-Package>
+						<Private-Package>org.backmeup.plugin.api.actions.indexing.*</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>
