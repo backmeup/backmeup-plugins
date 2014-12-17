@@ -1,1 +1,26 @@
-{"fields":{"owner_name":"john.doe","backup_at":1418660733144,"backup_source_id":"org.backmeup.filegenerator","job_name":"BackupJob1","backup_sink":"BackmeupStorageSinkProfile","owner_id":60,"path":"/file1.jpg","filename":"file1.jpg","backup_source_identification":236,"backup_source_plugin_name":"FilegeneratorProfile","Content-Type":"image/jpeg","fulltext":"","file_md5_hash":"5e27429caa34407fbeac31bc33190cf1","job_id":76},"largeFields":{"id":"1","source":"filegenerator","thumbnail_path":"C:\\Program Files\\Apache Software Foundation\\Tomcat 7.0\\thumbnails\\76\\1418660718739_file1.jpg_thumb.jpg","backupedAt":"15.12.2014 17:25:08 MEZ","type":"image/jpeg","destination":"/file1.jpg"}}
+{
+   "fields":{
+      "owner_name":"john.doe",
+      "backup_at":1418660733144,
+      "backup_source_id":"org.backmeup.filegenerator",
+      "job_name":"BackupJob1",
+      "backup_sink":"BackmeupStorageSinkProfile",
+      "owner_id":60,
+      "path":"/file1.jpg",
+      "filename":"file1.jpg",
+      "backup_source_identification":236,
+      "backup_source_plugin_name":"FilegeneratorProfile",
+      "Content-Type":"image/jpeg",
+      "fulltext":"",
+      "file_md5_hash":"5e27429caa34407fbeac31bc33190cf1",
+      "job_id":76
+   },
+   "largeFields":{
+      "id":"1",
+      "source":"filegenerator",
+      "thumbnail_path":"C:\\Program Files\\Apache Software Foundation\\Tomcat 7.0\\thumbnails\\76\\1418660718739_file1.jpg_thumb.jpg",
+      "backupedAt":"15.12.2014 17:25:08 MEZ",
+      "type":"image/jpeg",
+      "destination":"/file1.jpg"
+   }
+}
