@@ -480,14 +480,12 @@ public class MailDatasource implements Datasource {
   public void downloadAll(Properties accessData, Properties properties, List<String> options, Storage storage,
       Progressable progressor) throws StorageException {
     try {
-      Properties pluginAccessData = MailAuthenticator.convertInputPropertiesToAuthProperties(accessData);
-      
-      Session session = Session.getInstance(pluginAccessData);
+      Session session = Session.getInstance(accessData);
       Store store = session.getStore();
-      logger.log(Level.FINE, "Connecting to mail provider " + pluginAccessData.getProperty("mail.host"));
-      store.connect(pluginAccessData.getProperty("mail.host"),
-    		  pluginAccessData.getProperty("mail.user"),
-    		  pluginAccessData.getProperty("mail.password"));
+      logger.log(Level.FINE, "Connecting to mail provider " + accessData.getProperty("mail.host"));
+      store.connect(accessData.getProperty("mail.host"),
+    		  accessData.getProperty("mail.user"),
+    		  accessData.getProperty("mail.password"));
       Set<String> alreadyInspected = new HashSet<>();
       logger.log(Level.FINE, "Connected! Downloading folders...");
       Folder[] folders = store.getDefaultFolder().list("*");
@@ -502,7 +500,7 @@ public class MailDatasource implements Datasource {
         folders = toVisit.toArray(new Folder[]{});
       }      
       for (Folder folder : folders) {
-        handleDownloadAll(folder, pluginAccessData, storage, alreadyInspected, indexDetails);
+        handleDownloadAll(folder, accessData, storage, alreadyInspected, indexDetails);
       }
       logger.log(Level.FINE, "Download completed; creating index...");
       // generate index based on message info structs

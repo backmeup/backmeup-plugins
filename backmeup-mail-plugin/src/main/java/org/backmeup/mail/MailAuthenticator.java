@@ -12,6 +12,7 @@ import javax.mail.Store;
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
 import org.backmeup.model.api.RequiredInputField.Type;
+import org.backmeup.model.exceptions.ValidationException;
 import org.backmeup.model.spi.ValidationExceptionType;
 import org.backmeup.plugin.spi.InputBasedAuthorizable;
 
@@ -42,9 +43,24 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 
 	@Override
 	public String authorize(Properties inputProperties) {
-		Properties newProps = convertInputPropertiesToAuthProperties(inputProperties);
-		inputProperties.clear();
-		inputProperties.putAll(newProps);
+		Properties authProps = convertInputPropertiesToAuthProperties(inputProperties);
+		
+		try {
+			Session session = Session.getInstance(authProps);
+			Store store = session.getStore();
+			store.connect(authProps.getProperty("mail.host"),
+					authProps.getProperty("mail.user"),
+					authProps.getProperty("mail.password"));
+			store.close();
+		} catch (NoSuchProviderException e) {
+			throw new ValidationException(ValidationExceptionType.AuthException, "Cannot authorize mail provider", e);
+		} catch (MessagingException e) {
+			throw new ValidationException(ValidationExceptionType.AuthException, "Cannot authorize mail provider", e);
+		}
+		
+//		inputProperties.clear();
+		inputProperties.putAll(authProps);
+		
 		return inputProperties.getProperty("mail.user");
 	}
 
@@ -60,25 +76,6 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 		inputs.add(new RequiredInputField(PROP_SSL, PROP_SSL, PROP_SSL_DESC, true, 5, Type.Bool, PROP_SSL_DEFAULT));
 
 		return inputs;
-	}
-
-	protected static Properties convertInputPropertiesToAuthProperties(Properties inputs) {
-		Properties authProperties = new Properties();
-		String storeType = inputs.getProperty(PROP_TYPE);
-		String prefix = "mail." + storeType + ".";
-		if (inputs.get(PROP_SSL) != null && inputs.get(PROP_SSL).toString().equalsIgnoreCase("true")) {
-			authProperties.put(prefix + "socketFactory.class","javax.net.ssl.SSLSocketFactory");
-			authProperties.put(prefix + "socketFactory.fallback", "false");
-		}
-		authProperties.put(prefix + "port", inputs.getProperty(PROP_PORT));
-		authProperties.put("mail.user", inputs.getProperty(PROP_USERNAME));
-		authProperties.put("mail.password", inputs.getProperty(PROP_PASSWORD));
-		authProperties.put("mail.host", inputs.getProperty(PROP_HOST));
-		authProperties.put(prefix + "connectiontimeout", "5000");
-		authProperties.put(prefix + "timeout", "5000");
-		authProperties.put("mail.store.protocol", storeType);
-
-		return authProperties;
 	}
 
 	@Override
@@ -97,22 +94,6 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 		addEntryIfKeyMissing(properties, PROP_PORT, notes);
 		addEntryIfKeyMissing(properties, PROP_SSL, notes);
 		
-		if (notes.getValidationEntries().isEmpty()) {
-			try {
-				Properties authProperties = convertInputPropertiesToAuthProperties(properties);
-				Session session = Session.getInstance(authProperties);
-				Store store = session.getStore();
-				store.connect(authProperties.getProperty("mail.host"),
-						authProperties.getProperty("mail.user"),
-						authProperties.getProperty("mail.password"));
-				store.close();
-				return notes;
-			} catch (NoSuchProviderException e) {
-				notes.addValidationEntry(ValidationExceptionType.AuthException, e);
-			} catch (MessagingException e) {
-				notes.addValidationEntry(ValidationExceptionType.AuthException, e);
-			}
-		}
 		return notes;
 	}
 	
@@ -121,5 +102,24 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 			notes.addValidationEntry(ValidationExceptionType.ConfigException,
 					"Required input field missing: " + key);
 		}
+	}
+	
+	private Properties convertInputPropertiesToAuthProperties(Properties inputs) {
+		Properties authProperties = new Properties();
+		String storeType = inputs.getProperty(PROP_TYPE);
+		String prefix = "mail." + storeType + ".";
+		if (inputs.get(PROP_SSL) != null && inputs.get(PROP_SSL).toString().equalsIgnoreCase("true")) {
+			authProperties.put(prefix + "socketFactory.class","javax.net.ssl.SSLSocketFactory");
+			authProperties.put(prefix + "socketFactory.fallback", "false");
+		}
+		authProperties.put(prefix + "port", inputs.getProperty(PROP_PORT));
+		authProperties.put("mail.user", inputs.getProperty(PROP_USERNAME));
+		authProperties.put("mail.password", inputs.getProperty(PROP_PASSWORD));
+		authProperties.put("mail.host", inputs.getProperty(PROP_HOST));
+		authProperties.put(prefix + "connectiontimeout", "5000");
+		authProperties.put(prefix + "timeout", "5000");
+		authProperties.put("mail.store.protocol", storeType);
+
+		return authProperties;
 	}
 }
