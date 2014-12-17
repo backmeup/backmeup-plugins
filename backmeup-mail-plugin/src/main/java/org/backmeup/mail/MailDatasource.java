@@ -323,18 +323,18 @@ public class MailDatasource implements Datasource {
     
     for (Attachment a : attachments) {
       attachmentLinks.append(MessageFormat.format(textBundle.getString(MESSAGE_HTML_ATTACHMENT_ENTRY), "attachments" + msgNmbr + "/" + a.filename, a.filename));
-      progressor.progress("Downloading attachment " + a.filename);
+//      progressor.progress("Downloading attachment " + a.filename);
       storage.addFile(a.stream, attachmentFolder + a.filename, new MetainfoContainer());
-      progressor.progress("Done.");
+//      progressor.progress("Done.");
     }
     
     // get embedded images
     List<Content> contentIds = getContentIds(m);
     for (Content c : contentIds) {
-      progressor.progress("Downloading embedded resources " + c.filename);
+//      progressor.progress("Downloading embedded resources " + c.filename);
       appendToBody = appendToBody.replace("cid:" + c.contentId, "attachments" + msgNmbr + "/" + c.filename);
       storage.addFile(c.content, attachmentFolder + c.filename, new MetainfoContainer());
-      progressor.progress("Done.");
+//      progressor.progress("Done.");
     }
     
     String attachmentString = attachmentLinks.length() == 0 ? "" : MessageFormat.format(textBundle.getString(MESSAGE_HTML_ATTACHMENT_WRAP), attachmentLinks.toString());
@@ -412,6 +412,7 @@ public class MailDatasource implements Datasource {
   private void handleFolder(Folder folder, Storage storage, Set<String> alreadyInspected, List<MessageInfo> indexDetails, int retryCount, Progressable progressor)
       throws IOException, MessagingException, StorageException {
     try {
+    	progressor.progress("Processing next folder");
       folder.open(Folder.READ_ONLY);
       Message[] messages = folder.getMessages();   
       double prev = 0;
@@ -504,9 +505,12 @@ public class MailDatasource implements Datasource {
       for (Folder folder : folders) {
         handleDownloadAll(folder, accessData, storage, alreadyInspected, indexDetails, progressor);
       }
-      progressor.progress("Download completed; creating index...");
+      progressor.progress("Download completed");
+      progressor.progress("Creating index ...");
       // generate index based on message info structs
       generateIndex(storage, indexDetails);
+      progressor.progress("Creating index completed");
+      
       store.close();
     } catch (NoSuchProviderException e) {
       progressor.progress(e.toString());
