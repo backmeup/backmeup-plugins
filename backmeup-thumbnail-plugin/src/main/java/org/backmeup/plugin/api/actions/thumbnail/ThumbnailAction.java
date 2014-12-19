@@ -24,18 +24,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThumbnailAction implements Action {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ThumbnailAction.class);
-	
+    private static final Logger LOGGER = LoggerFactory.getLogger(ThumbnailAction.class);
+
     private static final String FIELD_THUMBNAIL_PATH = "thumbnail_path";
-    
+
     private static final String THUMBNAIL_PATH_EXTENSION = "_thumb.jpg";
-    private static final String THUMBNAIL_TEMP_DIR = "thumbnails";
-    
+    private static final String THUMBNAIL_TEMP_DIR = "/data/thumbnails";
+
     private static final Integer THUMBNAIL_DIMENSIONS = 120;
     private static final Double THUMBNAIL_QUALITY = 80.0;
-    
+
     private static final List<String> UNSUPPORTED_TYPES = Arrays.asList("css", "html", "xml");
-    
+
     private static File TEMP_DIR;
 
     static {
@@ -66,7 +66,7 @@ public class ThumbnailAction implements Action {
         op.quality(THUMBNAIL_QUALITY);
         op.resize(THUMBNAIL_DIMENSIONS, THUMBNAIL_DIMENSIONS);
         op.p_profile("*");
-        
+
         op.addImage(original.getAbsolutePath() + "[0]");
         op.addImage(thumbnailPath);
 
@@ -107,7 +107,7 @@ public class ThumbnailAction implements Action {
 
                     tempFilename = System.currentTimeMillis() + "_"
                             + tempFilename.replace("/", "$").replace(" ", "_").replace("#", "_");
-                    
+
                     File folder = new File(TEMP_DIR, job.getJobId().toString());
                     if (!folder.exists())
                         folder.mkdirs();
