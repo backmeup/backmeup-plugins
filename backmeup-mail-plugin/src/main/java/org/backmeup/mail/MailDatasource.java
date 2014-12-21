@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -501,6 +502,7 @@ public class MailDatasource implements Datasource {
 
                 if (toVisit.isEmpty()) {
                     //enabling download all folders if no options which folders to download are set by UI
+                    progressor.progress("adding folders progress upon: " + Arrays.toString(folders));
                 } else {
                     //download the selected imap folders
                     folders = toVisit.toArray(new Folder[] {});
