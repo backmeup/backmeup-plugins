@@ -176,9 +176,7 @@ public class IndexAction implements Action {
     */
 
     private void initIndexClient(Long userId) {
-        if (this.client == null) {
-            this.client = new IndexClientFactory().getIndexClient(userId);
-        }
+        this.client = new IndexClientFactory().getIndexClient(userId);
     }
 
 }
