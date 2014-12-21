@@ -116,7 +116,7 @@ public class IndexActionTest {
         SearchResponse response = rawClient.prepareSearch("backmeup").setQuery(QueryBuilders.matchAllQuery()).execute()
                 .actionGet();
         SearchHits hits = response.getHits();
-        Assert.assertEquals(3, hits.getHits().length);
+        Assert.assertEquals(1, hits.getHits().length); //skipping jpg and png, only indexing pdf+txt right now
 
         for (SearchHit hit : response.getHits().getHits()) {
             Map<String, Object> source = hit.getSource();
@@ -132,6 +132,9 @@ public class IndexActionTest {
                 if (key.equals("backup_sources"))
                     Assert.assertEquals("org.backmeup.dummy", source.get(key));
 
+                if (key.equals("fulltext"))
+                    Assert.assertTrue(((String) source.get(key)).contains("Dr. Crawford will be teaching a new course"));
+
                 // if (key.equals("backup_sink"))
                 // Assert.assertEquals("org.backmeup.dummy", source.get(key));
 
@@ -142,7 +145,6 @@ public class IndexActionTest {
 
         System.out.println("Done.");
     }
-
     // @Test
     // public void verifyQuery() {
     // System.out.println("Verifying keyword search");

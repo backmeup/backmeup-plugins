@@ -15,6 +15,8 @@ import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.storage.DataObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The indexer must be handed an ElasticSearch client in order to work. (This must be done by the class orchestrating
@@ -34,6 +36,7 @@ import org.backmeup.plugin.api.storage.DataObject;
 public class ElasticSearchIndexer {
 
     private final IndexClient client;
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     public ElasticSearchIndexer(IndexClient client) {
         this.client = client;
@@ -78,16 +81,12 @@ public class ElasticSearchIndexer {
             }
         }
 
+        this.log.debug("Started pushing IndexDocument to ES from Indexing Plugin " + Json.serialize(document));
         // Push to ES index
         this.client.index(document);
+        this.log.debug("Completed pushing IndexDocument to ES from Indexing Plugin ");
 
         //TODO AL Persist document for later ingestion instead pushing to ES.
-        String jsonDocument = Json.serialize(document);
-        //for testing just output to the logfile
-        System.out.println("-----start IndexDocument json------");
-        System.out.println(jsonDocument);
-        System.out.println("-----end IndexDocument json ------");
-
     }
 
     private String getFilename(String path) {

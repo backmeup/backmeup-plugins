@@ -24,7 +24,7 @@ public class TikaAnalyzer {
         ByteArrayInputStream is = new ByteArrayInputStream(dob.getBytes());
         Map<String, String> meta = new HashMap<>();
 
-        String mimeType = is.markSupported() ? tika.detect(is) : null;
+        String mimeType = is.markSupported() ? this.tika.detect(is) : null;
 
         if (mimeType != null) {
             meta.put(IndexFields.FIELD_CONTENT_TYPE, mimeType);
@@ -32,7 +32,7 @@ public class TikaAnalyzer {
 
         Metadata metadata = new Metadata();
         ContentHandler handler = new BodyContentHandler();
-        Parser parser = tika.getParser();
+        Parser parser = this.tika.getParser();
         parser.parse(is, handler, metadata, new ParseContext());
 
         for (String name : metadata.names()) {

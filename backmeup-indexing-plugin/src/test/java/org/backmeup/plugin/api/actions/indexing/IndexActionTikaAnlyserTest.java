@@ -27,183 +27,178 @@ import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class IndexActionTikaAnlyserTest {
 
-	private IndexDocument actualDocument;
+    private IndexDocument actualDocument;
 
-	@Test
-	public void shouldExtractFullTextOfPDF() throws ActionException {
-		FakeIndexClient fakeClient = new FakeIndexClient();
-		IndexAction action = new IndexAction(fakeClient);
+    @Test
+    @Ignore("add tika dependencies for this test")
+    public void shouldExtractFullTextOfPDF() throws ActionException {
+        FakeIndexClient fakeClient = new FakeIndexClient();
+        IndexAction action = new IndexAction(fakeClient);
 
-		Storage pdfStorage = new FakeFileStorage();
-		Progressable progressor = new Progressable() {
-			@Override
-			public void progress(String message) {
-				System.out.println(message);
-			}
-		};
-		BackupJobDTO job = new BackupJobDTO();
-		job.setUser(new UserDTO());
-		PluginProfileDTO profile = new PluginProfileDTO();
-		profile.setProfileType(PluginType.Sink);
-		//profile.set();
-		
-		job.setSink(profile);
-		// TODO fill properties
-		action.doAction(null, null, null, pdfStorage, job, progressor);
+        Storage pdfStorage = new FakeFileStorage();
+        Progressable progressor = new Progressable() {
+            @Override
+            public void progress(String message) {
+                System.out.println(message);
+            }
+        };
+        BackupJobDTO job = new BackupJobDTO();
+        job.setUser(new UserDTO());
+        PluginProfileDTO profile = new PluginProfileDTO();
+        profile.setProfileType(PluginType.Sink);
+        //profile.set();
 
-		// fakeClient got a document, must contain full text
-		assertEquals(
-				"hallo mihai und peter\n",
-				actualDocument.getFields().get(
-						"fulltext"));
-	}
+        job.setSink(profile);
+        // TODO fill properties
+        action.doAction(null, null, null, pdfStorage, job, progressor);
 
-	class FakeIndexClient implements IndexClient {
+        // fakeClient got a document, must contain full text
+        assertEquals("hallo mihai und peter\n", this.actualDocument.getFields().get("fulltext"));
+    }
 
-		@Override
-		public void index(IndexDocument document) throws IOException {
-			actualDocument = document;
-		}
+    class FakeIndexClient implements IndexClient {
 
-		// here for tests...
+        @Override
+        public void index(IndexDocument document) throws IOException {
+            IndexActionTikaAnlyserTest.this.actualDocument = document;
+        }
 
-		@Override
-		public SearchResultAccumulator queryBackup(String query,
-				String filterBySource, String filterByType, String filterByJob,
-				String username) {
-			Assert.fail("do not call");
-			return null;
-		}
+        // here for tests...
 
-		@Override
-		public Set<FileItem> searchAllFileItemsForJob(Long jobId) {
-			Assert.fail("do not call");
-			return null;
-		}
+        @Override
+        public SearchResultAccumulator queryBackup(String query, String filterBySource, String filterByType,
+                String filterByJob, String username) {
+            Assert.fail("do not call");
+            return null;
+        }
 
-		@Override
-		public FileInfo getFileInfoForFile(String fileId) {
-			Assert.fail("do not call");
-			return null;
-		}
+        @Override
+        public Set<FileItem> searchAllFileItemsForJob(Long jobId) {
+            Assert.fail("do not call");
+            return null;
+        }
 
-		@Override
-		public String getThumbnailPathForFile(String fileId) {
-			Assert.fail("do not call");
-			return null;
-		}
+        @Override
+        public FileInfo getFileInfoForFile(String fileId) {
+            Assert.fail("do not call");
+            return null;
+        }
 
-		@Override
-		public void deleteRecordsForUser() {
-			Assert.fail("do not call");
-		}
+        @Override
+        public String getThumbnailPathForFile(String fileId) {
+            Assert.fail("do not call");
+            return null;
+        }
 
-		@Override
-		public void deleteRecordsForJobAndTimestamp(Long jobId, Date timestamp) {
-			Assert.fail("do not call");
-		}
+        @Override
+        public void deleteRecordsForUser() {
+            Assert.fail("do not call");
+        }
 
-		@Override
-		public void close() {
-		}
+        @Override
+        public void deleteRecordsForJobAndTimestamp(Long jobId, Date timestamp) {
+            Assert.fail("do not call");
+        }
 
-	}
+        @Override
+        public void close() {
+        }
 
-	public class FakeFileStorage implements Storage {
+    }
 
-		@Override
-		public Iterator<DataObject> getDataObjects() throws StorageException {
-			DataObject pdfDob = new DataObject() {
+    public class FakeFileStorage implements Storage {
 
-				@Override
-				public byte[] getBytes() throws IOException {
-					return IOUtils.toByteArray(new FileReader(
-							"src/test/resources/tika_analyser.txt"));
-				}
+        @Override
+        public Iterator<DataObject> getDataObjects() throws StorageException {
+            DataObject pdfDob = new DataObject() {
 
-				@Override
-				public long getLength() {
-					return 21;
-				}
+                @Override
+                public byte[] getBytes() throws IOException {
+                    return IOUtils.toByteArray(new FileReader("src/test/resources/tika_analyser.pdf"));
+                }
 
-				@Override
-				public String getPath() {
-					return "abc";
-				}
+                @Override
+                public long getLength() {
+                    return 21;
+                }
 
-				@Override
-				public MetainfoContainer getMetainfo() {
-					return null;
-				}
+                @Override
+                public String getPath() {
+                    return "abc/tika_analyser.pdf";
+                }
 
-				@Override
-				public void setMetainfo(MetainfoContainer meta) {
-				}
-			};
-			return Arrays.asList(pdfDob).iterator();
-		}
+                @Override
+                public MetainfoContainer getMetainfo() {
+                    return null;
+                }
 
-		// here for tests...
+                @Override
+                public void setMetainfo(MetainfoContainer meta) {
+                }
+            };
+            return Arrays.asList(pdfDob).iterator();
+        }
 
-		@Override
-		public void open(String path) throws StorageException {
-			Assert.fail("do not call");
-		}
+        // here for tests...
 
-		@Override
-		public void close() throws StorageException {
-			Assert.fail("do not call");
-		}
+        @Override
+        public void open(String path) throws StorageException {
+            Assert.fail("do not call");
+        }
 
-		@Override
-		public void delete() throws StorageException {
-			Assert.fail("do not call");
-		}
+        @Override
+        public void close() throws StorageException {
+            Assert.fail("do not call");
+        }
 
-		@Override
-		public int getDataObjectCount() throws StorageException {
-			Assert.fail("do not call");
-			return 0;
-		}
+        @Override
+        public void delete() throws StorageException {
+            Assert.fail("do not call");
+        }
 
-		@Override
-		public long getDataObjectSize() throws StorageException {
-			Assert.fail("do not call");
-			return 0;
-		}
+        @Override
+        public int getDataObjectCount() throws StorageException {
+            Assert.fail("do not call");
+            return 0;
+        }
 
-		@Override
-		public boolean existsPath(String path) throws StorageException {
-			Assert.fail("do not call");
-			return false;
-		}
+        @Override
+        public long getDataObjectSize() throws StorageException {
+            Assert.fail("do not call");
+            return 0;
+        }
 
-		@Override
-		public void addFile(InputStream is, String path,
-				MetainfoContainer metadata) throws StorageException {
-			Assert.fail("do not call");
-		}
+        @Override
+        public boolean existsPath(String path) throws StorageException {
+            Assert.fail("do not call");
+            return false;
+        }
 
-		@Override
-		public void removeFile(String path) throws StorageException {
-			Assert.fail("do not call");
-		}
+        @Override
+        public void addFile(InputStream is, String path, MetainfoContainer metadata) throws StorageException {
+            Assert.fail("do not call");
+        }
 
-		@Override
-		public void removeDir(String path) throws StorageException {
-			Assert.fail("do not call");
-		}
+        @Override
+        public void removeFile(String path) throws StorageException {
+            Assert.fail("do not call");
+        }
 
-		@Override
-		public void move(String fromPath, String toPath)
-				throws StorageException {
-			Assert.fail("do not call");
-		}
+        @Override
+        public void removeDir(String path) throws StorageException {
+            Assert.fail("do not call");
+        }
 
-	}
+        @Override
+        public void move(String fromPath, String toPath) throws StorageException {
+            Assert.fail("do not call");
+        }
+
+    }
 
 }

@@ -13,6 +13,7 @@ import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.backmeup.index.api.IndexClient;
 import org.backmeup.index.api.IndexFields;
@@ -30,7 +31,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 public class IndexAction implements Action {
-    private final Logger logger = LoggerFactory.getLogger(IndexAction.class);
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private IndexClient client;
 
@@ -51,15 +52,21 @@ public class IndexAction implements Action {
         this.client = client;
     }
 
-    private static final String START_INDEX_PROCESS = "Starting index process";
+    private static final String START_INDEX_PROCESS = ">>>>>Starting index plugin ";
     private static final String ANALYZING = "Analyzing data object ";
-    private static final String SKIPPING = "This filetype is not indexed";
-    private static final String INDEXING = "Indexing data object ";
-    private static final String INDEX_PROCESS_COMPLETE = "Indexing complete";
+    private static final String SKIPPING = "This filetype is not indexed (blacklist) ";
+    private static final String INDEXING_OBJECT_STARTED = "Elastic Search Indexing data object started ";
+    private static final String INDEXING_OBJECT_COMPLETED = "Elastic Search Indexing data object completed ";
+    private static final String INDEX_PROCESS_COMPLETE = ">>>>>Indexing plugin completed ";
+    private static final String ERROR_SKIPPING_ITEM = "Error indexing data object, skipping object ";
 
     @Override
     public void doAction(Properties accessData, Properties parameters, List<String> options, Storage storage,
             BackupJobDTO job, Progressable progressor) throws ActionException {
+
+        int indexedItems_OK = 0;
+        int indexedItems_SKIPPED = 0;
+        int indexedItems_SKIPPED_ERROR = 0;
 
         this.logger.debug("Starting file analysis...");
         progressor.progress(START_INDEX_PROCESS);
@@ -78,50 +85,69 @@ public class IndexAction implements Action {
         try {
             Iterator<DataObject> dataObjects = storage.getDataObjects();
             while (dataObjects.hasNext()) {
-                DataObject dob = dataObjects.next();
-                progressor.progress(ANALYZING + dob.getPath());
+                try {
+                    DataObject dob = dataObjects.next();
+                    progressor.progress(ANALYZING + dob.getPath());
 
-                if (needsIndexing(dob)) {
-                    //call Apache Tika to analyze the object
-                    Map<String, String> meta = analyzer.analyze(dob);
-                    String mime = meta.get("Content-Type");
-                    String fulltext = null;
-                    if (mime != null) {
-                        fulltext = extractFullText(dob, meta.get("Content-Type"));
+                    if (needsIndexing(dob)) {
+                        //call Apache Tika to analyze the object
+                        Map<String, String> meta = analyzer.analyze(dob);
+                        String mime = meta.get("Content-Type");
+                        String fulltext = null;
+                        if (mime != null) {
+                            fulltext = extractFullText(dob, meta.get("Content-Type"));
+                        }
+
+                        progressor.progress(INDEXING_OBJECT_STARTED + dob.getPath());
+                        initIndexClient(job.getUser().getUserId());
+                        ElasticSearchIndexer indexer = new ElasticSearchIndexer(this.client);
+
+                        meta = new HashMap<>();
+                        meta.put(IndexFields.FIELD_CONTENT_TYPE, mime);
+                        if (fulltext != null)
+                            meta.put(IndexFields.FIELD_FULLTEXT, fulltext);
+
+                        this.logger.debug("Indexing " + dob.getPath());
+                        //push information to ElasticSearch
+                        indexer.doIndexing(job, dob, meta, indexingTimestamp);
+                        indexedItems_OK++;
+                        progressor.progress(INDEXING_OBJECT_COMPLETED + dob.getPath());
+                    } else {
+                        progressor.progress(SKIPPING + dob.getPath());
+                        indexedItems_SKIPPED++;
                     }
-
-                    progressor.progress(INDEXING + dob.getPath());
-                    initIndexClient(job.getUser().getUserId());
-                    ElasticSearchIndexer indexer = new ElasticSearchIndexer(this.client);
-
-                    this.logger.debug("Indexing " + dob.getPath());
-                    meta = new HashMap<>();
-                    meta.put(IndexFields.FIELD_CONTENT_TYPE, mime);
-                    if (fulltext != null)
-                        meta.put(IndexFields.FIELD_FULLTEXT, fulltext);
-
-                    //push information to ElasticSearch
-                    indexer.doIndexing(job, dob, meta, indexingTimestamp);
-                } else {
-                    progressor.progress(SKIPPING);
+                } catch (Exception e) {
+                    progressor.progress(ERROR_SKIPPING_ITEM + " " + e.toString());
+                    indexedItems_SKIPPED_ERROR++;
                 }
             }
         } catch (Exception e) {
             throw new ActionException(e);
         }
 
-        progressor.progress(INDEX_PROCESS_COMPLETE);
+        progressor.progress(INDEX_PROCESS_COMPLETE + " # of items indexed OK: " + indexedItems_OK
+                + " SKIPPED (blacklist): " + indexedItems_SKIPPED + " FAILED: " + indexedItems_SKIPPED_ERROR);
     }
 
     private boolean needsIndexing(DataObject dob) {
-        // TODO make this list configurable
+        // switching into whitelist approach for now
         if (dob.getPath().endsWith(".css"))
             return false;
 
         if (dob.getPath().endsWith(".xsd"))
             return false;
 
-        return true;
+        //TODO need to fix osgi classloading issues for org.apache.tika.parser.image.MetadataExtractor -> ClassNotFoundException com.drew.metadata.MetadataException
+        if (dob.getPath().endsWith(".jpg"))
+            return false;
+
+        if (dob.getPath().endsWith(".txt"))
+            return true;
+
+        if (dob.getPath().endsWith(".pdf"))
+            return true;
+
+        return false;
     }
 
     private String extractFullText(DataObject dob, String contentType) throws IOException, SAXException, TikaException {
@@ -129,7 +155,11 @@ public class IndexAction implements Action {
         Metadata metadata = new Metadata();
 
         AutoDetectParser parser = new AutoDetectParser();
-        parser.parse(new ByteArrayInputStream(dob.getBytes()), handler, metadata, new ParseContext());
+        ParseContext context = new ParseContext();
+        context.set(Parser.class, parser);
+
+        parser.parse(new ByteArrayInputStream(dob.getBytes()), handler, metadata, context);
+
         return handler.toString();
     }
 
