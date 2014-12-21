@@ -147,6 +147,9 @@ public class IndexAction implements Action {
         if (dob.getPath().endsWith(".pdf"))
             return true;
 
+        if (dob.getPath().endsWith(".html"))
+            return true;
+
         return false;
     }
 
