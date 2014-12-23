@@ -33,8 +33,7 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
 
 	@Override
 	public String createRedirectURL(Properties inputProperties, String callback) {
-		 inputProperties.setProperty("callback", callback);
-		 FacebookHelper fh = FacebookHelper.getInstance();
+		FacebookHelper fh = FacebookHelper.getInstance();
 		
 		return "https://www.facebook.com/dialog/oauth?client_id=" + fh.getAppKey() +
 				"&return_session=false&redirect_uri="+callback+"&scope="
@@ -53,7 +52,7 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
 	@Override
 	public String authorize(Properties inputProperties) {
 		String code = inputProperties.getProperty("code");
-		String callback = inputProperties.getProperty("callback");
+		String callback = inputProperties.getProperty(OAuthBasedAuthorizable.PROP_CALLBACK_URL);
 		String accessToken = "";
 		HttpURLConnection c = null;
 		URL url;
