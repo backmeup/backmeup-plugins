@@ -49,11 +49,6 @@ public class DropboxAuthenticator implements OAuthBasedAuthorizable {
 		try {
 			WebAuthSession session = DropboxHelper.getInstance().getWebAuthSession();
 			
-			WebAuthInfo authInfo = session.getAuthInfo();       
-	        RequestTokenPair rtp = authInfo.requestTokenPair;
-	        //inputProperties.setProperty(DropboxHelper.PROPERTY_TOKEN, rtp.key);
-	        inputProperties.setProperty(DropboxHelper.PROPERTY_SECRET, rtp.secret);
-
 			String token = inputProperties.getProperty(DropboxHelper.PROPERTY_TOKEN);
 			String secret = inputProperties.getProperty(DropboxHelper.PROPERTY_SECRET);
 
