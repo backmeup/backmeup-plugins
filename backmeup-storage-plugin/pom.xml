@@ -1,18 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
-    <parent>
+
+	<parent>
 		<artifactId>plugins</artifactId>
 		<groupId>org.backmeup</groupId>
 		<version>2.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-    
+
 	<artifactId>storage</artifactId>
 	<packaging>bundle</packaging>
-	
-    <dependencies>
+
+	<dependencies>
 		<dependency>
 			<groupId>org.backmeup</groupId>
 			<artifactId>backmeup-storage-client</artifactId>
@@ -20,7 +20,7 @@
 			<type>bundle</type>
 		</dependency>
 	</dependencies>
-    
+
 	<build>
 		<plugins>
 			<plugin>
@@ -34,14 +34,27 @@
 						<Bundle-Name>${project.name}</Bundle-Name>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Import-Package>
-							javax.crypto,javax.crypto.spec,javax.naming,javax.naming.directory,javax.naming.ldap,
-							javax.net,javax.net.ssl,javax.security.auth.x500,javax.sql,javax.xml.bind.annotation,
-							org.ietf.jgss,org.osgi.framework,org.osgi.service.cm,org.slf4j,org.slf4j.spi, org.slf4j.impl,
-                            net.sf.ehcache.*;resolution:=optional,net.spy.memcached.*;resolution:=optional,
-                        </Import-Package>
+							javax.crypto,
+							javax.crypto.spec,
+							javax.naming,
+							javax.naming.directory,
+							javax.naming.ldap,
+							javax.net,
+							javax.net.ssl,
+							javax.security.auth.x500,
+							javax.sql,
+							javax.xml.bind.annotation,
+							net.sf.ehcache.*;resolution:=optional,
+							net.spy.memcached.*;resolution:=optional,
+							org.ietf.jgss,
+							org.osgi.framework,
+							org.osgi.service.cm,
+							org.slf4j,org.slf4j.spi,
+							org.slf4j.impl,
+						</Import-Package>
 						<Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
-                        <Embed-Directory>lib</Embed-Directory>
+						<Embed-Transitive>true</Embed-Transitive>
+						<Embed-Directory>lib</Embed-Directory>
 						<Export-Package>org.backmeup.plugin.storage</Export-Package>
 						<Private-Package>org.backmeup.plugin.storage.*</Private-Package>
 					</instructions>
