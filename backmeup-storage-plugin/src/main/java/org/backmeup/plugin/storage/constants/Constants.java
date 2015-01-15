@@ -1,10 +1,6 @@
 package org.backmeup.plugin.storage.constants;
 
 public final class Constants {
-    private Constants() {
-        // Utility classes should not have a public constructor
-    }
-
     public static final String PROP_USERNAME = "username";
     public static final String PROP_USERNAME_LABEL = "Username";
     public static final String PROP_USERNAME_DESC = "Your BackMeUp username";
@@ -17,4 +13,8 @@ public final class Constants {
     
     public static final String ACCESS_TOKEN = "backmeupStorageAccessToken";
     public static final String CONNECTION_STRING = "connectionString";
+    
+    private Constants() {
+        // Utility classes should not have a public constructor
+    }
 }

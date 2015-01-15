@@ -35,17 +35,17 @@ public class PropertiesUtil {
     }
 
     private void loadProperties() {
-        Properties properties = new Properties();
         InputStream is = getClass().getClassLoader().getResourceAsStream(
                 PROPERTIES_FILE);
-        if (is == null)
+        if (is == null) {
             throw new PluginException(
                     BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
                     "Fatal error: cannot find dropbox.properties within jar-file!");
+        }
 
+        properties = new Properties();
         try {
             properties.load(is);
-            is.close();
         } catch (IOException e) {
             throw new PluginException(
                     BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
@@ -57,9 +57,12 @@ public class PropertiesUtil {
                     is.close();
                 }
             } catch (Exception e) {
+                throw new PluginException(
+                        BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
+                        "Error: could not close dropbox.properties: "
+                                + e.getMessage(), e);
             }
         }
-
     }
 
     public String getProperty(final String key) {

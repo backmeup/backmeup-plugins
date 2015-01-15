@@ -49,7 +49,7 @@ public class BackmeupStorageDatasink implements Datasink {
 
         progressor.progress("Initialized storage client");
 
-        Iterator<DataObject> it = storage.getDataObjects();		
+        Iterator<DataObject> it = storage.getDataObjects();
         int i = 1;
         progressor.progress("Start uploading ...");
         while(it.hasNext()) {
@@ -61,7 +61,7 @@ public class BackmeupStorageDatasink implements Datasink {
             try {
                 ByteArrayInputStream bis = new ByteArrayInputStream(dataObj.getBytes());
                 String log = String.format("Uploading file %s (Number: %d)...", filepath, i++);
-                progressor.progress(log);				
+                progressor.progress(log);
                 client.saveFile(accessToken, filepath, true, bis.available(), bis);
                 bis.close();
             } catch (IOException e) {

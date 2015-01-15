@@ -37,7 +37,8 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
             
             return "User";
         } catch (Exception e) {
-            throw new PluginException(BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID, "An error occurred during authorization");
+            throw new PluginException(BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID, 
+                    "An error occurred during authorization: " + e.getMessage());
         }
     }
 
