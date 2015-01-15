@@ -13,9 +13,8 @@ import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 import org.backmeup.plugin.storage.constants.Constants;
+import org.backmeup.storage.api.StorageClient;
 import org.backmeup.storage.client.BackmeupStorageClient;
-import org.backmeup.storage.client.StorageClient;
-import org.backmeup.storage.client.StorageConnectionStringBuilder;
 
 /**
  * The BackmeupStorageDatasink class uploads all elements from the StorageReader up to
@@ -24,36 +23,51 @@ import org.backmeup.storage.client.StorageConnectionStringBuilder;
  */
 public class BackmeupStorageDatasink implements Datasink {
 
-	@Override
-	public String upload(Properties authData, Properties properties, List<String> options, Storage storage, Progressable progressor) throws StorageException {		
-		String tmpDir = authData.getProperty("org.backmeup.tmpdir");
-		if (tmpDir == null) {
-		  tmpDir = "";
-		}
-		
-		String connectionString = authData.getProperty(Constants.PROP_CONNECTION_STRING);
-		StorageConnectionStringBuilder builder = new StorageConnectionStringBuilder(connectionString);
-		String accessToken = builder.getProperty("Token");
-		
-		StorageClient client = new BackmeupStorageClient(builder.getUrl());
-		
-		Iterator<DataObject> it = storage.getDataObjects();		
-		int i = 1;
-		while(it.hasNext()) {
-			DataObject dataObj = it.next();
-			
-			String filepath = "/" + tmpDir + dataObj.getPath();
-			
-			try {
-				ByteArrayInputStream bis = new ByteArrayInputStream(dataObj.getBytes());
-				String log = String.format("Uploading file %s (Number: %d)...", filepath, i++);
-				progressor.progress(log);				
-				client.saveFile(accessToken, filepath, true, bis.available(), bis);
-				bis.close();
-			} catch (IOException e) {
-				throw new PluginException(BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID, "Error during upload of file %s", e);
-			}
-		}
-		return null;
-	}
+    @Override
+    public String upload(Properties authData, Properties properties, List<String> options, Storage storage, Progressable progressor) throws StorageException {
+        progressor.progress("Start backmeup-storage-plugin");
+
+        String tmpDir = authData.getProperty("org.backmeup.tmpdir");
+        if (tmpDir == null) {
+            tmpDir = "";
+        }
+
+        progressor.progress("Get connection string");
+        progressor.progress("AuthData:");
+        for (String key : authData.stringPropertyNames()) {
+            String value = authData.getProperty(key);
+            progressor.progress(key + ": " + value);
+        }
+
+        String storageUrl = authData.getProperty(Constants.PROP_STORAGE_URL);
+        progressor.progress("Storage url= " + storageUrl);
+
+        String accessToken = authData.getProperty(Constants.ACCESS_TOKEN);
+        progressor.progress("Using Token=" + accessToken);
+
+        StorageClient client = new BackmeupStorageClient(storageUrl);
+
+        progressor.progress("Initialized storage client");
+
+        Iterator<DataObject> it = storage.getDataObjects();		
+        int i = 1;
+        progressor.progress("Start uploading ...");
+        while(it.hasNext()) {
+            DataObject dataObj = it.next();
+
+            String filepath = "/" + tmpDir + dataObj.getPath();
+            progressor.progress("Filepath: " + filepath);
+
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream(dataObj.getBytes());
+                String log = String.format("Uploading file %s (Number: %d)...", filepath, i++);
+                progressor.progress(log);				
+                client.saveFile(accessToken, filepath, true, bis.available(), bis);
+                bis.close();
+            } catch (IOException e) {
+                throw new PluginException(BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID, "Error during upload of file %s", e);
+            }
+        }
+        return null;
+    }
 }
