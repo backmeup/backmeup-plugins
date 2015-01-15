@@ -44,13 +44,21 @@
 							javax.security.auth.x500,
 							javax.sql,
 							javax.xml.bind.annotation,
+							javax.xml.datatype,
+							javax.xml.namespace,
+							javax.xml.parsers,
 							net.sf.ehcache.*;resolution:=optional,
 							net.spy.memcached.*;resolution:=optional,
 							org.ietf.jgss,
 							org.osgi.framework,
 							org.osgi.service.cm,
-							org.slf4j,org.slf4j.spi,
+							org.slf4j,
+							org.slf4j.spi,
 							org.slf4j.impl,
+							org.w3c.dom,
+							org.w3c.dom.bootstrap,
+							org.w3c.dom.ls,
+							org.xml.sax,
 						</Import-Package>
 						<Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
