@@ -43,6 +43,7 @@
         -->
         <version.backmeup>2.0.0-SNAPSHOT</version.backmeup>
         <version.backmeup.indexer>0.0.1-SNAPSHOT</version.backmeup.indexer>
+        <version.backmeup.storage>0.0.1-SNAPSHOT</version.backmeup.storage>
 
         <version.ch.qos.logback>1.0.0</version.ch.qos.logback>
         <version.com.google.code.gson>2.2.4</version.com.google.code.gson>

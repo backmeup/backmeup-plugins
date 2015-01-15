@@ -16,7 +16,13 @@
 		<dependency>
 			<groupId>org.backmeup</groupId>
 			<artifactId>backmeup-storage-client</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${version.backmeup.storage}</version>
+			<type>bundle</type>
+		</dependency>
+		<dependency>
+			<groupId>org.backmeup</groupId>
+			<artifactId>backmeup-storage-model</artifactId>
+			<version>${version.backmeup.storage}</version>
 			<type>bundle</type>
 		</dependency>
 	</dependencies>
