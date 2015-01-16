@@ -2,6 +2,7 @@ package org.backmeup.ftp.test;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.util.Vector;
 
 import org.junit.After;
@@ -49,6 +50,8 @@ public class SFTPConnectionTest {
 
             assertTrue("sftp connected", channel.isConnected());
 
+            sftpChannel.cd("src/test/resources/ftp/testUser1");
+
             //browse root ftp directory
             Vector<LsEntry> vEntries = sftpChannel.ls(".");
             for (LsEntry entry : vEntries) {
@@ -64,17 +67,10 @@ public class SFTPConnectionTest {
             }
 
             //reads TestSrc from sftpServer and writes it to localfile.txt
-            sftpChannel.get("src/test/resources/TestSrc.txt", "src/test/resources/ftp/testUser1/localfile.txt");
+            sftpChannel.get("TestSrc.txt", "src/test/resources/ftp/localfile.txt");
 
-            sftpChannel.cd("src/test/resources/ftp/testUser1");
-            vEntries = sftpChannel.ls(".");
-            boolean bFound = false;
-            for (LsEntry entry : vEntries) {
-                if (entry.getFilename().equals("localfile.txt")) {
-                    bFound = true;
-                }
-            }
-            assertTrue("found file", bFound);
+            File fTest = new File("src/test/resources/ftp/localfile.txt");
+            assertTrue(fTest.exists());
 
             sftpChannel.exit();
             session.disconnect();

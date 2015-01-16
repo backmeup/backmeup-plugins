@@ -1,8 +1,11 @@
 package org.backmeup.ftp.test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,11 +94,22 @@ public class SFTPServerSetup extends ExternalResource {
 
                 if ((!homeDir.exists()) && (!homeDir.mkdirs())) {
                     System.out.println("Cannot create user home :: " + homeDirStr);
+                } else {
+                    initUserSpace(homeDir);
                 }
 
                 return new NativeFileSystemView(session.getUsername(), false);
             };
         });
+    }
+
+    private void initUserSpace(File userHome) {
+        //copys a file into the user home directory
+        try {
+            copyFile(new File("src/test/resources/TestSrc.txt"), new File(userHome.getAbsolutePath() + "/TestSrc.txt"));
+        } catch (IOException e) {
+            System.out.println("issues copying file to user space " + e.toString());
+        }
     }
 
     private void createFtpWorkingDir() {
@@ -120,6 +134,29 @@ public class SFTPServerSetup extends ExternalResource {
         }
         if (!f.delete())
             throw new FileNotFoundException("Failed to delete file: " + f);
+    }
+
+    private static void copyFile(File sourceFile, File destFile) throws IOException {
+        if (!sourceFile.exists()) {
+            return;
+        }
+        if (!destFile.exists()) {
+            destFile.createNewFile();
+        }
+        FileChannel source = null;
+        FileChannel destination = null;
+        source = new FileInputStream(sourceFile).getChannel();
+        destination = new FileOutputStream(destFile).getChannel();
+        if (destination != null && source != null) {
+            destination.transferFrom(source, 0, source.size());
+        }
+        if (source != null) {
+            source.close();
+        }
+        if (destination != null) {
+            destination.close();
+        }
+
     }
 
 }
