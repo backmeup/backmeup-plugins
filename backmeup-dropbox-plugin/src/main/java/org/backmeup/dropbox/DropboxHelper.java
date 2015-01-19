@@ -22,10 +22,15 @@ import com.dropbox.client2.session.WebAuthSession;
  *
  */
 public class DropboxHelper {
+	private static final String PROPERTY_APP_SECRET = "app.secret";
+    private static final String PROPERTY_APP_KEY = "app.key";
+    
+    public static final String PROPERTY_REQUEST_TOKEN = "dbxreqtoken";
+	public static final String PROPERTY_REQUEST_SECRET = "dbxreqsecret";
 	
-	public static final String PROPERTY_TOKEN = "token";
+	public static final String PROPERTY_ACCESS_TOKEN = "dbxaccesstoken";
+	public static final String PROPERTY_ACCESS_SECRET = "dbxaccesssecret";
 	
-	public static final String PROPERTY_SECRET = "secret";
 	
 	private final String appKey;
 	
@@ -44,8 +49,8 @@ public class DropboxHelper {
 			throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Fatal error: could not load dropbox.properties: " + e.getMessage(), e);
 		}
 		
-		appKey = properties.getProperty("app.key");
-		appSecret = properties.getProperty("app.secret");
+		appKey = properties.getProperty(PROPERTY_APP_KEY);
+		appSecret = properties.getProperty(PROPERTY_APP_SECRET);
 	}
 	
 	public static DropboxHelper getInstance() {
@@ -58,8 +63,8 @@ public class DropboxHelper {
 	}
 	
 	public static DropboxAPI<WebAuthSession> getApi(Properties accessData) {		
-		String token = accessData.getProperty(DropboxHelper.PROPERTY_TOKEN);
-		String secret = accessData.getProperty(DropboxHelper.PROPERTY_SECRET);
+		String token = accessData.getProperty(DropboxHelper.PROPERTY_ACCESS_TOKEN);
+		String secret = accessData.getProperty(DropboxHelper.PROPERTY_ACCESS_SECRET);
 		WebAuthSession session = DropboxHelper.getInstance().getWebAuthSession();
 		session.setAccessTokenPair(new AccessTokenPair(token, secret));
 		if (!session.isLinked()) {
