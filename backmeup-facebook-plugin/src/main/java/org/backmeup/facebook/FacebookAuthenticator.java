@@ -3,12 +3,14 @@ package org.backmeup.facebook;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.spi.OAuthBasedAuthorizable;
+import org.backmeup.plugin.util.PluginUtils;
 
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
@@ -33,7 +35,7 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
 
     @Override
     public String createRedirectURL(Properties inputProperties, String callback) {
-        inputProperties.setProperty("callback", callback);
+        inputProperties.setProperty(FacebookHelper.PROPERTY_CALLBACK_URL, callback);
 
         return "https://www.facebook.com/dialog/oauth?client_id=" + FacebookHelper.getAppKey() + "&redirect_uri=" + callback + "&scope="
                 + "user_birthday,user_photos,read_stream,user_about_me,user_activities,"
@@ -65,8 +67,13 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
     }
 
     private String retrieveAccessToken(Properties inputProperties) throws IOException {
-        String code = inputProperties.getProperty("code");
-        String callback = inputProperties.getProperty("callback");
+        String code = null;
+        try {
+            code = PluginUtils.splitQuery(inputProperties.getProperty(OAuthBasedAuthorizable.QUERY_PARAM_PROPERTY)).getParameter("code");
+        } catch(MalformedURLException | NullPointerException e) {
+            throw new PluginException(FacebookDescriptor.FACEBOOK_ID, "cannot parse oAuth response", e);
+        }
+        String callback = inputProperties.getProperty(FacebookHelper.PROPERTY_CALLBACK_URL);
         StringBuilder content = new StringBuilder();
 
         try {

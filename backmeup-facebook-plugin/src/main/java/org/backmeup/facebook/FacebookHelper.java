@@ -13,6 +13,7 @@ public class FacebookHelper {
     private static final String PROPERTY_APP_SECRET = "app.secret";
     private static final String PROPERTY_APP_KEY = "app.key";
     
+    public static final String PROPERTY_CALLBACK_URL = "fbcallback";
 	public static final String PROPERTY_ACCESS_TOKEN = "fbaccesstoken";
 	
     private static final Properties PROPERTIES = new Properties();
