@@ -43,7 +43,7 @@ public class PropertiesUtil {
                     "Fatal error: cannot find dropbox.properties within jar-file!");
         }
 
-        properties = new Properties();
+        properties = new XProperties();
         try {
             properties.load(is);
         } catch (IOException e) {
