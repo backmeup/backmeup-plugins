@@ -54,7 +54,7 @@ public class IndexAction implements Action {
 
     private static final String START_INDEX_PROCESS = ">>>>>Starting index plugin ";
     private static final String ANALYZING = "Analyzing data object ";
-    private static final String SKIPPING = "This filetype is not indexed (blacklist) ";
+    private static final String SKIPPING_TIKA_ANALYSIS = "This filetype is not analysed (tika blacklist) ";
     private static final String INDEXING_OBJECT_STARTED = "Elastic Search Indexing data object started ";
     private static final String INDEXING_OBJECT_COMPLETED = "Elastic Search Indexing data object completed ";
     private static final String INDEX_PROCESS_COMPLETE = ">>>>>Indexing plugin completed ";
@@ -65,7 +65,7 @@ public class IndexAction implements Action {
             BackupJobDTO job, Progressable progressor) throws ActionException {
 
         int indexedItems_OK = 0;
-        int indexedItems_SKIPPED = 0;
+        int indexedItems_SKIPPED_TIKA_ANALYSIS = 0;
         int indexedItems_SKIPPED_ERROR = 0;
 
         this.logger.debug("Starting file analysis...");
@@ -89,33 +89,38 @@ public class IndexAction implements Action {
                     DataObject dob = dataObjects.next();
                     progressor.progress(ANALYZING + dob.getPath());
 
+                    String mime = null;
+                    Map<String, String> meta = new HashMap<>();
+                    String fulltext = null;
+
                     if (needsIndexing(dob)) {
                         //call Apache Tika to analyze the object
-                        Map<String, String> meta = analyzer.analyze(dob);
-                        String mime = meta.get("Content-Type");
-                        String fulltext = null;
+                        meta = analyzer.analyze(dob);
+                        mime = meta.get("Content-Type");
                         if (mime != null) {
                             fulltext = extractFullText(dob, meta.get("Content-Type"));
                         }
-
-                        progressor.progress(INDEXING_OBJECT_STARTED + dob.getPath());
-                        initIndexClient(job.getUser().getUserId());
-                        ElasticSearchIndexer indexer = new ElasticSearchIndexer(this.client);
-
-                        meta = new HashMap<>();
-                        meta.put(IndexFields.FIELD_CONTENT_TYPE, mime);
-                        if (fulltext != null)
-                            meta.put(IndexFields.FIELD_FULLTEXT, fulltext);
-
-                        this.logger.debug("Indexing " + dob.getPath());
-                        //push information to ElasticSearch
-                        indexer.doIndexing(job, dob, meta, indexingTimestamp);
-                        indexedItems_OK++;
-                        progressor.progress(INDEXING_OBJECT_COMPLETED + dob.getPath());
                     } else {
-                        progressor.progress(SKIPPING + dob.getPath());
-                        indexedItems_SKIPPED++;
+                        progressor.progress(SKIPPING_TIKA_ANALYSIS + dob.getPath());
+                        indexedItems_SKIPPED_TIKA_ANALYSIS++;
                     }
+
+                    progressor.progress(INDEXING_OBJECT_STARTED + dob.getPath());
+                    initIndexClient(job.getUser().getUserId());
+                    ElasticSearchIndexer indexer = new ElasticSearchIndexer(this.client);
+
+                    meta = new HashMap<>();
+                    meta.put(IndexFields.FIELD_CONTENT_TYPE, mime);
+                    if (fulltext != null) {
+                        meta.put(IndexFields.FIELD_FULLTEXT, fulltext);
+                    }
+
+                    this.logger.debug("Indexing " + dob.getPath());
+                    //push information to ElasticSearch
+                    indexer.doIndexing(job, dob, meta, indexingTimestamp);
+                    indexedItems_OK++;
+                    progressor.progress(INDEXING_OBJECT_COMPLETED + dob.getPath());
+
                 } catch (Exception e) {
                     progressor.progress(ERROR_SKIPPING_ITEM + " " + e.toString());
                     indexedItems_SKIPPED_ERROR++;
@@ -126,7 +131,8 @@ public class IndexAction implements Action {
         }
 
         progressor.progress(INDEX_PROCESS_COMPLETE + " # of items indexed OK: " + indexedItems_OK
-                + " SKIPPED (blacklist): " + indexedItems_SKIPPED + " FAILED: " + indexedItems_SKIPPED_ERROR);
+                + " SKIPPED (blacklist): " + indexedItems_SKIPPED_TIKA_ANALYSIS + " FAILED: "
+                + indexedItems_SKIPPED_ERROR);
     }
 
     private boolean needsIndexing(DataObject dob) {
