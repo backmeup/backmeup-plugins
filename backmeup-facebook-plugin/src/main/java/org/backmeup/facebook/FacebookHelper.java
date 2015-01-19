@@ -6,7 +6,7 @@ import java.util.Properties;
 /**
  * offers application key and secret 
  * 
- * @author Wplfgang Eibner
+ * @author Wolfgang Eibner
  *
  */
 public class FacebookHelper {
@@ -24,7 +24,7 @@ public class FacebookHelper {
 
     static {
         try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            ClassLoader loader = FacebookHelper.class.getClassLoader();
             if (loader.getResourceAsStream(PROPERTYFILE) != null) {
                 PROPERTIES.load(loader.getResourceAsStream(PROPERTYFILE));
             } else {
