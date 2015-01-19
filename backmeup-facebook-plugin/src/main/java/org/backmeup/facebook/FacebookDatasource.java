@@ -71,7 +71,7 @@ public class FacebookDatasource implements Datasource {
 	public void downloadAll(Properties authData, Properties properties, List<String> options,
 			Storage storage, Progressable progr) throws StorageException {
 
-		accessToken = authData.getProperty(FacebookHelper.PROPERTY_TOKEN);
+		accessToken = authData.getProperty(FacebookHelper.PROPERTY_ACCESS_TOKEN);
 		FacebookClient client = new DefaultFacebookClient(accessToken);
 
 		getThemes(storage, authData);

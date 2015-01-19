@@ -10,8 +10,10 @@ import java.util.Properties;
  *
  */
 public class FacebookHelper {
-	public static final String PROPERTY_TOKEN = "token";
-	public static final String PROPERTY_TOKEN_DESC = "The Facebook access token";
+    private static final String PROPERTY_APP_SECRET = "app.secret";
+    private static final String PROPERTY_APP_KEY = "app.key";
+    
+	public static final String PROPERTY_ACCESS_TOKEN = "fbaccesstoken";
 	
     private static final Properties PROPERTIES = new Properties();
     private static final String PROPERTYFILE = "facebook.properties";
@@ -41,11 +43,11 @@ public class FacebookHelper {
     }
 
 	public static String getAppKey() {
-		return getProperty("app.key");
+		return getProperty(PROPERTY_APP_KEY);
 	}
 	
 	public static String getAppSecret() {
-	    return getProperty("app.secret");
+	    return getProperty(PROPERTY_APP_SECRET);
 	}
 
 }

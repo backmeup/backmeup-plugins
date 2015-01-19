@@ -47,12 +47,12 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
 
     @Override
     public String authorize(Properties inputProperties) {
-        String accessToken = inputProperties.getProperty(FacebookHelper.PROPERTY_TOKEN);
+        String accessToken = inputProperties.getProperty(FacebookHelper.PROPERTY_ACCESS_TOKEN);
 
         try {
             if (accessToken == null) {
                 accessToken = this.retrieveAccessToken(inputProperties);
-                inputProperties.setProperty(FacebookHelper.PROPERTY_TOKEN, accessToken);
+                inputProperties.setProperty(FacebookHelper.PROPERTY_ACCESS_TOKEN, accessToken);
             }
 
             FacebookClient client = new DefaultFacebookClient(accessToken);
