@@ -70,7 +70,7 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
         String code = null;
         try {
             code = PluginUtils.splitQuery(inputProperties.getProperty(OAuthBasedAuthorizable.QUERY_PARAM_PROPERTY)).getParameter("code");
-        } catch(MalformedURLException | NullPointerException e) {
+        } catch(NullPointerException e) {
             throw new PluginException(FacebookDescriptor.FACEBOOK_ID, "cannot parse oAuth response", e);
         }
         String callback = inputProperties.getProperty(FacebookHelper.PROPERTY_CALLBACK_URL);
