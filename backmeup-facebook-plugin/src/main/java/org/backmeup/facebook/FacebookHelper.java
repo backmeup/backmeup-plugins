@@ -1,51 +1,51 @@
 package org.backmeup.facebook;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 /**
  * offers application key and secret 
  * 
- * @author mmurauer
+ * @author Wplfgang Eibner
  *
  */
 public class FacebookHelper {
 	public static final String PROPERTY_TOKEN = "token";
 	public static final String PROPERTY_TOKEN_DESC = "The Facebook access token";
 	
-	public static final String PROPERTY_SECRET = "secret";
-	
-	private final String appKey;
-	private final String appSecret;
-	
-	private FacebookHelper() {
-		Properties properties = new Properties();
-		InputStream is = getClass().getClassLoader().getResourceAsStream("facebook.properties");
-		if (is == null)
-			throw new RuntimeException("Fatal error: facebook.properties not found");
+    private static final Properties PROPERTIES = new Properties();
+    private static final String PROPERTYFILE = "facebook.properties";
 
-		try {
-			properties.load(is);
-			is.close();
-		} catch (IOException e) {
-			throw new RuntimeException("Fatal error: could not load facebook.properties: " + e.getMessage());
-		}
-		
-		appKey = properties.getProperty("app.key");
-		appSecret = properties.getProperty("app.secret");
-	}
+    private FacebookHelper() {
+    }
 
-	public static FacebookHelper getInstance() {
-		return new FacebookHelper();
-	}
+    static {
+        try {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            if (loader.getResourceAsStream(PROPERTYFILE) != null) {
+                PROPERTIES.load(loader.getResourceAsStream(PROPERTYFILE));
+            } else {
+                throw new IOException("unable to load properties file: " + PROPERTYFILE);
+            }
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
-	public String getAppKey() {
-		return appKey;
+    public static String getProperty(String key) {
+        return PROPERTIES.getProperty(key);
+    }
+
+    public static String getProperty(String key, String defaultValue) {
+        return PROPERTIES.getProperty(key, defaultValue);
+    }
+
+	public static String getAppKey() {
+		return getProperty("app.key");
 	}
 	
-	public String getAppSecret() {
-		return appSecret;
+	public static String getAppSecret() {
+	    return getProperty("app.secret");
 	}
 
 }

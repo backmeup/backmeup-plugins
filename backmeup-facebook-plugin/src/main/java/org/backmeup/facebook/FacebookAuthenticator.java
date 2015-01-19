@@ -19,7 +19,7 @@ import com.restfb.types.User;
  * The FacebookAuthenticator creates a redirect URL based on the app
  * informations and stores Accesstoken in the inputProperties
  * 
- * @author mmurauer
+ * @author Wolfgang Eibner
  * 
  */
 public class FacebookAuthenticator implements OAuthBasedAuthorizable {
@@ -34,9 +34,8 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
     @Override
     public String createRedirectURL(Properties inputProperties, String callback) {
         inputProperties.setProperty("callback", callback);
-        FacebookHelper fh = FacebookHelper.getInstance();
 
-        return "https://www.facebook.com/dialog/oauth?client_id=" + fh.getAppKey() + "&redirect_uri=" + callback + "&scope="
+        return "https://www.facebook.com/dialog/oauth?client_id=" + FacebookHelper.getAppKey() + "&redirect_uri=" + callback + "&scope="
                 + "user_birthday,user_photos,read_stream,user_about_me,user_activities,"
                 + "user_education_history,user_events,user_groups,user_hometown,user_interests"
                 + ",user_likes,user_location,user_notes,user_questions,user_relationships," + "user_relationship_details,user_religion_politics,user_status,"
@@ -71,8 +70,8 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
         StringBuilder content = new StringBuilder();
 
         try {
-            URL url = new URL("https://graph.facebook.com/oauth/access_token?" + "client_id=" + FacebookHelper.getInstance().getAppKey() + "&redirect_uri="
-                    + callback + "&client_secret=" + FacebookHelper.getInstance().getAppSecret() + "&code=" + code);
+            URL url = new URL("https://graph.facebook.com/oauth/access_token?" + "client_id=" + FacebookHelper.getAppKey() + "&redirect_uri="
+                    + callback + "&client_secret=" + FacebookHelper.getAppSecret() + "&code=" + code);
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName("UTF-8")))) {
                 int temp;
