@@ -31,7 +31,7 @@ public class DummyDescriptor extends BaseSourceSinkDescribable {
         props.setProperty(Metadata.FILE_SIZE_LIMIT, "100");
         props.setProperty(Metadata.QUOTA, "50");
         props.setProperty(Metadata.QUOTA_LIMIT, "200");
-        metadata.setProperty(Metadata.STORAGE_ALWAYS_ACCESSIBLE, "true");
+        props.setProperty(Metadata.STORAGE_ALWAYS_ACCESSIBLE, "true");
         return props;
     }
 
