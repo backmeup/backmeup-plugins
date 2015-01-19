@@ -6,8 +6,7 @@ import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 /**
- * The BackmeupStorageDescriptor provides all necessary information about this
- * plugin.
+ * The BackmeupStorageDescriptor provides all necessary information about this plugin.
  * 
  */
 public class BackmeupStorageDescriptor extends BaseSourceSinkDescribable {
@@ -42,6 +41,8 @@ public class BackmeupStorageDescriptor extends BaseSourceSinkDescribable {
     public Properties getMetadata(Properties accessData) {
         Properties metadata = new Properties();
         metadata.setProperty(Metadata.BACKUP_FREQUENCY, "daily");
+        metadata.setProperty(Metadata.STORAGE_ALWAYS_ACCESSIBLE, "true");
         return metadata;
     }
+
 }
