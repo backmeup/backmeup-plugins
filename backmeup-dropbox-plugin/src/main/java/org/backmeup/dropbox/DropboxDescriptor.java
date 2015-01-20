@@ -2,6 +2,7 @@ package org.backmeup.dropbox;
 
 import java.util.Properties;
 
+import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
@@ -53,8 +54,8 @@ public class DropboxDescriptor extends BaseSourceSinkDescribable {
         metadata.setProperty(Metadata.QUOTA_LIMIT, "2048");
 
         try {
-            if (accessData != null) {
-                DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(accessData);
+            if (accessData != null && !accessData.isEmpty()) {
+                DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(accessData);
                 if (api.getSession().isLinked()) {
                     double quota_limit = (double) api.accountInfo().quota / (1024.f * 1024.f);
                     double quota = (double) api.accountInfo().quotaNormal / (1024.f * 1024.f);
@@ -63,7 +64,7 @@ public class DropboxDescriptor extends BaseSourceSinkDescribable {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Could not load account metadata", ex);
         }
 
         metadata.setProperty(Metadata.STORAGE_ALWAYS_ACCESSIBLE, "true");

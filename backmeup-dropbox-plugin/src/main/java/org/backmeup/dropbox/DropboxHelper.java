@@ -22,7 +22,9 @@ import com.dropbox.client2.session.WebAuthSession;
  *
  */
 public class DropboxHelper {
-	private static final String PROPERTY_APP_SECRET = "app.secret";
+	private static final String PROPERTIES_FILE = "dropbox.properties";
+	
+    private static final String PROPERTY_APP_SECRET = "app.secret";
     private static final String PROPERTY_APP_KEY = "app.key";
     
     public static final String PROPERTY_REQUEST_TOKEN = "dbxreqtoken";
@@ -31,46 +33,71 @@ public class DropboxHelper {
 	public static final String PROPERTY_ACCESS_TOKEN = "dbxaccesstoken";
 	public static final String PROPERTY_ACCESS_SECRET = "dbxaccesssecret";
 	
+	private static DropboxHelper dropboxHelper;
 	
-	private final String appKey;
-	
-	private final String appSecret;
+	private String appKey;
+	private String appSecret;
 	
 	private DropboxHelper() {
-		Properties properties = new Properties();
-		InputStream is = getClass().getClassLoader().getResourceAsStream("dropbox.properties");
-		if (is == null)
-			throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Fatal error: cannot find dropbox.properties within jar-file!");
 
-		try {
-			properties.load(is);
-			is.close();
-		} catch (IOException e) {
-			throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Fatal error: could not load dropbox.properties: " + e.getMessage(), e);
-		}
-		
-		appKey = properties.getProperty(PROPERTY_APP_KEY);
-		appSecret = properties.getProperty(PROPERTY_APP_SECRET);
 	}
 	
 	public static DropboxHelper getInstance() {
-		return new DropboxHelper();
-	}
+        if (dropboxHelper == null) {
+            dropboxHelper = new DropboxHelper();
+            dropboxHelper.loadProperties();
+        }
+
+        return dropboxHelper;
+    }
 
 	public WebAuthSession getWebAuthSession() {
 		AppKeyPair appKeys = new AppKeyPair(appKey, appSecret);
 		return new WebAuthSession(appKeys, AccessType.DROPBOX);
 	}
 	
-	public static DropboxAPI<WebAuthSession> getApi(Properties accessData) {		
+	public DropboxAPI<WebAuthSession> getApi(Properties accessData) {		
 		String token = accessData.getProperty(DropboxHelper.PROPERTY_ACCESS_TOKEN);
 		String secret = accessData.getProperty(DropboxHelper.PROPERTY_ACCESS_SECRET);
+		
+		if(token == null || secret == null) {
+		    throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Access token and secret must not be null");
+		}
+		
 		WebAuthSession session = DropboxHelper.getInstance().getWebAuthSession();
 		session.setAccessTokenPair(new AccessTokenPair(token, secret));
+		
 		if (!session.isLinked()) {
-			throw new InvalidKeyException("org.backmeup.dropbox", "userToken, userSecret", token + ", " + secret, "dropbox.properties");
+			throw new InvalidKeyException("org.backmeup.dropbox", "userToken, userSecret", token + ", " + secret, PROPERTIES_FILE);
 		}
 		return new DropboxAPI<>(session);
 	}
 	
+	private void loadProperties() {
+        InputStream is = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE);
+        if (is == null)
+            throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Cannot find dropbox.properties within jar-file!");
+
+        Properties properties = new Properties();
+        try {
+            properties.load(is);
+            is.close();
+        } catch (IOException e) {
+            throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Could not load dropbox.properties: " + e.getMessage(), e);
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (Exception e) {
+                throw new PluginException(
+                        DropboxDescriptor.DROPBOX_ID,
+                        "Could not close dropbox.properties: "
+                                + e.getMessage(), e);
+            }
+        }
+        
+        appKey = properties.getProperty(PROPERTY_APP_KEY);
+        appSecret = properties.getProperty(PROPERTY_APP_SECRET);
+    } 
 }

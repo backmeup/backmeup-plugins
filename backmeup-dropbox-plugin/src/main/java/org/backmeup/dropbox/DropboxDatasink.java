@@ -26,7 +26,7 @@ public class DropboxDatasink implements Datasink {
 	@Override
 	public String upload(Properties accessData, Properties properties, List<String> options, Storage storage,
 			Progressable progressor) throws StorageException {
-		DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(accessData);
+		DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(accessData);
 		Iterator<DataObject> it = storage.getDataObjects();
 		while (it.hasNext()) {
 			DataObject dataObj = it.next();

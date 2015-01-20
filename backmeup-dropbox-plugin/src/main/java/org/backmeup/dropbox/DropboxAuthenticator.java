@@ -75,7 +75,7 @@ public class DropboxAuthenticator implements OAuthBasedAuthorizable {
 			
 			// Now we have an access token.
 			// Check if authentication is successful
-			DropboxAPI<WebAuthSession> api = DropboxHelper.getApi(inputProperties);
+			DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(inputProperties);
             if (!api.getSession().isLinked()) {
                 throw new PluginException(DropboxDescriptor.DROPBOX_ID, "An error occurred during authorization");          
             }
@@ -85,7 +85,7 @@ public class DropboxAuthenticator implements OAuthBasedAuthorizable {
             Entry entry = api.metadata("/", 100, null, true, null);
             entry.contents.size();
 			
-			return DropboxHelper.getApi(inputProperties).accountInfo().displayName;
+			return DropboxHelper.getInstance().getApi(inputProperties).accountInfo().displayName;
 			
 		} catch (DropboxException e) {
 			throw new PluginException(DropboxDescriptor.DROPBOX_ID, "An error occurred during post authorization", e);
