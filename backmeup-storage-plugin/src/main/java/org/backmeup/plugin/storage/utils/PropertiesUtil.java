@@ -40,7 +40,7 @@ public class PropertiesUtil {
         if (is == null) {
             throw new PluginException(
                     BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
-                    "Fatal error: cannot find dropbox.properties within jar-file!");
+                    "Fatal error: cannot find storage.properties within jar-file!");
         }
 
         properties = new XProperties();
@@ -49,7 +49,7 @@ public class PropertiesUtil {
         } catch (IOException e) {
             throw new PluginException(
                     BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
-                    "Fatal error: could not load dropbox.properties: "
+                    "Fatal error: could not load storage.properties: "
                             + e.getMessage(), e);
         } finally {
             try {
@@ -59,7 +59,7 @@ public class PropertiesUtil {
             } catch (Exception e) {
                 throw new PluginException(
                         BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
-                        "Error: could not close dropbox.properties: "
+                        "Error: could not close storage.properties: "
                                 + e.getMessage(), e);
             }
         }
