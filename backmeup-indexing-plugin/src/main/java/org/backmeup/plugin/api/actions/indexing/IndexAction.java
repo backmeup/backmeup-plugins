@@ -18,7 +18,6 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.backmeup.index.api.IndexClient;
 import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.client.IndexClientFactory;
-import org.backmeup.index.serializer.Json;
 import org.backmeup.model.dto.BackupJobDTO;
 import org.backmeup.plugin.api.connectors.Action;
 import org.backmeup.plugin.api.connectors.ActionException;
@@ -70,13 +69,6 @@ public class IndexAction implements Action {
 
         this.logger.debug("Starting file analysis...");
         progressor.progress(START_INDEX_PROCESS);
-
-        //TODO AL extract BackupJobDTO for Tests
-        String jsonDocument = Json.serialize(job);
-        //for testing just output to the logfile
-        System.out.println("-----start backupjobdto json ------");
-        System.out.println(jsonDocument);
-        System.out.println("-----end backupjobdto json ------");
 
         TikaAnalyzer analyzer = new TikaAnalyzer();
 
