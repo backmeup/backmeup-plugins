@@ -50,19 +50,41 @@
             <version>${version.backmeup.indexer}</version>
             <scope>test</scope>
         </dependency>
+
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${version.commons-io}</version>
 			<scope>test</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.backmeup</groupId>
 			<artifactId>localfsstorage</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient-osgi</artifactId>
+            <version>${version.org.apache.httpcomponents.httpclient-osgi}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>httpclient</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>httpcore</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+  	</dependencies>
 
 	<build>
 		<plugins>
@@ -78,9 +100,12 @@
 						<Bundle-Name>${project.name}</Bundle-Name>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Import-Package>
-							*
+							net.sf.ehcache.*;resolution:=optional,
+                            net.spy.*;resolution:=optional,
+                            javax.microedition.io.*;resolution:=optional,
+                            *
 						</Import-Package>
-						<Embed-Dependency></Embed-Dependency>
+						<Embed-Dependency>httpclient-osgi</Embed-Dependency>
 						<Embed-Transitive>false</Embed-Transitive>
 						<Embed-Directory>lib</Embed-Directory>
 						<Export-Package>org.backmeup.plugin.api.actions.indexing</Export-Package>
