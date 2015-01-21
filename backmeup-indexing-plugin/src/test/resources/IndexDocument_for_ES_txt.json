@@ -1,1 +1,24 @@
-{"fields":{"owner_name":"john.doe","backup_at":1418660733144,"backup_source_id":"org.backmeup.filegenerator","job_name":"BackupJob1","backup_sink":"BackmeupStorageSinkProfile","owner_id":60,"path":"/file0.txt","filename":"file0.txt","backup_source_identification":236,"backup_source_plugin_name":"FilegeneratorProfile","Content-Type":"text/plain","fulltext":"","file_md5_hash":"abd2d6ce5bd1ae8c959b7db20d766c39","job_id":76},"largeFields":{"id":"0","source":"filegenerator","backupedAt":"15.12.2014 17:25:08 MEZ","type":"text/plain","destination":"/file0.txt"}}
+{
+   "fields":{
+      "owner_name":"andrew",
+      "backup_at":1421843384027,
+      "backup_source_id":"org.backmeup.filegenerator",
+      "job_name":"Test document creation",
+      "backup_sink":"Neue Datensenke: org.backmeup.dummy",
+      "owner_id":147,
+      "filename":"file0.txt",
+      "backup_source_identification":429,
+      "Content-Type":"text/plain; charset\u003dISO-8859-1",
+      "backup_source_plugin_name":"Neue Datenquelle: org.backmeup.filegenerator",
+      "fulltext":"Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.\n",
+      "file_md5_hash":"abd2d6ce5bd1ae8c959b7db20d766c39",
+      "job_id":132
+   },
+   "largeFields":{
+      "id":"0",
+      "source":"filegenerator",
+      "backupedAt":"21.01.2015 13:29:33 MEZ",
+      "type":"text/plain",
+      "destination":"/file0.txt"
+   }
+}

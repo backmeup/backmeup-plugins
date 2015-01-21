@@ -1,25 +1,22 @@
 {
    "fields":{
-      "owner_name":"john.doe",
-      "backup_at":1418660733144,
-      "backup_source_id":"org.backmeup.filegenerator",
-      "job_name":"BackupJob1",
-      "backup_sink":"BackmeupStorageSinkProfile",
-      "owner_id":60,
-      "path":"/file1.jpg",
+      "owner_name":"andrew",
+      "job_name":"Test document creation",
+      "backup_sink":"Neue Datensenke: org.backmeup.dummy",
+      "owner_id":147,
       "filename":"file1.jpg",
-      "backup_source_identification":236,
-      "backup_source_plugin_name":"FilegeneratorProfile",
-      "Content-Type":"image/jpeg",
-      "fulltext":"",
-      "file_md5_hash":"5e27429caa34407fbeac31bc33190cf1",
-      "job_id":76
+      "backup_at":1421843384027,
+      "backup_source_identification":429,
+      "backup_source_plugin_name":"Neue Datenquelle: org.backmeup.filegenerator",
+      "backup_source_id":"org.backmeup.filegenerator",
+      "job_id":132,
+      "file_md5_hash":"150508f24c7515c782e3e7a22974340c"
    },
    "largeFields":{
       "id":"1",
       "source":"filegenerator",
-      "thumbnail_path":"C:\\Program Files\\Apache Software Foundation\\Tomcat 7.0\\thumbnails\\76\\1418660718739_file1.jpg_thumb.jpg",
-      "backupedAt":"15.12.2014 17:25:08 MEZ",
+      "thumbnail_path":"C:\\data\\thumbnails\\132\\1421843377473_file1.jpg_thumb.jpg",
+      "backupedAt":"21.01.2015 13:29:33 MEZ",
       "type":"image/jpeg",
       "destination":"/file1.jpg"
    }
