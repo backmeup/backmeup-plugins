@@ -109,7 +109,7 @@ public class IndexAction implements Action {
 
                     this.logger.debug("Indexing " + dob.getPath());
                     //push information to ElasticSearch
-                    indexer.doIndexing(job, dob, meta, indexingTimestamp);
+                    indexer.doIndexing(accessData, job, dob, meta, indexingTimestamp);
                     indexedItems_OK++;
                     progressor.progress(INDEXING_OBJECT_COMPLETED + dob.getPath());
 
@@ -123,7 +123,7 @@ public class IndexAction implements Action {
         }
 
         progressor.progress(INDEX_PROCESS_COMPLETE + " # of items indexed OK: " + indexedItems_OK
-                + " SKIPPED (blacklist): " + indexedItems_SKIPPED_TIKA_ANALYSIS + " FAILED: "
+                + "from this Tika-Analysis skipped: " + indexedItems_SKIPPED_TIKA_ANALYSIS + "NOT indexed: "
                 + indexedItems_SKIPPED_ERROR);
     }
 
