@@ -43,7 +43,7 @@ public class ElasticSearchIndexer {
         this.client = client;
     }
 
-    public void doIndexing(Properties accessData, BackupJobDTO job, DataObject dataObject, Map<String, String> meta,
+    public void doIndexing(Properties externalProps, BackupJobDTO job, DataObject dataObject, Map<String, String> meta,
             Date timestamp) throws IOException {
         // Build the index object
         IndexDocument document = new IndexDocument();
@@ -55,7 +55,7 @@ public class ElasticSearchIndexer {
         document.field(IndexFields.FIELD_OWNER_ID, job.getUser().getUserId());
         document.field(IndexFields.FIELD_OWNER_NAME, job.getUser().getUsername());
         document.field(IndexFields.FIELD_FILENAME, getFilename(dataObject.getPath()));
-        document.field(IndexFields.FIELD_PATH, getBMULocation(accessData) + dataObject.getPath());
+        document.field(IndexFields.FIELD_PATH, getBMULocation(externalProps) + dataObject.getPath());
         document.field(IndexFields.FIELD_FILE_HASH, dataObject.getMD5Hash());
         document.field(IndexFields.FIELD_BACKUP_SINK, job.getSink().getTitle());
         document.field(IndexFields.FIELD_BACKUP_AT, timestamp.getTime());
@@ -71,24 +71,20 @@ public class ElasticSearchIndexer {
             document.field(IndexFields.FIELD_BACKUP_SOURCE_IDENTIFICATION, sourceProfile.getProfileId());
         }
 
-        //if (job.getSink().getMetadata() != null) {
-        Properties metadata = job.getSink().getMetadata();
-        //TODO andrew: remove prop creation, this must come from the sink services
-        metadata = new Properties();
-        metadata.put(Metadata.DOWNLOAD_BASE, "http://localhost:8080/backmeup-storage-service/files/");
-        metadata.put(Metadata.STORAGE_ALWAYS_ACCESSIBLE, "true");
-        // ------ END remove -------
-
-        if (metadata.containsKey(Metadata.STORAGE_ALWAYS_ACCESSIBLE) && metadata.containsKey(Metadata.DOWNLOAD_BASE)) {
-            boolean alwaysAccess = Boolean.parseBoolean((String) metadata.get(Metadata.STORAGE_ALWAYS_ACCESSIBLE));
-            String downloadBase = (String) metadata.get(Metadata.DOWNLOAD_BASE);
-            //we're having a file sink like the themis central storage with permanent access
-            if (alwaysAccess) {
-                document.field(IndexFields.FIELD_SINK_DOWNLOAD_BASE, downloadBase + "#REPLACEAUTHTOKEN#/");
+        if (externalProps != null) {
+            //check if download access is supported by the sink plugin
+            if (externalProps.containsKey(Metadata.STORAGE_ALWAYS_ACCESSIBLE)
+                    && externalProps.containsKey(Metadata.DOWNLOAD_BASE)) {
+                boolean alwaysAccess = Boolean.parseBoolean((String) externalProps
+                        .get(Metadata.STORAGE_ALWAYS_ACCESSIBLE));
+                String downloadBase = (String) externalProps.get(Metadata.DOWNLOAD_BASE);
+                //we're having a file sink like the themis central storage with permanent access
+                if (alwaysAccess) {
+                    document.field(IndexFields.FIELD_SINK_DOWNLOAD_BASE, downloadBase);
+                }
             }
-        }
 
-        //}
+        }
 
         MetainfoContainer metainfoContainer = dataObject.getMetainfo();
         if (metainfoContainer != null) {
@@ -122,8 +118,8 @@ public class ElasticSearchIndexer {
      * @param accessData
      * @return
      */
-    private String getBMULocation(Properties accessData) {
-        String tmpDir = accessData.getProperty("org.backmeup.tmpdir");
+    private String getBMULocation(Properties p) {
+        String tmpDir = p.getProperty("org.backmeup.tmpdir");
         if (tmpDir == null) {
             return "";
         } else {

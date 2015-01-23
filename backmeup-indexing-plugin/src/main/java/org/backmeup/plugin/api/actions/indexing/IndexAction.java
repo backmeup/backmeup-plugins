@@ -60,7 +60,7 @@ public class IndexAction implements Action {
     private static final String ERROR_SKIPPING_ITEM = "Error indexing data object, skipping object ";
 
     @Override
-    public void doAction(Properties accessData, Properties parameters, List<String> options, Storage storage,
+    public void doAction(Properties authData, Properties properties, List<String> options, Storage storage,
             BackupJobDTO job, Progressable progressor) throws ActionException {
 
         int indexedItems_OK = 0;
@@ -109,7 +109,7 @@ public class IndexAction implements Action {
 
                     this.logger.debug("Indexing " + dob.getPath());
                     //push information to ElasticSearch
-                    indexer.doIndexing(accessData, job, dob, meta, indexingTimestamp);
+                    indexer.doIndexing(properties, job, dob, meta, indexingTimestamp);
                     indexedItems_OK++;
                     progressor.progress(INDEXING_OBJECT_COMPLETED + dob.getPath());
 
