@@ -54,6 +54,7 @@ public class IndexAction implements Action {
     private static final String START_INDEX_PROCESS = ">>>>>Starting index plugin ";
     private static final String ANALYZING = "Analyzing data object ";
     private static final String SKIPPING_TIKA_ANALYSIS = "This filetype is not analysed (tika blacklist) ";
+    private static final String SKIPPING_PUSHING_TO_ES = "This file is not sent to ElasticSearch (ES blacklist) ";
     private static final String INDEXING_OBJECT_STARTED = "Elastic Search Indexing data object started ";
     private static final String INDEXING_OBJECT_COMPLETED = "Elastic Search Indexing data object completed ";
     private static final String INDEX_PROCESS_COMPLETE = ">>>>>Indexing plugin completed ";
@@ -66,6 +67,7 @@ public class IndexAction implements Action {
         int indexedItems_OK = 0;
         int indexedItems_SKIPPED_TIKA_ANALYSIS = 0;
         int indexedItems_SKIPPED_ERROR = 0;
+        int indexedItems_SKIPPED_BLACKLSIT = 0;
 
         this.logger.debug("Starting file analysis...");
         progressor.progress(START_INDEX_PROCESS);
@@ -85,7 +87,7 @@ public class IndexAction implements Action {
                     Map<String, String> meta = new HashMap<>();
                     String fulltext = null;
 
-                    if (needsIndexing(dob)) {
+                    if (needsTikaAnalysis(dob)) {
                         //call Apache Tika to analyze the object
                         meta = analyzer.analyze(dob);
                         mime = meta.get("Content-Type");
@@ -107,27 +109,44 @@ public class IndexAction implements Action {
                         meta.put(IndexFields.FIELD_FULLTEXT, fulltext);
                     }
 
-                    this.logger.debug("Indexing " + dob.getPath());
-                    //push information to ElasticSearch
-                    indexer.doIndexing(properties, job, dob, meta, indexingTimestamp);
-                    indexedItems_OK++;
-                    progressor.progress(INDEXING_OBJECT_COMPLETED + dob.getPath());
+                    if (needsESIndexing(dob)) {
+                        this.logger.debug("Indexing " + dob.getPath());
+                        //push information to ElasticSearch
+                        indexer.doIndexing(properties, job, dob, meta, indexingTimestamp);
+                        indexedItems_OK++;
+                        progressor.progress(INDEXING_OBJECT_COMPLETED + dob.getPath());
+                    } else {
+                        indexedItems_SKIPPED_BLACKLSIT++;
+                        progressor.progress(SKIPPING_PUSHING_TO_ES + dob.getPath());
+                    }
 
                 } catch (Exception e) {
-                    progressor.progress(ERROR_SKIPPING_ITEM + " " + e.toString());
                     indexedItems_SKIPPED_ERROR++;
+                    progressor.progress(ERROR_SKIPPING_ITEM + " " + e.toString());
                 }
             }
         } catch (Exception e) {
             throw new ActionException(e);
         }
 
-        progressor.progress(INDEX_PROCESS_COMPLETE + " # of items indexed OK: " + indexedItems_OK
-                + "from this Tika-Analysis skipped: " + indexedItems_SKIPPED_TIKA_ANALYSIS + "NOT indexed: "
-                + indexedItems_SKIPPED_ERROR);
+        progressor.progress(INDEX_PROCESS_COMPLETE + " # of items indexed OK: " + indexedItems_OK + " , SKIPPED: "
+                + indexedItems_SKIPPED_BLACKLSIT + ", ERROR: " + indexedItems_SKIPPED_ERROR
+                + "# of items tika analysis SKIPPED: " + indexedItems_SKIPPED_TIKA_ANALYSIS);
     }
 
-    private boolean needsIndexing(DataObject dob) {
+    private boolean needsESIndexing(DataObject dob) {
+
+        if (dob.getPath().endsWith(".css"))
+            return false;
+
+        if (dob.getPath().endsWith(".xsd"))
+            return false;
+
+        return true;
+
+    }
+
+    private boolean needsTikaAnalysis(DataObject dob) {
         // switching into whitelist approach for now
         if (dob.getPath().endsWith(".css"))
             return false;
