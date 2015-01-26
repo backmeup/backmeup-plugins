@@ -83,7 +83,10 @@ public class FacebookDatasource implements Datasource {
         UL ul = new UL();
 
         //check if a configuration what to download was provided. If not, download all
-        if (options.size() == 0) {
+        if (options == null) {
+            options = new ArrayList<String>();
+        }
+        if (options.isEmpty()) {
             options.add("Profile");
             options.add("Friends");
             options.add("Friendslists");
