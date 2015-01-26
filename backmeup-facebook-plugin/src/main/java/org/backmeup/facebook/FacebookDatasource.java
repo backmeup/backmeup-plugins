@@ -71,6 +71,7 @@ public class FacebookDatasource implements Datasource {
     public void downloadAll(Properties authData, Properties properties, List<String> options, Storage storage,
             Progressable progr) throws StorageException {
 
+        progr.progress(" >>>>>Starting Facebook plugin ");
         this.accessToken = authData.getProperty(FacebookHelper.PROPERTY_ACCESS_TOKEN);
         FacebookClient client = new DefaultFacebookClient(this.accessToken);
 
@@ -159,7 +160,7 @@ public class FacebookDatasource implements Datasource {
         applic_content_page.addElement(navlist);
         InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
         storage.addFile(is, "index.html", new MetainfoContainer());
-
+        progr.progress(" >>>>>Facebook plugin completed");
     }
 
     @Override
