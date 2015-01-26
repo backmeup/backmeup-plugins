@@ -1,8 +1,10 @@
 package org.backmeup.plugin.api.actions.thumbnail;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.SystemUtils;
 import org.backmeup.model.dto.BackupJobDTO;
+import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Action;
@@ -17,6 +20,7 @@ import org.backmeup.plugin.api.connectors.ActionException;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
+import org.backmeup.plugin.api.storage.StorageException;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
@@ -29,26 +33,14 @@ public class ThumbnailAction implements Action {
     private static final String FIELD_THUMBNAIL_PATH = "thumbnail_path";
 
     private static final String THUMBNAIL_PATH_EXTENSION = "_thumb.jpg";
-    private static final String THUMBNAIL_TEMP_DIR = "/data/thumbnails";
+    //private static final String THUMBNAIL_TEMP_DIR = "/data/thumbnails";
 
     private static final Integer THUMBNAIL_DIMENSIONS = 120;
     private static final Double THUMBNAIL_QUALITY = 80.0;
 
     private static final List<String> UNSUPPORTED_TYPES = Arrays.asList("css", "html", "xml");
 
-    private static File TEMP_DIR;
-
-    static {
-        String path = THUMBNAIL_TEMP_DIR;
-        if (!path.endsWith("/")) {
-            path = path + "/";
-        }
-
-        TEMP_DIR = new File(path);
-        if (!TEMP_DIR.exists()) {
-            TEMP_DIR.mkdirs();
-        }
-    }
+    private File tempDir;
 
     /**
      * The GraphicsMagick command we need to emulate is this:
@@ -86,6 +78,9 @@ public class ThumbnailAction implements Action {
 
         progressor.progress("Starting thumbnail rendering");
 
+        this.tempDir = setPluginOutputLocation(properties);
+        progressor.progress("plugin output directory: " + this.tempDir.getAbsolutePath());
+
         try {
             Iterator<DataObject> dobs = storage.getDataObjects();
             while (dobs.hasNext()) {
@@ -108,11 +103,7 @@ public class ThumbnailAction implements Action {
                     tempFilename = System.currentTimeMillis() + "_"
                             + tempFilename.replace("/", "$").replace(" ", "_").replace("#", "_");
 
-                    File folder = new File(TEMP_DIR, job.getJobId().toString());
-                    if (!folder.exists())
-                        folder.mkdirs();
-
-                    File tempFile = new File(folder, tempFilename);
+                    File tempFile = new File(this.tempDir, tempFilename);
                     try (FileOutputStream fos = new FileOutputStream(tempFile)) {
                         fos.write(dataobject.getBytes());
                     }
@@ -125,7 +116,12 @@ public class ThumbnailAction implements Action {
                         MetainfoContainer container = dataobject.getMetainfo();
                         container.addMetainfo(meta);
                         dataobject.setMetainfo(container);
+                        progressor.progress("created thumbnail for object: " + thumbPath);
+                        tempFile.delete();
+                        //TODO andrew actually this is wrong as the thumbnail is a temp resource and should not be indexed, etc.
+                        //addThumbnailToStorage(storage, new File(thumbPath), new MetainfoContainer(), progressor);
                     } catch (Throwable t) {
+                        progressor.progress("skipping");
                         LOGGER.debug("Failed to render thumbnail for: " + dataobject.getPath());
                         LOGGER.debug(t.getClass().getName() + ": " + t.getMessage());
                     }
@@ -136,5 +132,41 @@ public class ThumbnailAction implements Action {
         }
 
         progressor.progress("Thumbnail rendering complete");
+    }
+
+    private void addThumbnailToStorage(Storage storage, File thumb, MetainfoContainer container, Progressable progressor) {
+        InputStream is = null;
+        try {
+            is = new FileInputStream(thumb);
+            storage.addFile(is, "/thumbs/" + thumb.getName(), container);
+            progressor.progress("Handed over thumbnail to storage");
+            is.close();
+        } catch (IOException | StorageException | PluginException e) {
+            progressor.progress("Error handing over thumbnail to storage");
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
+    }
+
+    private File setPluginOutputLocation(Properties p) {
+        String path = p.getProperty("org.backmeup.thumnails.tmpdir");
+        if (path == null) {
+            path = "/data/thumbnails";
+        }
+        if (!path.endsWith("/")) {
+            path = path + "/";
+        }
+
+        this.tempDir = new File(path);
+        if (!this.tempDir.exists()) {
+            this.tempDir.mkdirs();
+        }
+        return this.tempDir;
     }
 }
