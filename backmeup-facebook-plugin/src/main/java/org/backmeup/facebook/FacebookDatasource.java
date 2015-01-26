@@ -71,7 +71,7 @@ public class FacebookDatasource implements Datasource {
     public void downloadAll(Properties authData, Properties properties, List<String> options, Storage storage,
             Progressable progr) throws StorageException {
 
-        progr.progress(" >>>>>Starting Facebook plugin ");
+        progr.progress(" >>>>>Starting Facebook plugin with ");
         this.accessToken = authData.getProperty(FacebookHelper.PROPERTY_ACCESS_TOKEN);
         FacebookClient client = new DefaultFacebookClient(this.accessToken);
 
@@ -97,6 +97,7 @@ public class FacebookDatasource implements Datasource {
             options.add("Albums");
             options.add("Sites");
         }
+        progr.progress("calling with options: " + options.toString());
 
         if (options.contains("Profile")) {
             progr.progress("Download User-Profil...");
