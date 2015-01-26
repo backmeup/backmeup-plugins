@@ -87,6 +87,9 @@ public class FacebookDatasource implements Datasource {
         if (options == null) {
             options = new ArrayList<String>();
         }
+        if (options.contains("")) {
+            options.remove("");
+        }
         if (options.isEmpty()) {
             options.add("Profile");
             options.add("Friends");
@@ -97,6 +100,7 @@ public class FacebookDatasource implements Datasource {
             options.add("Albums");
             options.add("Sites");
         }
+
         progr.progress("calling with options: " + options.toString());
 
         if (options.contains("Profile")) {
