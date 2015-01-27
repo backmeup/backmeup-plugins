@@ -1,10 +1,8 @@
 package org.backmeup.plugin.api.actions.thumbnail;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -12,7 +10,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang.SystemUtils;
 import org.backmeup.model.dto.BackupJobDTO;
-import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Action;
@@ -20,7 +17,6 @@ import org.backmeup.plugin.api.connectors.ActionException;
 import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
-import org.backmeup.plugin.api.storage.StorageException;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
@@ -118,8 +114,6 @@ public class ThumbnailAction implements Action {
                         dataobject.setMetainfo(container);
                         progressor.progress("created thumbnail for object: " + thumbPath);
                         tempFile.delete();
-                        //TODO andrew actually this is wrong as the thumbnail is a temp resource and should not be indexed, etc.
-                        //addThumbnailToStorage(storage, new File(thumbPath), new MetainfoContainer(), progressor);
                     } catch (Throwable t) {
                         progressor.progress("skipping");
                         LOGGER.debug("Failed to render thumbnail for: " + dataobject.getPath());
@@ -132,26 +126,6 @@ public class ThumbnailAction implements Action {
         }
 
         progressor.progress("Thumbnail rendering complete");
-    }
-
-    private void addThumbnailToStorage(Storage storage, File thumb, MetainfoContainer container, Progressable progressor) {
-        InputStream is = null;
-        try {
-            is = new FileInputStream(thumb);
-            storage.addFile(is, "/thumbs/" + thumb.getName(), container);
-            progressor.progress("Handed over thumbnail to storage");
-            is.close();
-        } catch (IOException | StorageException | PluginException e) {
-            progressor.progress("Error handing over thumbnail to storage");
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-
     }
 
     private File setPluginOutputLocation(Properties p) {
