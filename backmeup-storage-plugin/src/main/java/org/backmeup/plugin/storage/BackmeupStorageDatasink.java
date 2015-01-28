@@ -71,7 +71,13 @@ public class BackmeupStorageDatasink implements Datasink {
                 progressor.progress(log);
                 client.saveFile(accessToken, filepath, true, bis.available(), bis);
                 bis.close();
-                uploadThumbnail(client, accessToken, dataObj.getMetainfo(), getThumnailPath(filepath), progressor);
+
+                //check if we've got a thumbnail for this data object
+                String thumbnailLocalLocation = extractThumbnailFileLocation(dataObj.getMetainfo());
+                if (thumbnailLocalLocation != null) {
+                    String destPath = buildThumnailStorageDestinationPath(filepath, thumbnailLocalLocation);
+                    uploadThumbnail(client, accessToken, thumbnailLocalLocation, destPath, progressor);
+                }
             } catch (IOException e) {
                 throw new PluginException(BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
                         "Error during upload of file %s", e);
@@ -85,41 +91,50 @@ public class BackmeupStorageDatasink implements Datasink {
      *            the objectPath of the corresponding digital object the thumnail belongs to
      * @return
      */
-    private String getThumnailPath(String ojbectPath) {
+    private String buildThumnailStorageDestinationPath(String parentOjbectPath, String thumbnailLocalLocationPath) {
         String fileName = "";
         String pathPrefix = "";
-        if (ojbectPath.indexOf('/') > -1) {
-            fileName = ojbectPath.substring(ojbectPath.lastIndexOf('/') + 1);
-            pathPrefix = ojbectPath.substring(0, ojbectPath.lastIndexOf('/'));
+        if (parentOjbectPath.indexOf('/') > -1) {
+            pathPrefix = parentOjbectPath.substring(0, parentOjbectPath.lastIndexOf('/'));
+        }
+        if (thumbnailLocalLocationPath.indexOf('/') > -1) {
+            fileName = thumbnailLocalLocationPath.substring(thumbnailLocalLocationPath.lastIndexOf('/') + 1);
+        } else if (thumbnailLocalLocationPath.indexOf('\\') > -1) {
+            fileName = thumbnailLocalLocationPath.substring(thumbnailLocalLocationPath.lastIndexOf('\\') + 2);
         }
         return pathPrefix + "/thumbs/" + fileName;
     }
 
-    private void uploadThumbnail(StorageClient client, String accessToken, MetainfoContainer metaInfo, String filePath,
-            Progressable progressor) {
+    private String extractThumbnailFileLocation(MetainfoContainer metaInfo) {
         Iterator<Metainfo> itMeta = metaInfo.iterator();
+        String thumnailPath = null;
         while (itMeta.hasNext()) {
             Metainfo mInfo = itMeta.next();
-            String thumnailPath = mInfo.getAttribute(FIELD_THUMBNAIL_PATH);
-            if ((thumnailPath != null) && (!thumnailPath.equals(""))) {
-                progressor.progress("Uploading thumnail to: " + filePath);
-                InputStream is = null;
-                try {
-                    is = new FileInputStream(thumnailPath);
-                    client.saveFile(accessToken, filePath, true, is.available(), is);
-                    is.close();
-                } catch (IOException | PluginException e) {
-                    progressor.progress("Error handing over thumbnail to storage");
-                } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                        }
+            thumnailPath = mInfo.getAttribute(FIELD_THUMBNAIL_PATH);
+        }
+        return thumnailPath;
+    }
+
+    private void uploadThumbnail(StorageClient client, String accessToken, String thumbLocalStorageLocation,
+            String thumbStorageDestinationPath, Progressable progressor) {
+
+        if ((thumbStorageDestinationPath != null)) {
+            progressor.progress("Uploading thumbnail to: " + thumbStorageDestinationPath);
+            InputStream is = null;
+            try {
+                is = new FileInputStream(thumbLocalStorageLocation);
+                client.saveFile(accessToken, thumbStorageDestinationPath, true, is.available(), is);
+                is.close();
+            } catch (IOException | PluginException e) {
+                progressor.progress("Error handing over thumbnail to storage");
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
                     }
                 }
             }
         }
-
     }
 }
