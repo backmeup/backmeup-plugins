@@ -92,7 +92,7 @@ public class BackmeupStorageDatasink implements Datasink {
             fileName = ojbectPath.substring(ojbectPath.lastIndexOf('/') + 1);
             pathPrefix = ojbectPath.substring(0, ojbectPath.lastIndexOf('/'));
         }
-        return pathPrefix + "thumbs/" + fileName;
+        return pathPrefix + "/thumbs/" + fileName;
     }
 
     private void uploadThumbnail(StorageClient client, String accessToken, MetainfoContainer metaInfo, String filePath,

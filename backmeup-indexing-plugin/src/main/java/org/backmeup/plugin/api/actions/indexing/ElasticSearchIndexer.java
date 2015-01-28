@@ -119,11 +119,10 @@ public class ElasticSearchIndexer {
      * @return
      */
     private String getBMULocation(Properties p) {
-        String tmpDir = p.getProperty("org.backmeup.bmuprefix");
-        if (tmpDir == null) {
-            return "";
+        if (p.containsKey("org.backmeup.bmuprefix")) {
+            return p.getProperty("org.backmeup.bmuprefix");
         } else {
-            return tmpDir;
+            return "";
         }
     }
 

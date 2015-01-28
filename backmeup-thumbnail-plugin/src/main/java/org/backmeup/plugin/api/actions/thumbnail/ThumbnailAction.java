@@ -129,7 +129,7 @@ public class ThumbnailAction implements Action {
     }
 
     private File setPluginOutputLocation(Properties p) {
-        String path = p.getProperty("org.backmeup.thumnails.tmpdir");
+        String path = p.getProperty("org.backmeup.thumbnails.tmpdir");
         if (path == null) {
             path = "/data/thumbnails";
         }
