@@ -52,10 +52,12 @@ public class ElasticSearchIndexer {
             document.field(metaKey, meta.get(metaKey));
         }
 
+        String relObjectPathOnStorage = getBMULocation(externalProps) + dataObject.getPath();
+
         document.field(IndexFields.FIELD_OWNER_ID, job.getUser().getUserId());
         document.field(IndexFields.FIELD_OWNER_NAME, job.getUser().getUsername());
         document.field(IndexFields.FIELD_FILENAME, getFilename(dataObject.getPath()));
-        document.field(IndexFields.FIELD_PATH, getBMULocation(externalProps) + dataObject.getPath());
+        document.field(IndexFields.FIELD_PATH, relObjectPathOnStorage);
         document.field(IndexFields.FIELD_FILE_HASH, dataObject.getMD5Hash());
         document.field(IndexFields.FIELD_BACKUP_SINK, job.getSink().getTitle());
         document.field(IndexFields.FIELD_BACKUP_AT, timestamp.getTime());
@@ -97,6 +99,12 @@ public class ElasticSearchIndexer {
             }
         }
 
+        if (document.getLargeFields().containsKey("thumbnail_path")) {
+            String tempThumbFileLocation = document.getLargeFields().get("thumbnail_path");
+            String relThumbPathOnStorage = buildThumnailPath(relObjectPathOnStorage, tempThumbFileLocation);
+            document.largeField("thumbnail_path", relThumbPathOnStorage);
+        }
+
         this.log.debug("Started pushing IndexDocument to ES from Indexing Plugin " + Json.serialize(document));
         // Push to ES index
         this.client.index(document);
@@ -126,4 +134,24 @@ public class ElasticSearchIndexer {
         }
     }
 
+    /**
+     * @param parentObjectPath
+     *            /BMU_filegenerator_553_28_01_2015_00_30/file10.jpg
+     * @param thumbnailLocalLocation
+     *            is a file path on the local disk e.g.
+     *            C:\\data\\thumbnails\\BMU_filegenerator_553_28_01_2015_00_30\\1422401430361_file10.jpg_thumb.jpg
+     * @return relative path of thumbnail on storage to ingest into elasticsearch
+     */
+    private String buildThumnailPath(String parentOjbectPath, String thumbnailLocalLocation) {
+
+        if (thumbnailLocalLocation.indexOf('\\') > -1) {
+            thumbnailLocalLocation = thumbnailLocalLocation.replace('\\', '/');
+        }
+        String fileName = getFilename(thumbnailLocalLocation);
+        String pathPrefix = "";
+        if (thumbnailLocalLocation.indexOf('/') > -1) {
+            pathPrefix = parentOjbectPath.substring(0, parentOjbectPath.lastIndexOf('/'));
+        }
+        return pathPrefix + "/thumbs/" + fileName;
+    }
 }

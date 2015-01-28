@@ -87,22 +87,31 @@ public class BackmeupStorageDatasink implements Datasink {
     }
 
     /**
-     * @param ojbectPath
-     *            the objectPath of the corresponding digital object the thumnail belongs to
-     * @return
+     * @param parentObjectPath
+     *            /BMU_filegenerator_553_28_01_2015_00_30/file10.jpg
+     * @param thumbnailLocalLocation
+     *            is a file path on the local disk e.g.
+     *            C:\\data\\thumbnails\\BMU_filegenerator_553_28_01_2015_00_30\\1422401430361_file10.jpg_thumb.jpg
+     * @return relative path of thumbnail on storage to ingest into elasticsearch
      */
-    private String buildThumnailStorageDestinationPath(String parentOjbectPath, String thumbnailLocalLocationPath) {
-        String fileName = "";
+    private String buildThumnailStorageDestinationPath(String parentOjbectPath, String thumbnailLocalLocation) {
+
+        if (thumbnailLocalLocation.indexOf('\\') > -1) {
+            thumbnailLocalLocation = thumbnailLocalLocation.replace('\\', '/');
+        }
+        String fileName = getFilename(thumbnailLocalLocation);
         String pathPrefix = "";
-        if (parentOjbectPath.indexOf('/') > -1) {
+        if (thumbnailLocalLocation.indexOf('/') > -1) {
             pathPrefix = parentOjbectPath.substring(0, parentOjbectPath.lastIndexOf('/'));
         }
-        if (thumbnailLocalLocationPath.indexOf('/') > -1) {
-            fileName = thumbnailLocalLocationPath.substring(thumbnailLocalLocationPath.lastIndexOf('/') + 1);
-        } else if (thumbnailLocalLocationPath.indexOf('\\') > -1) {
-            fileName = thumbnailLocalLocationPath.substring(thumbnailLocalLocationPath.lastIndexOf('\\') + 2);
-        }
         return pathPrefix + "/thumbs/" + fileName;
+    }
+
+    private String getFilename(String path) {
+        if (path.indexOf('/') > -1) {
+            return path.substring(path.lastIndexOf('/') + 1);
+        }
+        return path;
     }
 
     private String extractThumbnailFileLocation(MetainfoContainer metaInfo) {
