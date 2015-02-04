@@ -59,7 +59,7 @@ public class ElasticSearchIndexer {
         document.field(IndexFields.FIELD_FILENAME, getFilename(dataObject.getPath()));
         document.field(IndexFields.FIELD_PATH, relObjectPathOnStorage);
         document.field(IndexFields.FIELD_FILE_HASH, dataObject.getMD5Hash());
-        document.field(IndexFields.FIELD_BACKUP_SINK, job.getSink().getTitle());
+        document.field(IndexFields.FIELD_BACKUP_SINK, job.getSink().getAuthData().getName());
         document.field(IndexFields.FIELD_BACKUP_AT, timestamp.getTime());
         document.field(IndexFields.FIELD_JOB_ID, job.getJobId());
         document.field(IndexFields.FIELD_JOB_NAME, job.getJobTitle());
@@ -69,7 +69,7 @@ public class ElasticSearchIndexer {
 
         if (sourceProfile != null) {
             document.field(IndexFields.FIELD_BACKUP_SOURCE_ID, sourceProfile.getPluginId());
-            document.field(IndexFields.FIELD_BACKUP_SOURCE_PLUGIN_NAME, sourceProfile.getTitle());
+            document.field(IndexFields.FIELD_BACKUP_SOURCE_PLUGIN_NAME, sourceProfile.getAuthData().getName());
             document.field(IndexFields.FIELD_BACKUP_SOURCE_IDENTIFICATION, sourceProfile.getProfileId());
         }
 
