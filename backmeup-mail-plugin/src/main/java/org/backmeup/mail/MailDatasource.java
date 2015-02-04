@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -33,7 +34,10 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.MimeUtility;
 
+import org.backmeup.model.ValidationNotes;
+import org.backmeup.model.api.RequiredInputField;
 import org.backmeup.model.exceptions.PluginException;
+import org.backmeup.model.spi.Validationable;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Datasource;
@@ -47,7 +51,7 @@ import org.backmeup.plugin.api.storage.StorageException;
  * 
  * @author fschoeppl
  */
-public class MailDatasource implements Datasource {
+public class MailDatasource implements Datasource, Validationable {
 
     private static class Content {
         public String contentId;
@@ -138,11 +142,6 @@ public class MailDatasource implements Datasource {
 
     public MailDatasource() {
         this.folderFormat = new SimpleDateFormat(this.textBundle.getString(MESSAGE_FOLDER_FORMAT));
-    }
-
-    @Override
-    public String getStatistics(Properties items) {
-        return null;
     }
 
     private String getCharset(Part bp) throws MessagingException {
@@ -536,25 +535,47 @@ public class MailDatasource implements Datasource {
     }
 
     @Override
+    public boolean hasRequiredProperties() {
+        return false;
+    }
+
+    @Override
+    public List<RequiredInputField> getRequiredProperties() {
+        return null;
+    }
+
+    @Override
+    public ValidationNotes validateProperties(Map<String, String> properties) {
+        return null;
+    }
+
+    @Override
+    public boolean hasAvailableOptions() {
+        return true;
+    }
+
+    @Override
+    public ValidationNotes validateOptions(List<String> options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    @Override
     public List<String> getAvailableOptions(Properties accessData) {
-        List<String> availOpts = new ArrayList<>();
+        List<String> options = new ArrayList<>();
+        if (accessData == null || accessData.isEmpty()) {
+            return options;
+        }
+        
         try {
             Session session = Session.getInstance(accessData);
             Store store = session.getStore();
-            store.connect(accessData.getProperty("mail.host"), accessData.getProperty("mail.user"),
-                    accessData.getProperty("mail.password"));
+            store.connect(accessData.getProperty("mail.host"), accessData.getProperty("mail.user"), accessData.getProperty("mail.password"));
             Folder[] folders = store.getDefaultFolder().list("*");
             for (Folder folder : folders) {
                 String folderName = folder.getFullName();
-                availOpts.add(folderName);
+                options.add(folderName);
             }
-
-            Collections.sort(availOpts, new Comparator<String>() {
-                @Override
-                public int compare(String o1, String o2) {
-                    return o1.compareTo(o2);
-                }
-            });
 
             store.close();
         } catch (NoSuchProviderException e) {
@@ -564,6 +585,8 @@ public class MailDatasource implements Datasource {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return availOpts;
+        
+        Collections.sort(options);
+        return options;
     }
 }

@@ -132,19 +132,6 @@ public class FilegeneratorDatasource implements Datasource {
         }
     }
 
-    @Override
-    public String getStatistics(Properties accesssData) {
-        return "statistics are empty";
-    }
-
-    @Override
-    public List<String> getAvailableOptions(Properties accessData) {
-        List<String> options = new ArrayList<>();
-        options.add("option1");
-        options.add("option2");
-        return options;
-    }
-
     private Metainfo createMetainfo(String id, String type, String destination) {
         Metainfo info = new Metainfo();
         info.setBackupDate(new Date());

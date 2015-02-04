@@ -9,9 +9,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.ecs.ConcreteElement;
@@ -26,7 +28,11 @@ import org.apache.ecs.html.TD;
 import org.apache.ecs.html.TR;
 import org.apache.ecs.html.Table;
 import org.apache.ecs.html.UL;
+import org.backmeup.model.ValidationNotes;
+import org.backmeup.model.api.RequiredInputField;
 import org.backmeup.model.exceptions.PluginException;
+import org.backmeup.model.spi.ValidationExceptionType;
+import org.backmeup.model.spi.Validationable;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Datasource;
@@ -57,12 +63,25 @@ import com.restfb.types.Venue;
  * class FacebookDatasource to download the own profile, friends with photos, groups, posts, friendslists, sites and
  * albums with photos
  * 
- * @author aschmiedhofer, mmurauer
+ * @author aschmiedhofer, mmurauer, w.eibner
  */
-public class FacebookDatasource implements Datasource {
+public class FacebookDatasource implements Datasource, Validationable {
 
     private static final boolean DOWNLOAD_NON_FRIEND_USERS = true;
+    private static final List<String> BACKUP_OPTIONS = new ArrayList<>();
+    
+    static {
+        BACKUP_OPTIONS.add("Profile");
+        BACKUP_OPTIONS.add("Friends");
+        BACKUP_OPTIONS.add("Friendslists");
+        BACKUP_OPTIONS.add("Groups");
+        BACKUP_OPTIONS.add("Sites");
+        BACKUP_OPTIONS.add("Posts");
+        BACKUP_OPTIONS.add("Photos");
+        BACKUP_OPTIONS.add("Albums");
+    }
 
+    //TODO: Not thread-safe!
     private final List<String> allUsers = new LinkedList<>();
     private String accessToken = "";
     private final ConcreteElement ce = new ConcreteElement();
@@ -91,14 +110,7 @@ public class FacebookDatasource implements Datasource {
             options.remove("");
         }
         if (options.isEmpty()) {
-            options.add("Profile");
-            options.add("Friends");
-            options.add("Friendslists");
-            options.add("Groups");
-            options.add("Posts");
-            options.add("Photos");
-            options.add("Albums");
-            options.add("Sites");
+            options.addAll(BACKUP_OPTIONS);
         }
 
         progr.progress("calling with options: " + options.toString());
@@ -166,11 +178,6 @@ public class FacebookDatasource implements Datasource {
         InputStream is = new ByteArrayInputStream(doc.toString("UTF-8").getBytes());
         storage.addFile(is, "index.html", new MetainfoContainer());
         progr.progress(" >>>>>Facebook plugin completed");
-    }
-
-    @Override
-    public String getStatistics(Properties props) {
-        return null;
     }
 
     private void downloadAlbums(FacebookClient client, Storage storage, Progressable progr) throws StorageException {
@@ -1968,20 +1975,6 @@ public class FacebookDatasource implements Datasource {
         return str;
     }
 
-    @Override
-    public List<String> getAvailableOptions(Properties accessData) {
-        List<String> facebookBackupOptions = new ArrayList<>();
-        facebookBackupOptions.add("Profile");
-        facebookBackupOptions.add("Friends");
-        facebookBackupOptions.add("Friendslists");
-        facebookBackupOptions.add("Groups");
-        facebookBackupOptions.add("Sites");
-        facebookBackupOptions.add("Posts");
-        facebookBackupOptions.add("Photos");
-        facebookBackupOptions.add("Albums");
-        return facebookBackupOptions;
-    }
-
     public void getThemes(Storage storage, Properties props) throws StorageException {
         try {
             try (InputStream is = this.getClass().getResourceAsStream("/backmeuplogo.jpg")) {
@@ -1999,5 +1992,42 @@ public class FacebookDatasource implements Datasource {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean hasRequiredProperties() {
+        return false;
+    }
+
+    @Override
+    public List<RequiredInputField> getRequiredProperties() {
+        return null;
+    }
+
+    @Override
+    public ValidationNotes validateProperties(Map<String, String> properties) {
+        return null;
+    }
+
+    @Override
+    public boolean hasAvailableOptions() {
+        return true;
+    }
+
+    @Override
+    public ValidationNotes validateOptions(List<String> options) {
+        ValidationNotes notes = new ValidationNotes();
+        for (String option : options) {
+            if (!BACKUP_OPTIONS.contains(option)) {
+                notes.addValidationEntry(ValidationExceptionType.APIException, FacebookDescriptor.FACEBOOK_ID, new IllegalArgumentException("Option "+option+" not available"));
+            }
+        }
+        return notes;
+    }
+    
+    @Override
+    public List<String> getAvailableOptions(Properties accessData) {
+        //TODO: Maybe only return options which are granted by (facebook) user
+        return Collections.unmodifiableList(BACKUP_OPTIONS);
     }
 }

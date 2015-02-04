@@ -3,6 +3,7 @@ package org.backmeup.filegenerator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.backmeup.filegenerator.constants.Constants;
 import org.backmeup.model.ValidationNotes;
@@ -75,14 +76,12 @@ public class FilegeneratorValidator implements Validationable {
 	}
 
 	@Override
-	public List<String> getAvailableOptions() {
-		// TODO Auto-generated method stub
+	public List<String> getAvailableOptions(Properties accessData) {
 		return null;
 	}
 
 	@Override
 	public ValidationNotes validateOptions(List<String> options) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

@@ -4,10 +4,16 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import org.backmeup.model.ValidationNotes;
+import org.backmeup.model.api.RequiredInputField;
+import org.backmeup.model.spi.ValidationExceptionType;
+import org.backmeup.model.spi.Validationable;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Datasource;
@@ -15,7 +21,14 @@ import org.backmeup.plugin.api.connectors.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
-public class DummyDatasource implements Datasource {
+public class DummyDatasource implements Datasource, Validationable {
+    
+    private static final List<String> BACKUP_OPTIONS = new ArrayList<>();
+    
+    static {
+        BACKUP_OPTIONS.add("option1");
+        BACKUP_OPTIONS.add("option2");
+    }
 
     private InputStream stringToStream(String input) {
         try {
@@ -57,16 +70,39 @@ public class DummyDatasource implements Datasource {
     }
 
     @Override
-    public String getStatistics(@SuppressWarnings("unused") Properties accesssData) {
-        return "statistics are empty";
+    public boolean hasRequiredProperties() {
+        return false;
     }
 
     @Override
-    public List<String> getAvailableOptions(@SuppressWarnings("unused") Properties accessData) {
-        List<String> options = new ArrayList<>();
-        options.add("option1");
-        options.add("option2");
-        return options;
+    public List<RequiredInputField> getRequiredProperties() {
+        return null;
+    }
+
+    @Override
+    public ValidationNotes validateProperties(Map<String, String> properties) {
+        return null;
+    }
+
+    @Override
+    public boolean hasAvailableOptions() {
+        return true;
+    }
+    
+    @Override
+    public List<String> getAvailableOptions(Properties accessData) {
+        return Collections.unmodifiableList(BACKUP_OPTIONS);
+    }
+
+    @Override
+    public ValidationNotes validateOptions(List<String> options) {
+        ValidationNotes notes = new ValidationNotes();
+        for (String option : options) {
+            if (!BACKUP_OPTIONS.contains(option)) {
+                notes.addValidationEntry(ValidationExceptionType.APIException, DummyDescriptor.DUMMY_ID, new IllegalArgumentException("Option "+option+" not available"));
+            }
+        }
+        return notes;
     }
 
 }

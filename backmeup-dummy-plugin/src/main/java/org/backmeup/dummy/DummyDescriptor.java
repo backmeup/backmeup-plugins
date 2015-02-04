@@ -7,7 +7,7 @@ import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 public class DummyDescriptor extends BaseSourceSinkDescribable {
 
-    private static final String DUMMY_ID = "org.backmeup.dummy";
+    static final String DUMMY_ID = "org.backmeup.dummy";
 
     @Override
     public String getId() {

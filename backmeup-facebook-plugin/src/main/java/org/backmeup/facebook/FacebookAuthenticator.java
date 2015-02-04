@@ -3,7 +3,6 @@ package org.backmeup.facebook;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Properties;
@@ -39,8 +38,8 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
 
         return "https://www.facebook.com/dialog/oauth?client_id=" + FacebookHelper.getAppKey() + "&redirect_uri=" + callback + "&scope="
                 + "user_birthday,user_photos,read_stream,user_about_me,user_activities,"
-                + "user_education_history,user_events,user_groups,user_hometown,user_interests"
-                + ",user_likes,user_location,user_notes,user_questions,user_relationships," + "user_relationship_details,user_religion_politics,user_status,"
+                + "user_education_history,user_events,user_groups,user_hometown,user_interests,"
+                + "user_likes,user_location,user_notes,user_questions,user_relationships," + "user_relationship_details,user_religion_politics,user_status,"
                 + "user_subscriptions,user_videos,user_website,user_work_history,email,"
                 + "read_friendlists,friends_photos, friends_about_me, friends_activities, friends_birthday, " + "friends_education_history, friends_hometown, "
                 + "friends_interests, friends_likes, friends_location, friends_relationships, "
@@ -104,35 +103,4 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
 
         throw new PluginException(FacebookDescriptor.FACEBOOK_ID, AUTHENTICATION_ERROR);
     }
-
-    // @Override
-    // public ValidationNotes validateProperties(Map<String, String> properties)
-    // {
-    // ValidationNotes notes = new ValidationNotes();
-    // try {
-    // // Make sure authentication / authorization and API is working well
-    // String accessToken = properties.get(FacebookHelper.PROPERTY_TOKEN);
-    // if (accessToken == null)
-    // notes.addValidationEntry(ValidationExceptionType.AuthException,
-    // FacebookDescriptor.FACEBOOK_ID);
-    //
-    // FacebookClient client = new DefaultFacebookClient(accessToken);
-    //
-    // // Just to be sure about API is working well, catch user information
-    // User user = client.fetchObject("me", User.class);
-    // user.getId();
-    //
-    // } catch (FacebookNetworkException e) {
-    // notes.addValidationEntry(ValidationExceptionType.APIException,
-    // FacebookDescriptor.FACEBOOK_ID, e);
-    // } catch (FacebookOAuthException e) {
-    // notes.addValidationEntry(ValidationExceptionType.AuthException,
-    // FacebookDescriptor.FACEBOOK_ID, e);
-    // } catch (FacebookGraphException e) {
-    // notes.addValidationEntry(ValidationExceptionType.APIException,
-    // FacebookDescriptor.FACEBOOK_ID, e);
-    // }
-    //
-    // return notes;
-    // }
 }

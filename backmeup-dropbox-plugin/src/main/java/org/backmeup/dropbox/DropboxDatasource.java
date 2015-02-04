@@ -12,11 +12,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.activation.MimetypesFileTypeMap;
 
+import org.backmeup.model.ValidationNotes;
+import org.backmeup.model.api.RequiredInputField;
 import org.backmeup.model.exceptions.PluginException;
+import org.backmeup.model.spi.Validationable;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.connectors.FilesystemLikeDatasource;
 import org.backmeup.plugin.api.connectors.FilesystemURI;
@@ -33,7 +37,7 @@ import com.dropbox.client2.session.WebAuthSession;
  * 
  * @author fschoeppl
  */
-public class DropboxDatasource extends FilesystemLikeDatasource {
+public class DropboxDatasource extends FilesystemLikeDatasource implements Validationable {
     private static final String DROPBOX = "dropbox";
     private static final SimpleDateFormat formatter = new SimpleDateFormat(
             "EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
@@ -136,32 +140,49 @@ public class DropboxDatasource extends FilesystemLikeDatasource {
                     String.format("Error downloading file \" %s\"", path), e);
         }
     }
-
+    
     @Override
-    public String getStatistics(Properties accessData) {
-        StringBuffer html = new StringBuffer();
-        html.append("<ul>");
-        for (FilesystemURI uri : list(accessData, new ArrayList<String>())) {
-            html.append("<li>" + uri.toString() + "</li>");
-        }
-        html.append("</ul>");
-        return html.toString();
+    public boolean hasRequiredProperties() {
+        return false;
     }
 
     @Override
+    public List<RequiredInputField> getRequiredProperties() {
+        return null;
+    }
+
+    @Override
+    public ValidationNotes validateProperties(Map<String, String> properties) {
+        return null;
+    }
+
+    @Override
+    public boolean hasAvailableOptions() {
+        return true;
+    }
+
+    @Override
+    public ValidationNotes validateOptions(List<String> options) {
+        return null;
+    }
+    
+    @Override
     public List<String> getAvailableOptions(Properties accessData) {
-        List<String> results = new ArrayList<>();
+        List<String> options = new ArrayList<>();
+        if (accessData == null || accessData.isEmpty()) {
+            return options;
+        }
+        
         DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(accessData);
         try {
             Entry entry = api.metadata("/", 25000, null, true, null);
             for (Entry e : entry.contents) {
                 String encodedURI = e.path.replace(" ", "%20");
-                results.add(encodedURI);
+                options.add(encodedURI);
             }
         } catch (DropboxException e) {
-            throw new PluginException(DropboxDescriptor.DROPBOX_ID,
-                    "Failed to determine root folders", e);
+            throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Failed to determine root folders", e);
         }
-        return results;
+        return options;
     }
 }
