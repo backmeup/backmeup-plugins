@@ -2,7 +2,9 @@ package org.backmeup.plugin.api.actions.indexing;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.backmeup.index.api.IndexClient;
@@ -73,12 +75,10 @@ public class IndexActionTest {
         // Index test files on the local ES index
         IndexAction action = new IndexAction(this.client);
 
-        //TODO AL save a BackupJobDTO to use within this test.
-        // BackupJob job = JsonSerializer.deserialize(this.BACKUP_JOB, BackupJob.class);
         BackupJobDTO job = JsonSerializer.deserialize(this.BACKUP_JOB_DTO, BackupJobDTO.class);
 
         // now call the actual indexing (Metadata extraction, Tika analysis)
-        action.doAction(null, null, null, storage, job, this.logProgressable);
+        action.doAction(new Properties(), new Properties(), new ArrayList<String>(), storage, job, this.logProgressable);
         System.out.println("Done.");
     }
 
@@ -110,6 +110,7 @@ public class IndexActionTest {
     }
 
     @Test
+    @Ignore("outdated test, we can't test this way anymore, as IndexAction creates an index-per-user instance on its own")
     public void verifyIndex() {
         System.out.println("Verifying indexing content");
         Client rawClient = node.client();
