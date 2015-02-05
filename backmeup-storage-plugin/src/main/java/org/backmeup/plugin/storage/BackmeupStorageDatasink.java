@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.api.Metainfo;
@@ -30,26 +31,25 @@ public class BackmeupStorageDatasink implements Datasink {
     private static final String FIELD_THUMBNAIL_PATH = "thumbnail_path";
 
     @Override
-    public String upload(Properties authData, Properties properties, List<String> options, Storage storage,
+    public String upload(Map<String, String> authData, Map<String, String> properties, List<String> options, Storage storage,
             Progressable progressor) throws StorageException {
         progressor.progress("Start backmeup-storage-plugin");
 
-        String tmpDir = authData.getProperty("org.backmeup.tmpdir");
+        String tmpDir = authData.get("org.backmeup.tmpdir");
         if (tmpDir == null) {
             tmpDir = "";
         }
 
         progressor.progress("Get connection string");
         progressor.progress("AuthData:");
-        for (String key : authData.stringPropertyNames()) {
-            String value = authData.getProperty(key);
-            progressor.progress(key + ": " + value);
+        for (Entry<String,String> entry : authData.entrySet()) {
+            progressor.progress(entry.getKey() + ": " + entry.getValue());
         }
 
-        String storageUrl = authData.getProperty(Constants.PROP_STORAGE_URL);
+        String storageUrl = authData.get(Constants.PROP_STORAGE_URL);
         progressor.progress("Storage url= " + storageUrl);
 
-        String accessToken = authData.getProperty(Constants.ACCESS_TOKEN);
+        String accessToken = authData.get(Constants.ACCESS_TOKEN);
         progressor.progress("Using Token=" + accessToken);
 
         StorageClient client = new BackmeupStorageClient(storageUrl);

@@ -2,7 +2,7 @@ package org.backmeup.plugin.storage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
@@ -23,17 +23,17 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
     }
 
     @Override
-    public String authorize(Properties inputProperties) {
+    public String authorize(Map<String, String> authData) {
         try {
-            String username = inputProperties.getProperty(Constants.PROP_USERNAME);
-            String password = inputProperties.getProperty(Constants.PROP_PASSWORD);
+            String username = authData.get(Constants.PROP_USERNAME);
+            String password = authData.get(Constants.PROP_PASSWORD);
             
             String storageUrl = PropertiesUtil.getInstance().getProperty(Constants.PROP_STORAGE_URL);
             StorageClient storageClient = new BackmeupStorageClient(storageUrl);
             String accessToken = storageClient.authenticate(username, password);
             
-            inputProperties.put(Constants.ACCESS_TOKEN, accessToken);
-            inputProperties.put(Constants.PROP_STORAGE_URL, storageUrl);
+            authData.put(Constants.ACCESS_TOKEN, accessToken);
+            authData.put(Constants.PROP_STORAGE_URL, storageUrl);
             
             return "User";
         } catch (Exception e) {
@@ -64,12 +64,12 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
     }
 
     @Override
-    public boolean isValid(Properties inputs) {
+    public boolean isValid(Map<String, String> inputs) {
         return validateInputFields(inputs).getValidationEntries().isEmpty();
     }
 
     @Override
-    public ValidationNotes validateInputFields(Properties properties) {
+    public ValidationNotes validateInputFields(Map<String, String> properties) {
         ValidationNotes notes = new ValidationNotes();
 
         addEntryIfKeyMissing(properties, Constants.PROP_USERNAME, notes);
@@ -81,15 +81,15 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
         return notes;
     }
 
-    private void addEntryIfKeyMissing(Properties properties, String key, ValidationNotes notes) {
+    private void addEntryIfKeyMissing(Map<String, String> properties, String key, ValidationNotes notes) {
         if (!properties.containsKey(key)) {
             notes.addValidationEntry(ValidationExceptionType.ConfigException, BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
                     "Required input field missing: " + key);
         }
     }
     
-    private void addEntryIfValueEmpty(Properties properties, String key, ValidationNotes notes) {
-        String value = properties.getProperty(key);
+    private void addEntryIfValueEmpty(Map<String, String> properties, String key, ValidationNotes notes) {
+        String value = properties.get(key);
         if (value == null || value.isEmpty()) {
             notes.addValidationEntry(ValidationExceptionType.ConfigException, BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
                     "Value must not be null or empty: " + key);
