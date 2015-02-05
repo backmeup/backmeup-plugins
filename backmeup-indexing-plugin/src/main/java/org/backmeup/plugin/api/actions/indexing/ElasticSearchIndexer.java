@@ -68,16 +68,20 @@ public class ElasticSearchIndexer {
 
         if (sourceProfile != null) {
             document.field(IndexFields.FIELD_BACKUP_SOURCE_ID, sourceProfile.getPluginId());
-            document.field(IndexFields.FIELD_BACKUP_SOURCE_PLUGIN_NAME, sourceProfile.getAuthData().getName());
             document.field(IndexFields.FIELD_BACKUP_SOURCE_IDENTIFICATION, sourceProfile.getProfileId());
+            if ((sourceProfile.getAuthData() != null) && (sourceProfile.getAuthData().getName() != null)) {
+                document.field(IndexFields.FIELD_BACKUP_SOURCE_PLUGIN_NAME, sourceProfile.getAuthData().getName());
+            }
         }
 
         PluginProfileDTO sinkProfile = job.getSink();
 
         if (sinkProfile != null) {
             document.field(IndexFields.FIELD_BACKUP_SINK_ID, sinkProfile.getPluginId());
-            document.field(IndexFields.FIELD_BACKUP_SINK_PLUGIN_NAME, sinkProfile.getAuthData().getName());
             document.field(IndexFields.FIELD_BACKUP_SINK_IDENTIFICATION, sinkProfile.getProfileId());
+            if ((sinkProfile.getAuthData() != null) && (sinkProfile.getAuthData().getName() != null)) {
+                document.field(IndexFields.FIELD_BACKUP_SINK_PLUGIN_NAME, sinkProfile.getAuthData().getName());
+            }
         }
 
         if (externalProps != null) {
