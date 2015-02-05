@@ -1,6 +1,6 @@
 package org.backmeup.dropbox;
 
-import java.util.Properties;
+import java.util.Map;
 
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.spi.OAuthBasedAuthorizable;
@@ -29,13 +29,13 @@ public class DropboxAuthenticator implements OAuthBasedAuthorizable {
     }
 
     @Override
-    public String createRedirectURL(Properties inputProperties, String callback) {
+    public String createRedirectURL(Map<String, String> authData, String callback) {
         try {
             WebAuthInfo authInfo = DropboxHelper.getInstance().getWebAuthSession().getAuthInfo();	
 
             RequestTokenPair requestToken = authInfo.requestTokenPair;
-            inputProperties.setProperty(DropboxHelper.PROPERTY_REQUEST_TOKEN, requestToken.key);
-            inputProperties.setProperty(DropboxHelper.PROPERTY_REQUEST_SECRET, requestToken.secret);
+            authData.put(DropboxHelper.PROPERTY_REQUEST_TOKEN, requestToken.key);
+            authData.put(DropboxHelper.PROPERTY_REQUEST_SECRET, requestToken.secret);
 
             return authInfo.url + "&oauth_callback=" + callback;
         } catch (DropboxException e) {
@@ -44,21 +44,21 @@ public class DropboxAuthenticator implements OAuthBasedAuthorizable {
     }
 
     @Override
-    public String authorize(Properties inputProperties) {
+    public String authorize(Map<String, String> authData) {
         try {
             WebAuthSession session = DropboxHelper.getInstance().getWebAuthSession();
 
             // If we don't already have an access token (e.g. first time authorize is called),
             // use request token to obtain an access token
-            if(inputProperties.getProperty(DropboxHelper.PROPERTY_ACCESS_TOKEN) == null) {
+            if(authData.get(DropboxHelper.PROPERTY_ACCESS_TOKEN) == null) {
 
                 // Check if request token pair is set in input properties
-                String token = inputProperties.getProperty(DropboxHelper.PROPERTY_REQUEST_TOKEN);
+                String token = authData.get(DropboxHelper.PROPERTY_REQUEST_TOKEN);
                 if("".equals(token)){
                     throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Request token is not set");
                 }
 
-                String secret = inputProperties.getProperty(DropboxHelper.PROPERTY_REQUEST_SECRET);
+                String secret = authData.get(DropboxHelper.PROPERTY_REQUEST_SECRET);
                 if("".equals(secret)) {
                     throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Request secret is not set");
                 }
@@ -69,13 +69,13 @@ public class DropboxAuthenticator implements OAuthBasedAuthorizable {
 
                 // Retrieve access tokens and store them in properties for future use
                 AccessTokenPair accessToken = session.getAccessTokenPair();
-                inputProperties.setProperty(DropboxHelper.PROPERTY_ACCESS_TOKEN, accessToken.key);
-                inputProperties.setProperty(DropboxHelper.PROPERTY_ACCESS_SECRET, accessToken.secret);
+                authData.put(DropboxHelper.PROPERTY_ACCESS_TOKEN, accessToken.key);
+                authData.put(DropboxHelper.PROPERTY_ACCESS_SECRET, accessToken.secret);
             }
 
             // Now we have an access token.
             // Check if authentication is successful
-            DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(inputProperties);
+            DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(authData);
             if (!api.getSession().isLinked()) {
                 throw new PluginException(DropboxDescriptor.DROPBOX_ID, "An error occurred during authorization");
             }
@@ -85,7 +85,7 @@ public class DropboxAuthenticator implements OAuthBasedAuthorizable {
             Entry entry = api.metadata("/", 100, null, true, null);
             entry.contents.size();
 
-            return DropboxHelper.getInstance().getApi(inputProperties).accountInfo().displayName;
+            return DropboxHelper.getInstance().getApi(authData).accountInfo().displayName;
 
         } catch (DropboxException e) {
             throw new PluginException(DropboxDescriptor.DROPBOX_ID, "An error occurred during post authorization", e);

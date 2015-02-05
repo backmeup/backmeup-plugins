@@ -3,7 +3,7 @@ package org.backmeup.dropbox;
 import java.io.ByteArrayInputStream;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.api.connectors.Datasink;
@@ -24,11 +24,11 @@ import com.dropbox.client2.session.WebAuthSession;
  */
 public class DropboxDatasink implements Datasink {
     @Override
-    public String upload(Properties accessData, Properties properties,
+    public String upload(Map<String, String> authData, Map<String, String> properties,
             List<String> options, Storage storage, Progressable progressor)
             throws StorageException {
         
-        DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(accessData);
+        DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(authData);
         Iterator<DataObject> it = storage.getDataObjects();
         while (it.hasNext()) {
             DataObject dataObj = it.next();
@@ -41,7 +41,7 @@ public class DropboxDatasink implements Datasink {
             // TODO: do we really get this in properties (before it was
             // "items")?
             if (properties.containsKey("org.backmeup.tmpdir") == true) {
-                tmpDir = properties.getProperty("org.backmeup.tmpdir");
+                tmpDir = properties.get("org.backmeup.tmpdir");
             } else {
                 throw new PluginException(DropboxDescriptor.DROPBOX_ID,
                         "Property \"org.backmeup.tmpdir\" is not set");

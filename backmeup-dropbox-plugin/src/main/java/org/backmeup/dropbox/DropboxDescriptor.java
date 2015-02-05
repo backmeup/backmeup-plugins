@@ -1,6 +1,7 @@
 package org.backmeup.dropbox;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.api.Metadata;
@@ -45,13 +46,13 @@ public class DropboxDescriptor extends BaseSourceSinkDescribable {
     }
 
     @Override
-    public Properties getMetadata(Properties accessData) {
-        Properties metadata = new Properties();
-        metadata.setProperty(Metadata.BACKUP_FREQUENCY, "daily");
-        metadata.setProperty(Metadata.FILE_SIZE_LIMIT, "150");
+    public Map<String, String> getMetadata(Map<String, String> accessData) {
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(Metadata.BACKUP_FREQUENCY, "daily");
+        metadata.put(Metadata.FILE_SIZE_LIMIT, "150");
         // Note: The api cannot retrieve the total free space of dropbox.
         // The free version of dropbox currently has a capacity of 2GB.
-        metadata.setProperty(Metadata.QUOTA_LIMIT, "2048");
+        metadata.put(Metadata.QUOTA_LIMIT, "2048");
 
         try {
             if (accessData != null && !accessData.isEmpty()) {
@@ -59,16 +60,16 @@ public class DropboxDescriptor extends BaseSourceSinkDescribable {
                 if (api.getSession().isLinked()) {
                     double quota_limit = (double) api.accountInfo().quota / (1024.f * 1024.f);
                     double quota = (double) api.accountInfo().quotaNormal / (1024.f * 1024.f);
-                    metadata.setProperty(Metadata.QUOTA_LIMIT, Double.toString(quota_limit));
-                    metadata.setProperty(Metadata.QUOTA, Double.toString(quota));
+                    metadata.put(Metadata.QUOTA_LIMIT, Double.toString(quota_limit));
+                    metadata.put(Metadata.QUOTA, Double.toString(quota));
                 }
             }
         } catch (Exception ex) {
             throw new PluginException(DropboxDescriptor.DROPBOX_ID, "Could not load account metadata", ex);
         }
 
-        metadata.setProperty(Metadata.STORAGE_ALWAYS_ACCESSIBLE, "true");
-        metadata.setProperty(Metadata.DYNAMIC_OPTIONS, "true");
+        metadata.put(Metadata.STORAGE_ALWAYS_ACCESSIBLE, "true");
+        metadata.put(Metadata.DYNAMIC_OPTIONS, "true");
         return metadata;
     }
 

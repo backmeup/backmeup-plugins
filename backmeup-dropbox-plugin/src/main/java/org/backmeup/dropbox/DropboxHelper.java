@@ -2,6 +2,7 @@ package org.backmeup.dropbox;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 
 import org.backmeup.model.exceptions.InvalidKeyException;
@@ -56,9 +57,9 @@ public class DropboxHelper {
         return new WebAuthSession(appKeys, AccessType.DROPBOX);
     }
 
-    public DropboxAPI<WebAuthSession> getApi(Properties accessData) {
-        String token = accessData.getProperty(DropboxHelper.PROPERTY_ACCESS_TOKEN);
-        String secret = accessData.getProperty(DropboxHelper.PROPERTY_ACCESS_SECRET);
+    public DropboxAPI<WebAuthSession> getApi(Map<String, String> accessData) {
+        String token = accessData.get(DropboxHelper.PROPERTY_ACCESS_TOKEN);
+        String secret = accessData.get(DropboxHelper.PROPERTY_ACCESS_SECRET);
 
         if (token == null || secret == null) {
             throw new PluginException(DropboxDescriptor.DROPBOX_ID,

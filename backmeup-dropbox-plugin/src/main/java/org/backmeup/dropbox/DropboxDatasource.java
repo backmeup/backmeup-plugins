@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.activation.MimetypesFileTypeMap;
 
@@ -51,7 +50,7 @@ public class DropboxDatasource extends FilesystemLikeDatasource implements Valid
     }
 
     @Override
-    public List<FilesystemURI> list(Properties accessData, List<String> options, FilesystemURI uri) {
+    public List<FilesystemURI> list(Map<String, String> accessData, List<String> options, FilesystemURI uri) {
         String path = uri == null ? "/" : uri.toString();
         DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(accessData);
         List<FilesystemURI> uris = new ArrayList<>();
@@ -113,7 +112,7 @@ public class DropboxDatasource extends FilesystemLikeDatasource implements Valid
     }
 
     @Override
-    public InputStream getFile(Properties accessData, List<String> options,
+    public InputStream getFile(Map<String, String> accessData, List<String> options,
             FilesystemURI uri) {
         String path = "";
         try {
@@ -167,7 +166,7 @@ public class DropboxDatasource extends FilesystemLikeDatasource implements Valid
     }
     
     @Override
-    public List<String> getAvailableOptions(Properties accessData) {
+    public List<String> getAvailableOptions(Map<String, String> accessData) {
         List<String> options = new ArrayList<>();
         if (accessData == null || accessData.isEmpty()) {
             return options;
