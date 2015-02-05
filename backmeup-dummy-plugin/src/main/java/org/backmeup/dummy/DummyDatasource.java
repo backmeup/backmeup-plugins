@@ -99,7 +99,7 @@ public class DummyDatasource implements Datasource, Validationable {
         ValidationNotes notes = new ValidationNotes();
         for (String option : options) {
             if (!BACKUP_OPTIONS.contains(option)) {
-                notes.addValidationEntry(ValidationExceptionType.APIException, DummyDescriptor.DUMMY_ID, new IllegalArgumentException("Option "+option+" not available"));
+                notes.addValidationEntry(ValidationExceptionType.ConfigException, DummyDescriptor.DUMMY_ID, new IllegalArgumentException("Option \""+option+"\" not available"));
             }
         }
         return notes;

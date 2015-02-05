@@ -2019,7 +2019,7 @@ public class FacebookDatasource implements Datasource, Validationable {
         ValidationNotes notes = new ValidationNotes();
         for (String option : options) {
             if (!BACKUP_OPTIONS.contains(option)) {
-                notes.addValidationEntry(ValidationExceptionType.APIException, FacebookDescriptor.FACEBOOK_ID, new IllegalArgumentException("Option "+option+" not available"));
+                notes.addValidationEntry(ValidationExceptionType.ConfigException, FacebookDescriptor.FACEBOOK_ID, "Option \""+option+"\" not available");
             }
         }
         return notes;

@@ -6,7 +6,7 @@ import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 public class FilegeneratorDescriptor extends BaseSourceSinkDescribable {
-  private static final String FILEGENERATOR_ID = "org.backmeup.filegenerator";
+  static final String FILEGENERATOR_ID = "org.backmeup.filegenerator";
   
   @Override
   public String getId() {

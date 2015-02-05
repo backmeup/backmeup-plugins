@@ -83,7 +83,7 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
 
     private void addEntryIfKeyMissing(Properties properties, String key, ValidationNotes notes) {
         if (!properties.containsKey(key)) {
-            notes.addValidationEntry(ValidationExceptionType.ConfigException,
+            notes.addValidationEntry(ValidationExceptionType.ConfigException, BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
                     "Required input field missing: " + key);
         }
     }
@@ -91,7 +91,7 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
     private void addEntryIfValueEmpty(Properties properties, String key, ValidationNotes notes) {
         String value = properties.getProperty(key);
         if (value == null || value.isEmpty()) {
-            notes.addValidationEntry(ValidationExceptionType.ConfigException,
+            notes.addValidationEntry(ValidationExceptionType.ConfigException, BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID,
                     "Value must not be null or empty: " + key);
         }
     }

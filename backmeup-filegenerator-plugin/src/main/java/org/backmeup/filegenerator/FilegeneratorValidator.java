@@ -48,22 +48,22 @@ public class FilegeneratorValidator implements Validationable {
 		// 1: Check if all required keys are present and 
 		// 2: check if values match required types (and bounds?)
 		if(!properties.containsKey(Constants.PROP_TEXT)){
-			notes.addValidationEntry(ValidationExceptionType.ConfigException, 
+			notes.addValidationEntry(ValidationExceptionType.ConfigException, FilegeneratorDescriptor.FILEGENERATOR_ID, 
 					                 "Required input field missing: " + Constants.PROP_TEXT);
 		}
 		
 		if(!properties.containsKey(Constants.PROP_IMAGE)){
-			notes.addValidationEntry(ValidationExceptionType.ConfigException, 
+			notes.addValidationEntry(ValidationExceptionType.ConfigException, FilegeneratorDescriptor.FILEGENERATOR_ID,
 					                 "Required input field missing: " + Constants.PROP_IMAGE);
 		} 
 		
 		if(!properties.containsKey(Constants.PROP_PDF)){
-			notes.addValidationEntry(ValidationExceptionType.ConfigException, 
+			notes.addValidationEntry(ValidationExceptionType.ConfigException, FilegeneratorDescriptor.FILEGENERATOR_ID,
 					                 "Required input field missing: " + Constants.PROP_PDF);
 		} 
 		
 		if(!properties.containsKey(Constants.PROP_BINARY)){
-			notes.addValidationEntry(ValidationExceptionType.ConfigException, 
+			notes.addValidationEntry(ValidationExceptionType.ConfigException, FilegeneratorDescriptor.FILEGENERATOR_ID,
 					                 "Required input field missing: " + Constants.PROP_BINARY);
 		} 
 				

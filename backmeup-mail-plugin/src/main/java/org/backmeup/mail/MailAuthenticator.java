@@ -99,7 +99,7 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 	
 	private void addEntryIfKeyMissing(Properties properties, String key, ValidationNotes notes) {
 		if (!properties.containsKey(key)) {
-			notes.addValidationEntry(ValidationExceptionType.ConfigException,
+			notes.addValidationEntry(ValidationExceptionType.ConfigException, MailDescriptor.MAIL_ID,
 					"Required input field missing: " + key);
 		}
 	}
