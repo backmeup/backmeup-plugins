@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.ecs.ConcreteElement;
 import org.apache.ecs.Document;
@@ -87,11 +86,11 @@ public class FacebookDatasource implements Datasource, Validationable {
     private final ConcreteElement ce = new ConcreteElement();
 
     @Override
-    public void downloadAll(Properties authData, Properties properties, List<String> options, Storage storage,
+    public void downloadAll(Map<String, String> authData, Map<String, String> properties, List<String> options, Storage storage,
             Progressable progr) throws StorageException {
 
         progr.progress(" >>>>>Starting Facebook plugin with ");
-        this.accessToken = authData.getProperty(FacebookHelper.PROPERTY_ACCESS_TOKEN);
+        this.accessToken = authData.get(FacebookHelper.PROPERTY_ACCESS_TOKEN);
         FacebookClient client = new DefaultFacebookClient(this.accessToken);
 
         getThemes(storage, authData);
@@ -1972,7 +1971,7 @@ public class FacebookDatasource implements Datasource, Validationable {
         return str;
     }
 
-    public void getThemes(Storage storage, Properties props) throws StorageException {
+    public void getThemes(Storage storage, Map<String, String> props) throws StorageException {
         try {
             try (InputStream is = this.getClass().getResourceAsStream("/backmeuplogo.jpg")) {
                 storage.addFile(is, "Themes/backmeuplogo.jpg", null);
@@ -2023,7 +2022,7 @@ public class FacebookDatasource implements Datasource, Validationable {
     }
     
     @Override
-    public List<String> getAvailableOptions(Properties accessData) {
+    public List<String> getAvailableOptions(Map<String, String> accessData) {
         //TODO: Maybe only return options which are granted by (facebook) user
         return Collections.unmodifiableList(BACKUP_OPTIONS);
     }

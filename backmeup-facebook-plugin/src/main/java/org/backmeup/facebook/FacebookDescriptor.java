@@ -1,6 +1,7 @@
 package org.backmeup.facebook;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
@@ -41,9 +42,9 @@ public class FacebookDescriptor extends BaseSourceSinkDescribable {
 	}
 
 	@Override
-	public Properties getMetadata(Properties accessData) {
-		Properties metadata = new Properties();
-		metadata.setProperty(Metadata.BACKUP_FREQUENCY, "daily");
+	public Map<String, String> getMetadata(Map<String, String> accessData) {
+	    Map<String, String> metadata = new HashMap<>();
+		metadata.put(Metadata.BACKUP_FREQUENCY, "daily");
 		return metadata;
 	}
 

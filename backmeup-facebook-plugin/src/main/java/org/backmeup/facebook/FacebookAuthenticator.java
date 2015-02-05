@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Properties;
+import java.util.Map;
 
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.spi.OAuthBasedAuthorizable;
@@ -33,8 +33,8 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
     }
 
     @Override
-    public String createRedirectURL(Properties inputProperties, String callback) {
-        inputProperties.setProperty(FacebookHelper.PROPERTY_CALLBACK_URL, callback);
+    public String createRedirectURL(Map<String, String> inputProperties, String callback) {
+        inputProperties.put(FacebookHelper.PROPERTY_CALLBACK_URL, callback);
 
         return "https://www.facebook.com/dialog/oauth?client_id=" + FacebookHelper.getAppKey() + "&redirect_uri=" + callback + "&scope="
                 + "user_birthday,user_photos,read_stream,user_about_me,user_activities,"
@@ -47,13 +47,13 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
     }
 
     @Override
-    public String authorize(Properties inputProperties) {
-        String accessToken = inputProperties.getProperty(FacebookHelper.PROPERTY_ACCESS_TOKEN);
+    public String authorize(Map<String, String> authData) {
+        String accessToken = authData.get(FacebookHelper.PROPERTY_ACCESS_TOKEN);
 
         try {
             if (accessToken == null) {
-                accessToken = this.retrieveAccessToken(inputProperties);
-                inputProperties.setProperty(FacebookHelper.PROPERTY_ACCESS_TOKEN, accessToken);
+                accessToken = this.retrieveAccessToken(authData);
+                authData.put(FacebookHelper.PROPERTY_ACCESS_TOKEN, accessToken);
             }
 
             FacebookClient client = new DefaultFacebookClient(accessToken);
@@ -65,14 +65,14 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
         }
     }
 
-    private String retrieveAccessToken(Properties inputProperties) throws IOException {
+    private String retrieveAccessToken(Map<String, String> inputProperties) throws IOException {
         String code = null;
         try {
-            code = PluginUtils.splitQuery(inputProperties.getProperty(OAuthBasedAuthorizable.QUERY_PARAM_PROPERTY)).getParameter("code");
+            code = PluginUtils.splitQuery(inputProperties.get(OAuthBasedAuthorizable.QUERY_PARAM_PROPERTY)).getParameter("code");
         } catch(NullPointerException e) {
             throw new PluginException(FacebookDescriptor.FACEBOOK_ID, "cannot parse oAuth response", e);
         }
-        String callback = inputProperties.getProperty(FacebookHelper.PROPERTY_CALLBACK_URL);
+        String callback = inputProperties.get(FacebookHelper.PROPERTY_CALLBACK_URL);
         StringBuilder content = new StringBuilder();
 
         try {
