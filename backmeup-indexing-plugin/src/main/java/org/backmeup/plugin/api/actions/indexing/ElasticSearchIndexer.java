@@ -67,20 +67,20 @@ public class ElasticSearchIndexer {
         PluginProfileDTO sourceProfile = job.getSource();
 
         if (sourceProfile != null) {
-            document.field(IndexFields.FIELD_BACKUP_SOURCE_ID, sourceProfile.getPluginId());
-            document.field(IndexFields.FIELD_BACKUP_SOURCE_IDENTIFICATION, sourceProfile.getProfileId());
+            document.field(IndexFields.FIELD_BACKUP_SOURCE_PLUGIN_ID, sourceProfile.getPluginId());
+            document.field(IndexFields.FIELD_BACKUP_SOURCE_PROFILE_ID, sourceProfile.getProfileId());
             if ((sourceProfile.getAuthData() != null) && (sourceProfile.getAuthData().getName() != null)) {
-                document.field(IndexFields.FIELD_BACKUP_SOURCE_PLUGIN_NAME, sourceProfile.getAuthData().getName());
+                document.field(IndexFields.FIELD_BACKUP_SOURCE_AUTH_TITLE, sourceProfile.getAuthData().getName());
             }
         }
 
         PluginProfileDTO sinkProfile = job.getSink();
 
         if (sinkProfile != null) {
-            document.field(IndexFields.FIELD_BACKUP_SINK_ID, sinkProfile.getPluginId());
-            document.field(IndexFields.FIELD_BACKUP_SINK_IDENTIFICATION, sinkProfile.getProfileId());
+            document.field(IndexFields.FIELD_BACKUP_SINK_PLUGIN_ID, sinkProfile.getPluginId());
+            document.field(IndexFields.FIELD_BACKUP_SINK_PROFILE_ID, sinkProfile.getProfileId());
             if ((sinkProfile.getAuthData() != null) && (sinkProfile.getAuthData().getName() != null)) {
-                document.field(IndexFields.FIELD_BACKUP_SINK_PLUGIN_NAME, sinkProfile.getAuthData().getName());
+                document.field(IndexFields.FIELD_BACKUP_SINK_AUTH_TITLE, sinkProfile.getAuthData().getName());
             }
         }
 
