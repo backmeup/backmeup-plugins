@@ -106,9 +106,6 @@ public class FacebookDatasource implements Datasource, Validationable {
         if (options == null) {
             options = new ArrayList<String>();
         }
-        if (options.contains("")) {
-            options.remove("");
-        }
         if (options.isEmpty()) {
             options.addAll(BACKUP_OPTIONS);
         }
