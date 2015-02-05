@@ -2,8 +2,8 @@ package org.backmeup.dummy;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.connectors.Datasink;
@@ -15,7 +15,7 @@ import org.backmeup.plugin.api.storage.StorageException;
 public class DummyDatasink implements Datasink {
 
     @Override
-    public String upload(Properties accessData, Properties properties, List<String> options, Storage storage, Progressable progressor) throws StorageException {
+    public String upload(Map<String, String> authData, Map<String, String> properties, List<String> options, Storage storage, Progressable progressor) throws StorageException {
 
         System.out.println("Uploading to StorageReader");
 

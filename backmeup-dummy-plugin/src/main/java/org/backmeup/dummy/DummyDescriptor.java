@@ -1,6 +1,7 @@
 package org.backmeup.dummy;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
@@ -25,13 +26,13 @@ public class DummyDescriptor extends BaseSourceSinkDescribable {
     }
 
     @Override
-    public Properties getMetadata(@SuppressWarnings("unused") Properties accessData) {
-        Properties props = new Properties();
-        props.setProperty(Metadata.BACKUP_FREQUENCY, "daily");
-        props.setProperty(Metadata.FILE_SIZE_LIMIT, "100");
-        props.setProperty(Metadata.QUOTA, "50");
-        props.setProperty(Metadata.QUOTA_LIMIT, "200");
-        props.setProperty(Metadata.STORAGE_ALWAYS_ACCESSIBLE, "true");
+    public Map<String, String> getMetadata(@SuppressWarnings("unused") Map<String, String> accessData) {
+        Map<String, String> props = new HashMap<>();
+        props.put(Metadata.BACKUP_FREQUENCY, "daily");
+        props.put(Metadata.FILE_SIZE_LIMIT, "100");
+        props.put(Metadata.QUOTA, "50");
+        props.put(Metadata.QUOTA_LIMIT, "200");
+        props.put(Metadata.STORAGE_ALWAYS_ACCESSIBLE, "true");
         return props;
     }
 

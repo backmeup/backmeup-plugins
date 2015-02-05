@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
@@ -50,7 +49,7 @@ public class DummyDatasource implements Datasource, Validationable {
     }
 
     @Override
-    public void downloadAll(Properties accessData, Properties properties, List<String> options, Storage storage, Progressable progressor) throws StorageException {
+    public void downloadAll(Map<String, String> accessData, Map<String, String> properties, List<String> options, Storage storage, Progressable progressor) throws StorageException {
         MetainfoContainer cont = new MetainfoContainer();
         cont.addMetainfo(create("1", "text/plain", "/plain.txt"));
         InputStream is = stringToStream("This is an important text file.\nPlease create a backup with this file");
@@ -90,7 +89,7 @@ public class DummyDatasource implements Datasource, Validationable {
     }
     
     @Override
-    public List<String> getAvailableOptions(Properties accessData) {
+    public List<String> getAvailableOptions(Map<String, String> accessData) {
         return Collections.unmodifiableList(BACKUP_OPTIONS);
     }
 
