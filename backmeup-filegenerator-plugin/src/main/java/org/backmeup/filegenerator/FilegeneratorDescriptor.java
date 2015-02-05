@@ -1,6 +1,7 @@
 package org.backmeup.filegenerator;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
@@ -24,9 +25,9 @@ public class FilegeneratorDescriptor extends BaseSourceSinkDescribable {
   }
 
   @Override
-  public Properties getMetadata(Properties accessData) {
-    Properties props = new Properties();
-    props.setProperty(Metadata.BACKUP_FREQUENCY, "daily");
+  public Map<String, String> getMetadata(Map<String, String> accessData) {
+      Map<String, String> props = new HashMap<>();
+    props.put(Metadata.BACKUP_FREQUENCY, "daily");
     return props;
   }
 

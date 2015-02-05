@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Random;
 
 import org.backmeup.filegenerator.constants.Constants;
@@ -24,13 +24,13 @@ public class FilegeneratorDatasource implements Datasource {
     private static final int DEFAULT_MAX_FILES = Integer.parseInt(Constants.PROP_GENERATOR_FILES_DEFAULT);
 
     @Override
-    public void downloadAll(Properties authData, Properties properties, List<String> options, Storage storage,
+    public void downloadAll(Map<String, String> authData, Map<String, String> properties, List<String> options, Storage storage,
             Progressable progressor) throws StorageException {
         final Random random = new Random();
         final ArrayList<Generator> generators = new ArrayList<>();
 
-        if (properties.getProperty(Constants.PROP_TEXT).equals("true")) {
-            String amount = properties.getProperty(Constants.PROP_TEXT_PARAGRAPHS);
+        if (properties.get(Constants.PROP_TEXT).equals("true")) {
+            String amount = properties.get(Constants.PROP_TEXT_PARAGRAPHS);
             try {
                 //note: amount might be null or "" or a valid integer
                 int txtAmountParagraphs = Integer.parseInt(amount);
@@ -40,8 +40,8 @@ public class FilegeneratorDatasource implements Datasource {
             }
         }
 
-        if (properties.getProperty(Constants.PROP_IMAGE).equals("true")) {
-            String size = properties.getProperty(Constants.PROP_IMAGE_SIZE);
+        if (properties.get(Constants.PROP_IMAGE).equals("true")) {
+            String size = properties.get(Constants.PROP_IMAGE_SIZE);
             try {
                 int imgSize = Integer.parseInt(size);
                 generators.add(new ImageGenerator(imgSize, imgSize, random));
@@ -50,8 +50,8 @@ public class FilegeneratorDatasource implements Datasource {
             }
         }
 
-        if (properties.getProperty(Constants.PROP_PDF).equals("true")) {
-            String amount = properties.getProperty(Constants.PROP_PDF_PARAGRAPHS);
+        if (properties.get(Constants.PROP_PDF).equals("true")) {
+            String amount = properties.get(Constants.PROP_PDF_PARAGRAPHS);
             try {
                 int pdfAmountParagraphs = Integer.parseInt(amount);
                 String pdfText = new TextGenerator().getParagraphs(pdfAmountParagraphs);
@@ -62,8 +62,8 @@ public class FilegeneratorDatasource implements Datasource {
             }
         }
 
-        if (properties.getProperty(Constants.PROP_BINARY).equals("true")) {
-            String size = properties.getProperty(Constants.PROP_BINARY_SIZE);
+        if (properties.get(Constants.PROP_BINARY).equals("true")) {
+            String size = properties.get(Constants.PROP_BINARY_SIZE);
             try {
                 int binSize = Integer.parseInt(size);
                 generators.add(new BinaryGenerator(binSize, random));
@@ -82,7 +82,7 @@ public class FilegeneratorDatasource implements Datasource {
         //		long currentTime = new Date().getTime();
         //		long endTime;
 
-        String files = properties.getProperty(Constants.PROP_GENERATOR_FILES);
+        String files = properties.get(Constants.PROP_GENERATOR_FILES);
         try {
             maxFiles = Integer.parseInt(files);
         } catch (NumberFormatException e) {
