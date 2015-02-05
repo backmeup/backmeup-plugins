@@ -68,6 +68,7 @@ public class DropboxDescriptor extends BaseSourceSinkDescribable {
         }
 
         metadata.setProperty(Metadata.STORAGE_ALWAYS_ACCESSIBLE, "true");
+        metadata.setProperty(Metadata.DYNAMIC_OPTIONS, "true");
         return metadata;
     }
 

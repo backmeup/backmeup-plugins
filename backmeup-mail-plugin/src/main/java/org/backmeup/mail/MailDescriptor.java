@@ -45,6 +45,7 @@ public class MailDescriptor extends BaseSourceSinkDescribable {
 	public Properties getMetadata(Properties accessData) {
 		Properties metadata = new Properties();
 		metadata.setProperty(Metadata.BACKUP_FREQUENCY, "daily");		
+		metadata.setProperty(Metadata.DYNAMIC_OPTIONS, "true");
 		return metadata;
 	}
 
