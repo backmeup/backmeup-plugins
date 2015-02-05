@@ -2,12 +2,11 @@ package org.backmeup.mail.test;
 
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import org.backmeup.mail.MailAuthenticator;
 
@@ -26,7 +25,7 @@ public class MailAuthenticate {
 	public static void main(String[] args) throws IOException {
 		// first authenticate a user to mail; store his profile as auth.props file 
 		MailAuthenticator auth = new MailAuthenticator();
-		Properties props = new Properties();
+		Map<String, String> props = new HashMap<>();
 		do {
   		props.clear();
 //  		for (String input : auth.getRequiredInputFields()) {
@@ -47,9 +46,9 @@ public class MailAuthenticate {
 		}
 		while (!auth.isValid(props));
 		auth.authorize(props);
-		for (Entry<Object, Object> entry: props.entrySet()) {
+		for (Entry<String, String> entry: props.entrySet()) {
 			System.out.println(entry.getKey() + ": " + entry.getValue());
 		}
-		props.store(new FileWriter(new File("auth.props")), null);
+//		props.store(new FileWriter(new File("auth.props")), null);
 	}
 }

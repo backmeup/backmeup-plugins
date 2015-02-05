@@ -1,9 +1,10 @@
 package org.backmeup.mail.test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import org.backmeup.mail.MailDatasource;
 import org.backmeup.plugin.api.connectors.Progressable;
@@ -14,10 +15,10 @@ import org.backmeup.plugin.api.storage.filesystem.LocalFilesystemStorage;
 public class MailTest {
   public static void main(String[] args) throws Exception {
  // Use the properties saved during DropboxAuthenticate to download all files from Dropbox
-    Properties authProps = new Properties();
-    authProps.load(MailTest.class.getClassLoader().getResourceAsStream("auth.props"));    
+      Map<String, String> authProps = new HashMap<>();
+//    authProps.load(MailTest.class.getClassLoader().getResourceAsStream("auth.props"));    
     
-    Properties props = new Properties();
+    Map<String, String> props = new HashMap<>();
     List<String> options = new ArrayList<>();
     
     MailDatasource source = new MailDatasource();

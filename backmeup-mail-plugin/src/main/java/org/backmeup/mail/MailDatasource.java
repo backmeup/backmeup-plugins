@@ -439,7 +439,7 @@ public class MailDatasource implements Datasource, Validationable {
         }
     }
 
-    public void handleDownloadAll(Folder current, Properties accessData, Storage storage, Set<String> alreadyInspected,
+    public void handleDownloadAll(Folder current, Map<String, String> accessData, Storage storage, Set<String> alreadyInspected,
             List<MessageInfo> indexDetails, Progressable progressor) throws IOException, MessagingException,
             StorageException {
         if (alreadyInspected.contains(current.getFullName()))
@@ -474,14 +474,17 @@ public class MailDatasource implements Datasource, Validationable {
     }
 
     @Override
-    public void downloadAll(Properties accessData, Properties properties, List<String> options, Storage storage,
+    public void downloadAll(Map<String, String> accessData, Map<String, String> properties, List<String> options, Storage storage,
             Progressable progressor) throws StorageException {
         try {
-            Session session = Session.getInstance(accessData);
+            Properties mailProps = new Properties();
+            mailProps.putAll(accessData);
+            
+            Session session = Session.getInstance(mailProps);
             Store store = session.getStore();
-            progressor.progress("Connecting to mail provider " + accessData.getProperty("mail.host"));
-            store.connect(accessData.getProperty("mail.host"), accessData.getProperty("mail.user"),
-                    accessData.getProperty("mail.password"));
+            progressor.progress("Connecting to mail provider " + accessData.get("mail.host"));
+            store.connect(accessData.get("mail.host"), accessData.get("mail.user"),
+                    accessData.get("mail.password"));
             progressor.progress("Connection successfull");
 
             Set<String> alreadyInspected = new HashSet<>();
@@ -561,16 +564,19 @@ public class MailDatasource implements Datasource, Validationable {
     }
     
     @Override
-    public List<String> getAvailableOptions(Properties accessData) {
+    public List<String> getAvailableOptions(Map<String, String> accessData) {
         List<String> options = new ArrayList<>();
         if (accessData == null || accessData.isEmpty()) {
             return options;
         }
         
         try {
-            Session session = Session.getInstance(accessData);
+            Properties mailProps = new Properties();
+            mailProps.putAll(accessData);
+            
+            Session session = Session.getInstance(mailProps);
             Store store = session.getStore();
-            store.connect(accessData.getProperty("mail.host"), accessData.getProperty("mail.user"), accessData.getProperty("mail.password"));
+            store.connect(accessData.get("mail.host"), accessData.get("mail.user"), accessData.get("mail.password"));
             Folder[] folders = store.getDefaultFolder().list("*");
             for (Folder folder : folders) {
                 String folderName = folder.getFullName();

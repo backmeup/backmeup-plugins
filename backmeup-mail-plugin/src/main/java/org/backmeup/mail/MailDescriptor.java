@@ -1,6 +1,7 @@
 package org.backmeup.mail;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
@@ -42,10 +43,10 @@ public class MailDescriptor extends BaseSourceSinkDescribable {
 	}
 
 	@Override
-	public Properties getMetadata(Properties accessData) {
-		Properties metadata = new Properties();
-		metadata.setProperty(Metadata.BACKUP_FREQUENCY, "daily");		
-		metadata.setProperty(Metadata.DYNAMIC_OPTIONS, "true");
+	public Map<String, String> getMetadata(Map<String, String> accessData) {
+	    Map<String, String> metadata = new HashMap<>();
+		metadata.put(Metadata.BACKUP_FREQUENCY, "daily");		
+		metadata.put(Metadata.DYNAMIC_OPTIONS, "true");
 		return metadata;
 	}
 

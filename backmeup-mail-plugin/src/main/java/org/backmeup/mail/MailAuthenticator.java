@@ -2,6 +2,7 @@ package org.backmeup.mail;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
@@ -42,8 +43,8 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 	}
 
 	@Override
-	public String authorize(Properties inputProperties) {
-		Properties authProps = convertInputPropertiesToAuthProperties(inputProperties);
+	public String authorize(Map<String, String> authData) {
+		Properties authProps = convertInputPropertiesToAuthProperties(authData);
 		
 		try {
 			Session session = Session.getInstance(authProps);
@@ -59,9 +60,11 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 		}
 		
 //		inputProperties.clear();
-		inputProperties.putAll(authProps);
+        for (final String name : authProps.stringPropertyNames()) {
+            authData.put(name, authProps.getProperty(name));
+        }
 		
-		return inputProperties.getProperty("mail.user");
+		return authData.get("mail.user");
 	}
 
 	@Override
@@ -79,12 +82,12 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 	}
 
 	@Override
-	public boolean isValid(Properties inputs) {
+	public boolean isValid(Map<String, String> inputs) {
 		return validateInputFields(inputs).getValidationEntries().isEmpty();
 	}
   
 	@Override
-	public ValidationNotes validateInputFields(Properties properties) {
+	public ValidationNotes validateInputFields(Map<String, String> properties) {
 		ValidationNotes notes = new ValidationNotes();
 
 		addEntryIfKeyMissing(properties, PROP_USERNAME, notes);
@@ -97,25 +100,25 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 		return notes;
 	}
 	
-	private void addEntryIfKeyMissing(Properties properties, String key, ValidationNotes notes) {
+	private void addEntryIfKeyMissing(Map<String, String> properties, String key, ValidationNotes notes) {
 		if (!properties.containsKey(key)) {
 			notes.addValidationEntry(ValidationExceptionType.ConfigException, MailDescriptor.MAIL_ID,
 					"Required input field missing: " + key);
 		}
 	}
 	
-	private Properties convertInputPropertiesToAuthProperties(Properties inputs) {
+	private Properties convertInputPropertiesToAuthProperties(Map<String, String> inputs) {
 		Properties authProperties = new Properties();
-		String storeType = inputs.getProperty(PROP_TYPE);
+		String storeType = inputs.get(PROP_TYPE);
 		String prefix = "mail." + storeType + ".";
 		if (inputs.get(PROP_SSL) != null && inputs.get(PROP_SSL).toString().equalsIgnoreCase("true")) {
 			authProperties.put(prefix + "socketFactory.class","javax.net.ssl.SSLSocketFactory");
 			authProperties.put(prefix + "socketFactory.fallback", "false");
 		}
-		authProperties.put(prefix + "port", inputs.getProperty(PROP_PORT));
-		authProperties.put("mail.user", inputs.getProperty(PROP_USERNAME));
-		authProperties.put("mail.password", inputs.getProperty(PROP_PASSWORD));
-		authProperties.put("mail.host", inputs.getProperty(PROP_HOST));
+		authProperties.put(prefix + "port", inputs.get(PROP_PORT));
+		authProperties.put("mail.user", inputs.get(PROP_USERNAME));
+		authProperties.put("mail.password", inputs.get(PROP_PASSWORD));
+		authProperties.put("mail.host", inputs.get(PROP_HOST));
 		authProperties.put(prefix + "connectiontimeout", "5000");
 		authProperties.put(prefix + "timeout", "5000");
 		authProperties.put("mail.store.protocol", storeType);
