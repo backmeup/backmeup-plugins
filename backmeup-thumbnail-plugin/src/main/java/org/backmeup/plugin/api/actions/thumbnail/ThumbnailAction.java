@@ -1,7 +1,6 @@
 package org.backmeup.plugin.api.actions.thumbnail;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -45,9 +44,9 @@ public class ThumbnailAction implements Action {
      * 
      * @return the name of the thumbnail file
      */
-    private String convert(File original) throws IOException, InterruptedException, IM4JavaException {
+    private String convert(String path) throws IOException, InterruptedException, IM4JavaException {
 
-        String thumbnailPath = original.getAbsolutePath() + THUMBNAIL_PATH_EXTENSION;
+        String thumbnailPath = path + THUMBNAIL_PATH_EXTENSION;
 
         IMOperation op = new IMOperation();
         op.size(THUMBNAIL_DIMENSIONS, THUMBNAIL_DIMENSIONS);
@@ -55,7 +54,7 @@ public class ThumbnailAction implements Action {
         op.resize(THUMBNAIL_DIMENSIONS, THUMBNAIL_DIMENSIONS);
         op.p_profile("*");
 
-        op.addImage(original.getAbsolutePath() + "[0]");
+        op.addImage(path + "[0]");
         op.addImage(thumbnailPath);
 
         ConvertCmd cmd = new ConvertCmd(true);
@@ -93,27 +92,27 @@ public class ThumbnailAction implements Action {
                 }
 
                 if (supported) {
-                    if (tempFilename.startsWith("/"))
-                        tempFilename = tempFilename.substring(1);
+                    /* if (tempFilename.startsWith("/"))
+                         tempFilename = tempFilename.substring(1);
 
-                    tempFilename = System.currentTimeMillis() + "_"
-                            + tempFilename.replace("/", "$").replace(" ", "_").replace("#", "_");
+                     tempFilename = System.currentTimeMillis() + "_"
+                             + tempFilename.replace("/", "$").replace(" ", "_").replace("#", "_");*/
 
-                    File tempFile = new File(this.tempDir, tempFilename);
+                    /*File tempFile = new File(this.tempDir, tempFilename);
                     try (FileOutputStream fos = new FileOutputStream(tempFile)) {
                         fos.write(dataobject.getBytes());
-                    }
+                    }*/
 
                     try {
                         // Generate thumbnails using GraphicsMagick
-                        String thumbPath = convert(tempFile);
+                        String thumbPath = convert(dataobject.getPath());
                         Metainfo meta = new Metainfo();
                         meta.setAttribute(FIELD_THUMBNAIL_PATH, thumbPath);
                         MetainfoContainer container = dataobject.getMetainfo();
                         container.addMetainfo(meta);
                         dataobject.setMetainfo(container);
                         progressor.progress("created thumbnail for object: " + thumbPath);
-                        tempFile.delete();
+                        //tempFile.delete();
                     } catch (Throwable t) {
                         progressor.progress("skipping");
                         LOGGER.debug("Failed to render thumbnail for: " + dataobject.getPath());
