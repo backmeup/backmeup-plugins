@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import org.apache.commons.lang.SystemUtils;
 import org.backmeup.model.dto.BackupJobDTO;
@@ -68,7 +68,7 @@ public class ThumbnailAction implements Action {
     }
 
     @Override
-    public void doAction(Properties accessData, Properties properties, List<String> options, Storage storage,
+    public void doAction(Map<String, String> accessData, Map<String, String> properties, List<String> options, Storage storage,
             BackupJobDTO job, Progressable progressor) throws ActionException {
 
         progressor.progress("Starting thumbnail rendering");
@@ -127,8 +127,8 @@ public class ThumbnailAction implements Action {
         progressor.progress("Thumbnail rendering complete");
     }
 
-    private File setPluginOutputLocation(Properties p) {
-        String path = p.getProperty("org.backmeup.thumbnails.tmpdir");
+    private File setPluginOutputLocation(Map<String, String> p) {
+        String path = p.get("org.backmeup.thumbnails.tmpdir");
         if (path == null) {
             path = "/data/thumbnails";
         }
