@@ -43,7 +43,7 @@ public class ElasticSearchIndexer {
         this.client = client;
     }
 
-    public void doIndexing(Properties externalProps, BackupJobDTO job, DataObject dataObject, Map<String, String> meta,
+    public void doIndexing(Map<String, String> externalProps, BackupJobDTO job, DataObject dataObject, Map<String, String> meta,
             Date timestamp) throws IOException {
         // Build the index object
         IndexDocument document = new IndexDocument();
@@ -137,9 +137,9 @@ public class ElasticSearchIndexer {
      * @param accessData
      * @return
      */
-    private String getBMULocation(Properties p) {
+    private String getBMULocation(Map<String, String> p) {
         if (p.containsKey("org.backmeup.bmuprefix")) {
-            return p.getProperty("org.backmeup.bmuprefix");
+            return p.get("org.backmeup.bmuprefix");
         } else {
             return "";
         }

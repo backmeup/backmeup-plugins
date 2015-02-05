@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -61,7 +60,7 @@ public class IndexAction implements Action {
     private static final String ERROR_SKIPPING_ITEM = "Error indexing data object, skipping object ";
 
     @Override
-    public void doAction(Properties authData, Properties properties, List<String> options, Storage storage,
+    public void doAction(Map<String, String> authData, Map<String, String> properties, List<String> options, Storage storage,
             BackupJobDTO job, Progressable progressor) throws ActionException {
 
         int indexedItems_OK = 0;
