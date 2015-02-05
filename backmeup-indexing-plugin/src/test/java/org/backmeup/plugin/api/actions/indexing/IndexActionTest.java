@@ -3,8 +3,8 @@ package org.backmeup.plugin.api.actions.indexing;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.backmeup.index.api.IndexClient;
@@ -78,7 +78,7 @@ public class IndexActionTest {
         BackupJobDTO job = JsonSerializer.deserialize(this.BACKUP_JOB_DTO, BackupJobDTO.class);
 
         // now call the actual indexing (Metadata extraction, Tika analysis)
-        action.doAction(new Properties(), new Properties(), new ArrayList<String>(), storage, job, this.logProgressable);
+        action.doAction(new HashMap<String, String>(), new HashMap<String, String>(), new ArrayList<String>(), storage, job, this.logProgressable);
         System.out.println("Done.");
     }
 
