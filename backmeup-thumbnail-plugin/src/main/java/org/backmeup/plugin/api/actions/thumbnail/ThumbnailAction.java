@@ -1,5 +1,6 @@
 package org.backmeup.plugin.api.actions.thumbnail;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -19,6 +20,7 @@ import org.backmeup.plugin.api.storage.Storage;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
+import org.im4java.process.Pipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +46,10 @@ public class ThumbnailAction implements Action {
      * 
      * @return the name of the thumbnail file
      */
-    private String convert(String path) throws IOException, InterruptedException, IM4JavaException {
+    private String convert(DataObject dob, String pathThumbnail) throws IOException, InterruptedException,
+            IM4JavaException {
 
-        String thumbnailPath = path + THUMBNAIL_PATH_EXTENSION;
+        String thumbnailPath = pathThumbnail + THUMBNAIL_PATH_EXTENSION;
 
         IMOperation op = new IMOperation();
         op.size(THUMBNAIL_DIMENSIONS, THUMBNAIL_DIMENSIONS);
@@ -54,7 +57,10 @@ public class ThumbnailAction implements Action {
         op.resize(THUMBNAIL_DIMENSIONS, THUMBNAIL_DIMENSIONS);
         op.p_profile("*");
 
-        op.addImage(path + "[0]");
+        ByteArrayInputStream is = new ByteArrayInputStream(dob.getBytes());
+        Pipe pipeIn = new Pipe(is, null);
+
+        op.addImage("-");
         op.addImage(thumbnailPath);
 
         ConvertCmd cmd = new ConvertCmd(true);
@@ -62,6 +68,8 @@ public class ThumbnailAction implements Action {
             //TODO move the configuration into a property file
             cmd.setSearchPath("C:/Program Files/GraphicsMagick-1.3.20-Q8");
         }
+        cmd.setInputProvider(pipeIn);
+        LOGGER.debug("calling ImageMagickProcessor: " + cmd.toString());
         cmd.run(op);
 
         return thumbnailPath;
@@ -82,30 +90,27 @@ public class ThumbnailAction implements Action {
                 DataObject dataobject = dobs.next();
                 progressor.progress("Processing " + dataobject.getPath());
 
-                // Write file to temp dir
-                String tempFilename = dataobject.getPath();
+                // Create location for output file, write to workflow temp dir
+                String thumbFilename = dataobject.getPath();
 
                 boolean supported = true;
                 for (String format : UNSUPPORTED_TYPES) {
-                    if (tempFilename.toLowerCase().endsWith(format))
+                    if (thumbFilename.toLowerCase().endsWith(format))
                         supported = false;
                 }
 
                 if (supported) {
-                    /* if (tempFilename.startsWith("/"))
-                         tempFilename = tempFilename.substring(1);
+                    if (thumbFilename.startsWith("/"))
+                        thumbFilename = thumbFilename.substring(1);
 
-                     tempFilename = System.currentTimeMillis() + "_"
-                             + tempFilename.replace("/", "$").replace(" ", "_").replace("#", "_");*/
+                    thumbFilename = System.currentTimeMillis() + "_"
+                            + thumbFilename.replace("/", "$").replace(" ", "_").replace("#", "_");
 
-                    /*File tempFile = new File(this.tempDir, tempFilename);
-                    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                        fos.write(dataobject.getBytes());
-                    }*/
+                    File thumbOutputFile = new File(this.tempDir, thumbFilename);
 
                     try {
                         // Generate thumbnails using GraphicsMagick
-                        String thumbPath = convert(dataobject.getPath());
+                        String thumbPath = convert(dataobject, thumbOutputFile.getAbsolutePath());
                         Metainfo meta = new Metainfo();
                         meta.setAttribute(FIELD_THUMBNAIL_PATH, thumbPath);
                         MetainfoContainer container = dataobject.getMetainfo();
@@ -114,7 +119,7 @@ public class ThumbnailAction implements Action {
                         progressor.progress("created thumbnail for object: " + thumbPath);
                         //tempFile.delete();
                     } catch (Throwable t) {
-                        progressor.progress("skipping");
+                        progressor.progress("skipping " + t.toString());
                         LOGGER.debug("Failed to render thumbnail for: " + dataobject.getPath());
                         LOGGER.debug(t.getClass().getName() + ": " + t.getMessage());
                     }
