@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.backmeup.model.dto.BackupJobDTO;
 import org.backmeup.plugin.api.Metainfo;
@@ -58,26 +59,32 @@ public class ThumbnailAction implements Action {
         op.p_profile("*");
 
         ByteArrayInputStream is = new ByteArrayInputStream(dob.getBytes());
-        Pipe pipeIn = new Pipe(is, null);
+        try {
+            Pipe pipeIn = new Pipe(is, null);
 
-        op.addImage("-");
-        op.addImage(thumbnailPath);
+            op.addImage("-");
+            op.addImage(thumbnailPath);
 
-        ConvertCmd cmd = new ConvertCmd(true);
-        if (SystemUtils.IS_OS_WINDOWS) {
-            //TODO move the configuration into a property file
-            cmd.setSearchPath("C:/Program Files/GraphicsMagick-1.3.20-Q8");
+            ConvertCmd cmd = new ConvertCmd(true);
+            if (SystemUtils.IS_OS_WINDOWS) {
+                //TODO move the configuration into a property file
+                cmd.setSearchPath("C:/Program Files/GraphicsMagick-1.3.20-Q8");
+            }
+            cmd.setInputProvider(pipeIn);
+            LOGGER.debug("calling ImageMagickProcessor: " + cmd.toString());
+            cmd.run(op);
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            IOUtils.closeQuietly(is);
         }
-        cmd.setInputProvider(pipeIn);
-        LOGGER.debug("calling ImageMagickProcessor: " + cmd.toString());
-        cmd.run(op);
 
         return thumbnailPath;
     }
 
     @Override
-    public void doAction(Map<String, String> accessData, Map<String, String> properties, List<String> options, Storage storage,
-            BackupJobDTO job, Progressable progressor) throws ActionException {
+    public void doAction(Map<String, String> accessData, Map<String, String> properties, List<String> options,
+            Storage storage, BackupJobDTO job, Progressable progressor) throws ActionException {
 
         progressor.progress("Starting thumbnail rendering");
 
