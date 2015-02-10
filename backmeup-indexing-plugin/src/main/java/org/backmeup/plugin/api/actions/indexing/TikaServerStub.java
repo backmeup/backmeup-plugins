@@ -2,8 +2,11 @@ package org.backmeup.plugin.api.actions.indexing;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
@@ -77,36 +80,31 @@ public class TikaServerStub {
 
     }
 
-    /**
-     * Calls Apache Tika to determine the object's Content-Type It uses Tikas mime-type detector and hands over the file
-     * name to achieve better results http://localhost:9998/detect/stream
-     * 
-     * @return null if problems detecting
-     */
-    public String detectContentType(DataObject dob) throws IOException {
-        HttpPut httpput = new HttpPut(SERVER_AND_PORT + "detect/stream");
-        CloseableHttpClient httpclient = HttpClientBuilder.create().build();
-        //add content disposition header to get better Tika discovery results
-        //e.g. httpput.addHeader("Content-Disposition", "attachment; filename=creative-commons.pdf");
-        httpput.addHeader("Content-Disposition", "attachment; filename=" + getFilename(dob.getPath()));
-
+    private HttpResponse addPayloadAndExecuteCall(CloseableHttpClient httpclient, HttpPut httpput, DataObject dob,
+            boolean useInputStreamBody) throws IOException {
         ByteArrayInputStream is = null;
         try {
+            //add an InputStreamBody to httpput entity
             is = new ByteArrayInputStream(dob.getBytes());
             MultipartEntityBuilder multipartEntity = MultipartEntityBuilder.create();
-            multipartEntity.addPart("data", new InputStreamBody(is, getFilename(dob.getPath())));
-            httpput.setEntity(multipartEntity.build());
-
-            HttpResponse response = httpclient.execute(httpput);
-            //check on status code
-            if (response.getStatusLine().getStatusCode() == 200) {
-                String responseBody = EntityUtils.toString(response.getEntity());
-                return responseBody.toString();
+            if (useInputStreamBody) {
+                //add a inputstream body
+                multipartEntity.addPart("data", new InputStreamBody(is, getFilename(dob.getPath())));
+                httpput.setEntity(multipartEntity.build());
             } else {
-                throw new IOException("received status code " + response.getStatusLine().getStatusCode());
+                //add a file body - as some Tika JAX-RS endpoints can't handle streaming
+                File fileToUse = stream2file(is);
+                FileBody data = new FileBody(fileToUse);
+                multipartEntity = MultipartEntityBuilder.create();
+                multipartEntity.addPart("data", data);
+                httpput.setEntity(multipartEntity.build());
             }
+
+            //execute the call
+            HttpResponse response = httpclient.execute(httpput);
+            return response;
         } catch (IOException e) {
-            this.log.debug("Error calling Tika for content type detection", e);
+            this.log.debug("Error calling Tika ", e);
             throw e;
         } finally {
             if (is != null) {
@@ -118,11 +116,92 @@ public class TikaServerStub {
         }
     }
 
+    /**
+     * Calls Apache Tika server to determine the object's Content-Type It uses Tikas mime-type detector and hands over
+     * the file name to achieve better results http://localhost:9998/detect/stream
+     * 
+     * @param dob
+     *            the object to extract data from
+     * @return
+     * @throws IOException
+     */
+    public String detectContentType(DataObject dob) throws IOException {
+        HttpPut httpput = new HttpPut(SERVER_AND_PORT + "detect/stream");
+        CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+        //add content disposition header to get better Tika discovery results
+        //e.g. httpput.addHeader("Content-Disposition", "attachment; filename=creative-commons.pdf");
+        httpput.addHeader("Content-Disposition", "attachment; filename=" + getFilename(dob.getPath()));
+
+        HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, true);
+        //check on status code
+        if (response.getStatusLine().getStatusCode() == 200) {
+            String responseBody = EntityUtils.toString(response.getEntity());
+            return responseBody.toString();
+        } else {
+            throw new IOException("Error calling Tika for content type detection - received status code "
+                    + response.getStatusLine().getStatusCode());
+        }
+    }
+
     private String getFilename(String path) {
         if (path.indexOf('/') > -1) {
             return path.substring(path.lastIndexOf('/') + 1);
         }
         return path;
+    }
+
+    private static File stream2file(InputStream in) throws IOException {
+        final File tempFile = File.createTempFile("stream2file", ".tmp");
+        FileOutputStream out = new FileOutputStream(tempFile);
+        tempFile.deleteOnExit();
+        try {
+            IOUtils.copy(in, out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+        }
+        return tempFile;
+    }
+
+    /**
+     * @param dob
+     * @param contentType
+     * @return
+     */
+    public String extractFullText(DataObject dob, String contentType) throws IOException {
+
+        HttpPut httpput = new HttpPut(SERVER_AND_PORT + "tika");
+        CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+
+        //httpput.addHeader("Accept", "text/plain");
+        if (contentType != null) {
+            //e.g. httpput.addHeader("Content-Type", "application/pdf");
+            httpput.addHeader("Content-Type", contentType);
+        }
+
+        HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, false);
+
+        //check on status code
+        if (response.getStatusLine().getStatusCode() == 200) {
+            String responseBody = EntityUtils.toString(response.getEntity());
+            return responseBody.toString();
+        } else {
+            throw new IOException("received status code " + response.getStatusLine().getStatusCode());
+        }
+
+    }
+
+    /**
+     * Adds a detectContentType call before calling Tika full text extraction on object
+     * 
+     * @param dob
+     * @return
+     */
+    public String extractFullText(DataObject dob) throws IOException {
+        String contentType = this.detectContentType(dob);
+        System.out.println(contentType);
+        this.log.debug("calling FullText extraction on content type: " + contentType + " for " + dob.getPath());
+        return this.extractFullText(dob, contentType);
     }
 
     /**
@@ -135,18 +214,18 @@ public class TikaServerStub {
 
         //HttpClient httpclient = HttpClientBuilder.create().build();
         CloseableHttpClient httpclient = HttpClientBuilder.create().build();
-        //HttpPut httpput = new HttpPut("http://localhost:9998/tika");
+        HttpPut httpput = new HttpPut("http://localhost:9998/tika");
         //HttpPut httpput = new HttpPut("http://localhost:9998/meta");
-        HttpPut httpput = new HttpPut("http://localhost:9998/detect/stream");
+        //HttpPut httpput = new HttpPut("http://localhost:9998/detect/stream");
         //HttpPut httpput = new HttpPut("http://localhost:9998/rmeta");
 
         //httpput.addHeader("Accept", "application/rdf+xml");
         //httpput.addHeader("Accept", "text/csv");
-        //httpput.addHeader("Content-Type", "application/pdf");
+        httpput.addHeader("Content-Type", "application/pdf");
         //httpput.addHeader("Content-Type", "text/csv");
 
         //httpput.addHeader("Content-Type", "application/pdf");
-        httpput.addHeader("Content-Disposition", "attachment; filename=creative-commons.pdf");
+        //httpput.addHeader("Content-Disposition", "attachment; filename=creative-commons.pdf");
 
         //for docx application/vnd.openxmlformats-officedocument.wordprocessingml.document
 

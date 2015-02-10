@@ -4,34 +4,111 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.http.client.ClientProtocolException;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.StorageException;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TikaAnalysisInServerModeTest {
 
-    private TikaServerStub tikaServer;
+    private static TikaServerStub tikaServer;
     DataObject pdf1 = getTestDataObjects("creative-commons.pdf");
     DataObject pdf2 = getTestDataObjects("tika_analyser.pdf");
     DataObject txt1 = getTestDataObjects("tika_analyser.txt");
     DataObject jpg1 = getTestDataObjects("creative-commons.jpg");
     DataObject png1 = getTestDataObjects("creative-commons.png");
 
-    @Before
-    public void before() {
-        this.tikaServer = new TikaServerStub();
+    @BeforeClass
+    public static void beforeClass() {
+        tikaServer = new TikaServerStub();
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        //TODO stop tika server
     }
 
     @Test
-    public void testCallTikaMetadataAnalysis() {
+    public void testCallTikaIsAlive() {
+        assertTrue(TikaAnalysisInServerModeTest.tikaServer.isTikaAlive());
+    }
+
+    @Test
+    public void testContentTypeExtraction() throws StorageException {
+
         try {
-            this.tikaServer.extractMeta();
+            String contentType = tikaServer.detectContentType(this.pdf1);
+            assertEquals("application/pdf", contentType);
+
+            contentType = tikaServer.detectContentType(this.pdf2);
+            assertEquals("text/plain", contentType);
+
+            contentType = tikaServer.detectContentType(this.png1);
+            assertEquals("image/png", contentType);
+
+            contentType = tikaServer.detectContentType(this.jpg1);
+            assertEquals("image/jpeg", contentType);
+
+            contentType = tikaServer.detectContentType(this.txt1);
+            assertEquals("text/plain", contentType);
+
+        } catch (IOException e) {
+            assertTrue(e.toString(), false);
+        }
+    }
+
+    @Test
+    public void testFullTextExtraction() {
+
+        try {
+            String fullText = tikaServer.extractFullText(this.pdf1);
+            assertTrue(fullText.contains("Crawford starts with her own bookshelf, pulling letters"));
+
+            //in this case content type is recognised as text/plain and fulltext from binary
+            fullText = tikaServer.extractFullText(this.pdf2);
+            assertTrue(fullText.contains("Ã0ï¿½Â¼Ã»+|Â´Â¥ÃxÃÂ»Ã¶Å¡#ï¿½!UBÂ¢Ã"));
+
+            try {
+                //we should get status code 500 for png
+                fullText = tikaServer.extractFullText(this.png1);
+                assertFalse("FullText extraction from png not possible", true);
+            } catch (IOException e) {
+                assertTrue(e.toString().contains("received status code 500"));
+            }
+
+            try {
+                //we should get status code 500 for jpeg
+                fullText = tikaServer.extractFullText(this.jpg1);
+                assertFalse("FullText extraction from jpeg not possible", true);
+            } catch (IOException e) {
+                assertTrue(e.toString().contains("received status code 500"));
+            }
+
+            fullText = tikaServer.extractFullText(this.txt1);
+            assertTrue(fullText.contains("hallo mihai und peter"));
+
+        } catch (IOException e) {
+            assertTrue(e.toString(), false);
+        }
+    }
+
+    @Test
+    @Ignore
+    public void testMeta() {
+        try {
+            tikaServer.extractMeta();
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -39,41 +116,33 @@ public class TikaAnalysisInServerModeTest {
     }
 
     @Test
-    public void testCallTikaIsAlive() {
-        assertTrue(this.tikaServer.isTikaAlive());
-    }
+    @Ignore
+    public void testFullTextNegativeCallExamples() {
 
-    @Test
-    public void testContentTypeExtraction() throws StorageException {
-
+        String fullText;
         try {
-            String contentType = this.tikaServer.detectContentType(this.pdf1);
-            assertEquals("application/pdf", contentType);
-
-            contentType = this.tikaServer.detectContentType(this.pdf2);
-            assertEquals("text/plain", contentType);
-
-            contentType = this.tikaServer.detectContentType(this.png1);
-            assertEquals("image/png", contentType);
-
-            contentType = this.tikaServer.detectContentType(this.jpg1);
-            assertEquals("image/jpeg", contentType);
-
-            contentType = this.tikaServer.detectContentType(this.txt1);
-            assertEquals("text/plain", contentType);
-
+            fullText = tikaServer.extractFullText(this.pdf1, "application/bogus");
+            System.out.println(fullText);
+            assertTrue(false);
         } catch (IOException e) {
-            assertTrue(e.toString(), false);
+            assertTrue(true);
         }
 
+        try {
+            fullText = tikaServer.extractFullText(this.pdf1, null);
+            System.out.println(fullText);
+            assertTrue(false);
+        } catch (IOException e) {
+            assertTrue(true);
+        }
     }
 
     public void testStartServer() {
-        assertFalse(this.tikaServer.isTikaAlive());
+        assertFalse(tikaServer.isTikaAlive());
 
-        assertTrue(this.tikaServer.isTikaAlive());
+        assertTrue(tikaServer.isTikaAlive());
 
-        assertFalse(this.tikaServer.isTikaAlive());
+        assertFalse(tikaServer.isTikaAlive());
     }
 
     /**
@@ -86,7 +155,9 @@ public class TikaAnalysisInServerModeTest {
         DataObject dob = new DataObject() {
             @Override
             public byte[] getBytes() throws IOException {
-                return IOUtils.toByteArray(new FileReader("src/test/resources/" + filename));
+                //return IOUtils.toByteArray(new FileReader("src/test/resources/" + filename));
+                Path path = Paths.get("src/test/resources/" + filename);
+                return Files.readAllBytes(path);
             }
 
             @Override
