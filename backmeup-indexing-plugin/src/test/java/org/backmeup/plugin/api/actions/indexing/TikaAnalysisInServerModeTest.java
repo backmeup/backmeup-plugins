@@ -8,14 +8,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
-import org.apache.http.client.ClientProtocolException;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.StorageException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TikaAnalysisInServerModeTest {
@@ -102,27 +101,47 @@ public class TikaAnalysisInServerModeTest {
     }
 
     @Test
-    @Ignore
-    public void testMeta() {
+    public void testMetadataExtraction() {
+
         try {
-            tikaServer.extractMeta();
-        } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Map<String, String> meta = tikaServer.extractMetaData(this.pdf1);
+            assertTrue(meta.containsKey("pdf:PDFVersion"));
+            assertEquals("1.4", meta.get("pdf:PDFVersion"));
+            assertEquals("Adobe PDF Library 7.0", meta.get("producer"));
+            assertEquals("2007-03-02T21:50:25Z", meta.get("meta:creation-date"));
+
+            meta = tikaServer.extractMetaData(this.pdf2);
+            assertTrue(meta.containsKey("X-Parsed-By"));
+            assertTrue(meta.get("X-Parsed-By").contains("org.apache.tika.parser.txt.TXTParser"));
+            assertEquals("windows-1252", meta.get("Content-Encoding"));
+
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            assertTrue(e.toString(), false);
+        }
+
+        try {
+            //we should get status code 500 for png
+            Map<String, String> meta = tikaServer.extractMetaData(this.png1);
+            assertFalse("Metadata extraction from png not possible", true);
+        } catch (IOException e) {
+            assertTrue(e.toString().contains("received status code 500"));
+        }
+
+        try {
+            //we should get status code 500 for png
+            Map<String, String> meta = tikaServer.extractMetaData(this.jpg1);
+            assertFalse("Metadata extraction from jpg not possible", true);
+        } catch (IOException e) {
+            assertTrue(e.toString().contains("received status code 500"));
         }
     }
 
     @Test
-    @Ignore
     public void testFullTextNegativeCallExamples() {
 
         String fullText;
         try {
             fullText = tikaServer.extractFullText(this.pdf1, "application/bogus");
-            System.out.println(fullText);
             assertTrue(false);
         } catch (IOException e) {
             assertTrue(true);
@@ -130,7 +149,6 @@ public class TikaAnalysisInServerModeTest {
 
         try {
             fullText = tikaServer.extractFullText(this.pdf1, null);
-            System.out.println(fullText);
             assertTrue(false);
         } catch (IOException e) {
             assertTrue(true);

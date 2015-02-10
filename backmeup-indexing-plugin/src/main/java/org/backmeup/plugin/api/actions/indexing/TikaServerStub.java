@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
@@ -150,6 +152,13 @@ public class TikaServerStub {
         return path;
     }
 
+    /**
+     * Takes an InputStream an flushes it into a temp file which is deleted on exit.
+     * 
+     * @param in
+     * @return
+     * @throws IOException
+     */
     private static File stream2file(InputStream in) throws IOException {
         final File tempFile = File.createTempFile("stream2file", ".tmp");
         FileOutputStream out = new FileOutputStream(tempFile);
@@ -164,16 +173,22 @@ public class TikaServerStub {
     }
 
     /**
+     * Calls Apache Tika server to extract full text from its content. from a t uses Tikas mime-type detector and hands
+     * over the file name to achieve better results http://localhost:9998/tika
+     * 
      * @param dob
      * @param contentType
      * @return
      */
     public String extractFullText(DataObject dob, String contentType) throws IOException {
 
+        this.log.debug("calling Tika FullText extraction on content type: " + contentType + " for " + dob.getPath());
+
         HttpPut httpput = new HttpPut(SERVER_AND_PORT + "tika");
         CloseableHttpClient httpclient = HttpClientBuilder.create().build();
 
-        //httpput.addHeader("Accept", "text/plain");
+        //we accept plain text as return value
+        httpput.addHeader("Accept", "text/plain");
         if (contentType != null) {
             //e.g. httpput.addHeader("Content-Type", "application/pdf");
             httpput.addHeader("Content-Type", contentType);
@@ -196,12 +211,82 @@ public class TikaServerStub {
      * 
      * @param dob
      * @return
+     * @throws IOException
      */
     public String extractFullText(DataObject dob) throws IOException {
         String contentType = this.detectContentType(dob);
-        System.out.println(contentType);
-        this.log.debug("calling FullText extraction on content type: " + contentType + " for " + dob.getPath());
         return this.extractFullText(dob, contentType);
+    }
+
+    /**
+     * Adds a detectContentType call before calling Tika metadata extraction on object
+     * 
+     * @param dob
+     * @return
+     * @throws IOException
+     */
+    public Map<String, String> extractMetaData(DataObject dob) throws IOException {
+        String contentType = this.detectContentType(dob);
+        return this.extractMetaData(dob, contentType);
+    }
+
+    /**
+     * @param dob
+     * @return
+     * @throws IOException
+     */
+    public Map<String, String> extractMetaData(DataObject dob, String contentType) throws IOException {
+        this.log.debug("calling Tika Metadata extraction on content type: " + contentType + " for " + dob.getPath());
+        HttpPut httpput = new HttpPut(SERVER_AND_PORT + "meta");
+        CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+
+        //we accept plain text as return value (other possibilities: application/rdf+xml or application/json)
+        httpput.addHeader("Accept", "text/csv");
+        if (contentType != null) {
+            //e.g. httpput.addHeader("Content-Type", "application/pdf");
+            httpput.addHeader("Content-Type", contentType);
+        }
+
+        HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, true);
+
+        //check on status code
+        if (response.getStatusLine().getStatusCode() == 200) {
+            String responseBody = EntityUtils.toString(response.getEntity());
+            System.out.println(responseBody);
+            return convertCSV2Map(responseBody);
+        } else {
+            throw new IOException("received status code " + response.getStatusLine().getStatusCode());
+        }
+    }
+
+    private Map<String, String> convertCSV2Map(String responsebody) {
+        Map<String, String> maps = new HashMap<String, String>();
+
+        String[] lines = responsebody.split("\r\n|\r|\n");
+        for (String line : lines) {
+            //split only at commas which are followed by an even (or zero) number of quotes (and thus not inside quotes)
+            String[] res = line.split(",(?=([^\"]|\"[^\"]*\")*$)");
+            boolean keyFound = false;
+            String key = "";
+            String value = "";
+            for (String s : res) {
+                s = s.replace("\"", "");
+                if (!keyFound) {
+                    //first element in csv file is the key
+                    key = s;
+                    keyFound = true;
+                } else {
+                    if (value.equals("")) {
+                        value += s;
+                    } else {
+                        value += ", " + s;
+                    }
+
+                }
+            }
+            maps.put(key, value);
+        }
+        return maps;
     }
 
     /**
@@ -214,13 +299,13 @@ public class TikaServerStub {
 
         //HttpClient httpclient = HttpClientBuilder.create().build();
         CloseableHttpClient httpclient = HttpClientBuilder.create().build();
-        HttpPut httpput = new HttpPut("http://localhost:9998/tika");
-        //HttpPut httpput = new HttpPut("http://localhost:9998/meta");
+        //HttpPut httpput = new HttpPut("http://localhost:9998/tika");
+        HttpPut httpput = new HttpPut("http://localhost:9998/meta");
         //HttpPut httpput = new HttpPut("http://localhost:9998/detect/stream");
         //HttpPut httpput = new HttpPut("http://localhost:9998/rmeta");
 
         //httpput.addHeader("Accept", "application/rdf+xml");
-        //httpput.addHeader("Accept", "text/csv");
+        httpput.addHeader("Accept", "text/csv");
         httpput.addHeader("Content-Type", "application/pdf");
         //httpput.addHeader("Content-Type", "text/csv");
 
