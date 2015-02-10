@@ -36,6 +36,12 @@
             <artifactId>commons-lang</artifactId>
             <version>${version.commons-lang}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${version.commons-io}</version>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -54,7 +60,7 @@
 						<Import-Package>*</Import-Package>
 						<Export-Package>org.backmeup.plugin.api.actions.thumbnail</Export-Package>
 						<Private-Package>org.backmeup.plugin.api.actions.thumbnail.*</Private-Package>
-						<Embed-Dependency>im4java,commons-lang</Embed-Dependency>
+						<Embed-Dependency>im4java,commons-lang, commons-io</Embed-Dependency>
 						<Embed-Transitive>false</Embed-Transitive>
 						<Embed-Directory>lib</Embed-Directory>
 					</instructions>
