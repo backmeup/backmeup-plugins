@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -34,33 +33,10 @@ import org.slf4j.LoggerFactory;
  */
 public class TikaServerStub {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private static final Logger log = LoggerFactory.getLogger(TikaServerStub.class);
     private static final String SERVER_AND_PORT = "http://localhost:9998/";
 
-    public TikaServerStub() {
-        if (!isTikaAlive()) {
-            //startupServer();
-        }
-    }
-
-    private void startupServer() {
-        Process ps;
-        try {
-            //TODO add only for testing? Start processIsolatedTika in new Thread
-            ps = Runtime.getRuntime().exec(
-                    new String[] { "java", "-jar",
-                            "src/main/resources/processisolatedtika-0.0.4-SNAPSHOT-jar-with-dependencies.jar" });
-            ps.waitFor();
-            java.io.InputStream is = ps.getInputStream();
-            byte b[] = new byte[is.available()];
-            is.read(b, 0, b.length);
-            System.out.println(new String(b));
-        } catch (IOException | InterruptedException e) {
-            this.log.debug("issues starting up tika server" + e.toString());
-        }
-    }
-
-    public boolean isTikaAlive() {
+    public static boolean isTikaAlive() {
 
         HttpGet httpget = new HttpGet(SERVER_AND_PORT + "tika");
 
@@ -69,15 +45,23 @@ public class TikaServerStub {
         try {
             response = httpclient.execute(httpget);
             String responseBody = EntityUtils.toString(response.getEntity());
+            httpclient.close();
             if (response.getStatusLine().getStatusCode() == 200) {
+                log.debug("is Tika Server alive? true");
                 return true;
             } else {
+                log.debug("is Tika Server alive? false");
                 return false;
             }
 
         } catch (IOException e) {
-            this.log.debug(e.toString());
+            log.debug("is Tika alive? false ", e);
             return false;
+        } finally {
+            try {
+                httpclient.close();
+            } catch (IOException e) {
+            }
         }
 
     }
@@ -106,7 +90,7 @@ public class TikaServerStub {
             HttpResponse response = httpclient.execute(httpput);
             return response;
         } catch (IOException e) {
-            this.log.debug("Error calling Tika ", e);
+            log.debug("Error calling Tika ", e);
             throw e;
         } finally {
             if (is != null) {
@@ -128,20 +112,28 @@ public class TikaServerStub {
      * @throws IOException
      */
     public String detectContentType(DataObject dob) throws IOException {
-        HttpPut httpput = new HttpPut(SERVER_AND_PORT + "detect/stream");
         CloseableHttpClient httpclient = HttpClientBuilder.create().build();
-        //add content disposition header to get better Tika discovery results
-        //e.g. httpput.addHeader("Content-Disposition", "attachment; filename=creative-commons.pdf");
-        httpput.addHeader("Content-Disposition", "attachment; filename=" + getFilename(dob.getPath()));
+        try {
+            HttpPut httpput = new HttpPut(SERVER_AND_PORT + "detect/stream");
+            //add content disposition header to get better Tika discovery results
+            //e.g. httpput.addHeader("Content-Disposition", "attachment; filename=creative-commons.pdf");
+            httpput.addHeader("Content-Disposition", "attachment; filename=" + getFilename(dob.getPath()));
 
-        HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, true);
-        //check on status code
-        if (response.getStatusLine().getStatusCode() == 200) {
-            String responseBody = EntityUtils.toString(response.getEntity());
-            return responseBody.toString();
-        } else {
-            throw new IOException("Error calling Tika for content type detection - received status code "
-                    + response.getStatusLine().getStatusCode());
+            HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, true);
+            //check on status code
+            if (response.getStatusLine().getStatusCode() == 200) {
+                String responseBody = EntityUtils.toString(response.getEntity());
+                httpclient.close();
+                return responseBody.toString();
+            } else {
+                throw new IOException("Error calling Tika for content type detection - received status code "
+                        + response.getStatusLine().getStatusCode());
+            }
+        } finally {
+            try {
+                httpclient.close();
+            } catch (IOException e) {
+            }
         }
     }
 
@@ -182,26 +174,34 @@ public class TikaServerStub {
      */
     public String extractFullText(DataObject dob, String contentType) throws IOException {
 
-        this.log.debug("calling Tika FullText extraction on content type: " + contentType + " for " + dob.getPath());
+        log.debug("calling Tika FullText extraction on content type: " + contentType + " for " + dob.getPath());
 
-        HttpPut httpput = new HttpPut(SERVER_AND_PORT + "tika");
         CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+        try {
+            HttpPut httpput = new HttpPut(SERVER_AND_PORT + "tika");
 
-        //we accept plain text as return value
-        httpput.addHeader("Accept", "text/plain");
-        if (contentType != null) {
-            //e.g. httpput.addHeader("Content-Type", "application/pdf");
-            httpput.addHeader("Content-Type", contentType);
-        }
+            //we accept plain text as return value
+            httpput.addHeader("Accept", "text/plain");
+            if (contentType != null) {
+                //e.g. httpput.addHeader("Content-Type", "application/pdf");
+                httpput.addHeader("Content-Type", contentType);
+            }
 
-        HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, false);
+            HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, false);
 
-        //check on status code
-        if (response.getStatusLine().getStatusCode() == 200) {
-            String responseBody = EntityUtils.toString(response.getEntity());
-            return responseBody.toString();
-        } else {
-            throw new IOException("received status code " + response.getStatusLine().getStatusCode());
+            //check on status code
+            if (response.getStatusLine().getStatusCode() == 200) {
+                String responseBody = EntityUtils.toString(response.getEntity());
+                httpclient.close();
+                return responseBody.toString();
+            } else {
+                throw new IOException("received status code " + response.getStatusLine().getStatusCode());
+            }
+        } finally {
+            try {
+                httpclient.close();
+            } catch (IOException e) {
+            }
         }
 
     }
@@ -236,26 +236,35 @@ public class TikaServerStub {
      * @throws IOException
      */
     public Map<String, String> extractMetaData(DataObject dob, String contentType) throws IOException {
-        this.log.debug("calling Tika Metadata extraction on content type: " + contentType + " for " + dob.getPath());
-        HttpPut httpput = new HttpPut(SERVER_AND_PORT + "meta");
+        log.debug("calling Tika Metadata extraction on content type: " + contentType + " for " + dob.getPath());
         CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+        try {
+            HttpPut httpput = new HttpPut(SERVER_AND_PORT + "meta");
 
-        //we accept plain text as return value (other possibilities: application/rdf+xml or application/json)
-        httpput.addHeader("Accept", "text/csv");
-        if (contentType != null) {
-            //e.g. httpput.addHeader("Content-Type", "application/pdf");
-            httpput.addHeader("Content-Type", contentType);
-        }
+            //we accept plain text as return value (other possibilities: application/rdf+xml or application/json)
+            httpput.addHeader("Accept", "text/csv");
+            if (contentType != null) {
+                //e.g. httpput.addHeader("Content-Type", "application/pdf");
+                httpput.addHeader("Content-Type", contentType);
+            }
 
-        HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, true);
+            HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, true);
 
-        //check on status code
-        if (response.getStatusLine().getStatusCode() == 200) {
-            String responseBody = EntityUtils.toString(response.getEntity());
-            System.out.println(responseBody);
-            return convertCSV2Map(responseBody);
-        } else {
-            throw new IOException("received status code " + response.getStatusLine().getStatusCode());
+            //check on status code
+            if (response.getStatusLine().getStatusCode() == 200) {
+                String responseBody = EntityUtils.toString(response.getEntity());
+                log.debug("Extracted Metadata for " + dob.getPath() + " and content-type: " + contentType + " was: "
+                        + responseBody);
+                httpclient.close();
+                return convertCSV2Map(responseBody);
+            } else {
+                throw new IOException("received status code " + response.getStatusLine().getStatusCode());
+            }
+        } finally {
+            try {
+                httpclient.close();
+            } catch (IOException e) {
+            }
         }
     }
 
@@ -287,48 +296,5 @@ public class TikaServerStub {
             maps.put(key, value);
         }
         return maps;
-    }
-
-    /**
-     * * @param args
-     * 
-     * @throws IOException
-     * @throws ClientProtocolException
-     */
-    public void extractMeta() throws ClientProtocolException, IOException {
-
-        //HttpClient httpclient = HttpClientBuilder.create().build();
-        CloseableHttpClient httpclient = HttpClientBuilder.create().build();
-        //HttpPut httpput = new HttpPut("http://localhost:9998/tika");
-        HttpPut httpput = new HttpPut("http://localhost:9998/meta");
-        //HttpPut httpput = new HttpPut("http://localhost:9998/detect/stream");
-        //HttpPut httpput = new HttpPut("http://localhost:9998/rmeta");
-
-        //httpput.addHeader("Accept", "application/rdf+xml");
-        httpput.addHeader("Accept", "text/csv");
-        httpput.addHeader("Content-Type", "application/pdf");
-        //httpput.addHeader("Content-Type", "text/csv");
-
-        //httpput.addHeader("Content-Type", "application/pdf");
-        //httpput.addHeader("Content-Disposition", "attachment; filename=creative-commons.pdf");
-
-        //for docx application/vnd.openxmlformats-officedocument.wordprocessingml.document
-
-        //File fileToUse = new File("src/test/resources/tika_analyser.pdf");
-        //File fileToUse = new File("src/test/resources/creative-commons.jpg");
-        File fileToUse = new File("src/test/resources/creative-commons.pdf");
-        //File fileToUse = new File("src/test/resources/creative-commons.png");
-        FileBody data = new FileBody(fileToUse);
-
-        MultipartEntityBuilder multipartEntity = MultipartEntityBuilder.create();
-        //multipartEntity.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-        multipartEntity.addPart("data", data);
-        httpput.setEntity(multipartEntity.build());
-
-        HttpResponse response = httpclient.execute(httpput);
-        System.out.println(response.getStatusLine());
-        String responseBody = EntityUtils.toString(response.getEntity());
-        System.out.println(responseBody.toString());
-        System.out.println("is 200 ok?: " + response.getStatusLine().getStatusCode());
     }
 }
