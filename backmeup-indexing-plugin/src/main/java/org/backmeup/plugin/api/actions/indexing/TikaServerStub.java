@@ -88,6 +88,8 @@ public class TikaServerStub {
 
             //execute the call
             HttpResponse response = httpclient.execute(httpput);
+            System.out.println(response.toString());
+            log.debug(response.toString());
             return response;
         } catch (IOException e) {
             log.debug("Error calling Tika ", e);
@@ -151,7 +153,7 @@ public class TikaServerStub {
      * @return
      * @throws IOException
      */
-    private static File stream2file(InputStream in) throws IOException {
+    private File stream2file(InputStream in) throws IOException {
         final File tempFile = File.createTempFile("stream2file", ".tmp");
         FileOutputStream out = new FileOutputStream(tempFile);
         tempFile.deleteOnExit();
@@ -226,8 +228,8 @@ public class TikaServerStub {
      * @throws IOException
      */
     public Map<String, String> extractMetaData(DataObject dob) throws IOException {
-        String contentType = this.detectContentType(dob);
-        return this.extractMetaData(dob, contentType);
+        String contentType = detectContentType(dob);
+        return extractMetaData(dob, contentType);
     }
 
     /**
