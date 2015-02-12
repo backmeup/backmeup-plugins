@@ -18,6 +18,8 @@ public class TikaAnalyzer {
         //check if we've got a Tika Server running - if not start one
         if (!TikaServerStub.isTikaAlive()) {
             this.log.warn("Tika server not running. Metadata extraction disabled. Please fire up Tika Server on localhost:9998 (see _Quickstart_Guide_and_Installation_Notes.txt hint G]");
+        } else {
+            this.log.debug("Found Tika server up and running");
         }
     }
 
