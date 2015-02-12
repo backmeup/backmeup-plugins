@@ -43,11 +43,12 @@ public class ElasticSearchIndexer {
         this.client = client;
     }
 
-    public void doIndexing(Map<String, String> externalProps, BackupJobDTO job, DataObject dataObject, Map<String, String> meta,
-            Date timestamp) throws IOException {
+    public void doIndexing(Map<String, String> externalProps, BackupJobDTO job, DataObject dataObject,
+            Map<String, String> meta, Date timestamp) throws IOException {
         // Build the index object
         IndexDocument document = new IndexDocument();
 
+        //add the metadata provided by Tika 
         for (String metaKey : meta.keySet()) {
             document.field(metaKey, meta.get(metaKey));
         }
@@ -88,9 +89,8 @@ public class ElasticSearchIndexer {
             //check if download access is supported by the sink plugin
             if (externalProps.containsKey(Metadata.STORAGE_ALWAYS_ACCESSIBLE)
                     && externalProps.containsKey(Metadata.DOWNLOAD_BASE)) {
-                boolean alwaysAccess = Boolean.parseBoolean((String) externalProps
-                        .get(Metadata.STORAGE_ALWAYS_ACCESSIBLE));
-                String downloadBase = (String) externalProps.get(Metadata.DOWNLOAD_BASE);
+                boolean alwaysAccess = Boolean.parseBoolean(externalProps.get(Metadata.STORAGE_ALWAYS_ACCESSIBLE));
+                String downloadBase = externalProps.get(Metadata.DOWNLOAD_BASE);
                 //we're having a file sink like the themis central storage with permanent access
                 if (alwaysAccess) {
                     document.field(IndexFields.FIELD_SINK_DOWNLOAD_BASE, downloadBase);
@@ -99,6 +99,7 @@ public class ElasticSearchIndexer {
 
         }
 
+        //add the metadata fields added in the Metainfo Container File
         MetainfoContainer metainfoContainer = dataObject.getMetainfo();
         if (metainfoContainer != null) {
             Iterator<Metainfo> it = metainfoContainer.iterator();
