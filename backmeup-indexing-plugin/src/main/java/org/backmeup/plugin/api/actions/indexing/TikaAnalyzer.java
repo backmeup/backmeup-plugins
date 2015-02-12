@@ -17,16 +17,7 @@ public class TikaAnalyzer {
     public TikaAnalyzer() {
         //check if we've got a Tika Server running - if not start one
         if (!TikaServerStub.isTikaAlive()) {
-            this.log.debug("Tika server not running, starting up Tika Server instance");
-            new TikaServerStartupHandler().startTikaServer();
-            //give tika server a chance to startup
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-            }
-            this.log.debug("Tika server is alive? " + TikaServerStub.isTikaAlive());
-        } else {
-            this.log.debug("Tika server up and running");
+            this.log.warn("Tika server not running. Metadata extraction disabled. Please fire up Tika Server on localhost:9998 (see _Quickstart_Guide_and_Installation_Notes.txt hint G]");
         }
     }
 
