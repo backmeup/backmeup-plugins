@@ -18,8 +18,8 @@
             <version>${version.backmeup.indexer}</version>
         </dependency>
 
-		
-		<dependency>
+		<!-- removing Tika osgi dependencies, using external Tika in Server via JAXRS -->
+		<!-- dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-parsers</artifactId>
 			<version>${version.org.apache.tika}</version>
@@ -36,7 +36,7 @@
 			<artifactId>tika-parsers</artifactId>
 			<version>${version.org.apache.tika}</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency-->
 		
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -139,7 +139,7 @@
 								</artifactItem>
 								
 								<!-- can't embed tika dependencies transitive into indexer bundle.  -->
-								<artifactItem>
+								<!-- artifactItem>
 									<groupId>org.apache.tika</groupId>
 									<artifactId>tika-parsers</artifactId>
 									<version>${version.org.apache.tika}</version>
@@ -168,7 +168,7 @@
 									<groupId>org.apache.tika</groupId>
 									<artifactId>tika-serialization</artifactId>
 									<version>${version.org.apache.tika}</version>
-								</artifactItem>
+								</artifactItem-->
 							</artifactItems>
 							<outputDirectory>${config.localBuildArtefactDirectory}</outputDirectory>
 						</configuration>

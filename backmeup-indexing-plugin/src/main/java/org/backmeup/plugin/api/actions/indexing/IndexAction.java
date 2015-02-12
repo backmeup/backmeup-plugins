@@ -1,19 +1,11 @@
 package org.backmeup.plugin.api.actions.indexing;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.sax.BodyContentHandler;
 import org.backmeup.index.api.IndexClient;
 import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.client.IndexClientFactory;
@@ -25,8 +17,6 @@ import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 public class IndexAction implements Action {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -60,8 +50,8 @@ public class IndexAction implements Action {
     private static final String ERROR_SKIPPING_ITEM = "Error indexing data object, skipping object ";
 
     @Override
-    public void doAction(Map<String, String> authData, Map<String, String> properties, List<String> options, Storage storage,
-            BackupJobDTO job, Progressable progressor) throws ActionException {
+    public void doAction(Map<String, String> authData, Map<String, String> properties, List<String> options,
+            Storage storage, BackupJobDTO job, Progressable progressor) throws ActionException {
 
         int indexedItems_OK = 0;
         int indexedItems_SKIPPED_TIKA_ANALYSIS = 0;
@@ -89,9 +79,12 @@ public class IndexAction implements Action {
                     if (needsTikaAnalysis(dob)) {
                         //call Apache Tika to analyze the object
                         meta = analyzer.analyze(dob);
-                        mime = meta.get("Content-Type");
+                        mime = meta.get(IndexFields.FIELD_CONTENT_TYPE);
                         if (mime != null) {
-                            fulltext = extractFullText(dob, meta.get("Content-Type"));
+                            fulltext = analyzer.extractFullText(dob, meta.get(IndexFields.FIELD_CONTENT_TYPE));
+                            if (fulltext != null) {
+                                meta.put(IndexFields.FIELD_FULLTEXT, fulltext);
+                            }
                         }
                     } else {
                         progressor.progress(SKIPPING_TIKA_ANALYSIS + dob.getPath());
@@ -99,14 +92,9 @@ public class IndexAction implements Action {
                     }
 
                     progressor.progress(INDEXING_OBJECT_STARTED + dob.getPath());
+                    //init index client for user
                     initIndexClient(job.getUser().getUserId());
                     ElasticSearchIndexer indexer = new ElasticSearchIndexer(this.client);
-
-                    meta = new HashMap<>();
-                    meta.put(IndexFields.FIELD_CONTENT_TYPE, mime);
-                    if (fulltext != null) {
-                        meta.put(IndexFields.FIELD_FULLTEXT, fulltext);
-                    }
 
                     if (needsESIndexing(dob)) {
                         this.logger.debug("Indexing " + dob.getPath());
@@ -146,15 +134,14 @@ public class IndexAction implements Action {
     }
 
     private boolean needsTikaAnalysis(DataObject dob) {
-        // switching into whitelist approach for now
+        // blacklist approach, try to extract tika metadata for as many objects as possible
         if (dob.getPath().endsWith(".css"))
             return false;
 
         if (dob.getPath().endsWith(".xsd"))
             return false;
 
-        //TODO need to fix osgi classloading issues for org.apache.tika.parser.image.MetadataExtractor -> ClassNotFoundException com.drew.metadata.MetadataException
-        if (dob.getPath().endsWith(".jpg"))
+        /*if (dob.getPath().endsWith(".jpg"))
             return false;
 
         if (dob.getPath().endsWith(".txt"))
@@ -164,35 +151,15 @@ public class IndexAction implements Action {
             return true;
 
         if (dob.getPath().endsWith(".html"))
-            return true;
+            return true;*/
 
-        return false;
+        return true;
     }
-
-    private String extractFullText(DataObject dob, String contentType) throws IOException, SAXException, TikaException {
-        ContentHandler handler = new BodyContentHandler(10 * 1024 * 1024);
-        Metadata metadata = new Metadata();
-
-        AutoDetectParser parser = new AutoDetectParser();
-        ParseContext context = new ParseContext();
-        context.set(Parser.class, parser);
-
-        parser.parse(new ByteArrayInputStream(dob.getBytes()), handler, metadata, context);
-
-        return handler.toString();
-    }
-
-    /*
-    private String extractFullText_HTML(DataObject dob) throws IOException, SAXException, TikaException {		
-        ContentHandler handler = new BodyContentHandler(10*1024*1024);
-        Metadata metadata = new Metadata();
-        new HtmlParser().parse(new ByteArrayInputStream(dob.getBytes()), handler, metadata, new ParseContext());
-        return handler.toString();
-    }
-    */
 
     private void initIndexClient(Long userId) {
-        this.client = new IndexClientFactory().getIndexClient(userId);
+        if (userId != null) {
+            this.client = new IndexClientFactory().getIndexClient(userId);
+        }
     }
 
 }
