@@ -25,9 +25,7 @@ import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -62,7 +60,7 @@ public class IndexActionTest {
     public IndexActionTest() throws IOException {
     }
 
-    @Before
+    // @Before
     public void setup() throws ActionException {
         node = NodeBuilder.nodeBuilder().local(true).clusterName(ELASTICSEARCH_CLUSTERNAME).node();
 
@@ -78,7 +76,8 @@ public class IndexActionTest {
         BackupJobDTO job = JsonSerializer.deserialize(this.BACKUP_JOB_DTO, BackupJobDTO.class);
 
         // now call the actual indexing (Metadata extraction, Tika analysis)
-        action.doAction(new HashMap<String, String>(), new HashMap<String, String>(), new ArrayList<String>(), storage, job, this.logProgressable);
+        action.doAction(new HashMap<String, String>(), new HashMap<String, String>(), new ArrayList<String>(), storage,
+                job, this.logProgressable);
         System.out.println("Done.");
     }
 
@@ -101,7 +100,7 @@ public class IndexActionTest {
         JsonSerializer.deserialize(this.BACKUP_JOB_old, BackupJob.class);
     }
 
-    @After
+    //@After
     public void tearDown() {
         this.client.close();
         node.close();

@@ -5,8 +5,10 @@ import static org.junit.Assert.assertEquals;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -27,7 +29,6 @@ import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class IndexActionTikaAnlyserTest {
@@ -35,7 +36,7 @@ public class IndexActionTikaAnlyserTest {
     private IndexDocument actualDocument;
 
     @Test
-    @Ignore("add tika dependencies for this test")
+    //@Ignore("add tika dependencies for this test")
     public void shouldExtractFullTextOfPDF() throws ActionException {
         FakeIndexClient fakeClient = new FakeIndexClient();
         IndexAction action = new IndexAction(fakeClient);
@@ -48,17 +49,25 @@ public class IndexActionTikaAnlyserTest {
             }
         };
         BackupJobDTO job = new BackupJobDTO();
-        job.setUser(new UserDTO());
+        UserDTO user = new UserDTO() {
+            @Override
+            public Long getUserId() {
+                return null;
+            };
+        };
+
+        job.setUser(user);
         PluginProfileDTO profile = new PluginProfileDTO();
         profile.setProfileType(PluginType.Sink);
         //profile.set();
 
         job.setSink(profile);
         // TODO fill properties
-        action.doAction(null, null, null, pdfStorage, job, progressor);
+        action.doAction(new HashMap<String, String>(), new HashMap<String, String>(), new ArrayList<String>(),
+                pdfStorage, job, progressor);
 
         // fakeClient got a document, must contain full text
-        assertEquals("hallo mihai und peter\n", this.actualDocument.getFields().get("fulltext"));
+        assertEquals("1.4", this.actualDocument.getFields().get("pdf:PDFVersion"));
     }
 
     class FakeIndexClient implements IndexClient {
@@ -119,7 +128,7 @@ public class IndexActionTikaAnlyserTest {
 
                 @Override
                 public byte[] getBytes() throws IOException {
-                    return IOUtils.toByteArray(new FileReader("src/test/resources/tika_analyser.pdf"));
+                    return IOUtils.toByteArray(new FileReader("src/test/resources/creative-commons.pdf"));
                 }
 
                 @Override
@@ -129,7 +138,7 @@ public class IndexActionTikaAnlyserTest {
 
                 @Override
                 public String getPath() {
-                    return "abc/tika_analyser.pdf";
+                    return "abc/creative-commons.pdf";
                 }
 
                 @Override
