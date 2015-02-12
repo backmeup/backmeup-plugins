@@ -36,8 +36,7 @@ public class IndexActionTikaAnlyserTest {
     private IndexDocument actualDocument;
 
     @Test
-    //@Ignore("add tika dependencies for this test")
-    public void shouldExtractFullTextOfPDF() throws ActionException {
+    public void shouldExtractContentTypeOfPDF() throws ActionException {
         FakeIndexClient fakeClient = new FakeIndexClient();
         IndexAction action = new IndexAction(fakeClient);
 
@@ -62,12 +61,11 @@ public class IndexActionTikaAnlyserTest {
         //profile.set();
 
         job.setSink(profile);
-        // TODO fill properties
         action.doAction(new HashMap<String, String>(), new HashMap<String, String>(), new ArrayList<String>(),
                 pdfStorage, job, progressor);
 
-        // fakeClient got a document, must contain full text
-        assertEquals("1.4", this.actualDocument.getFields().get("pdf:PDFVersion"));
+        // fakeClient got a document, must contain content-type
+        assertEquals("application/pdf", this.actualDocument.getFields().get("Content-Type"));
     }
 
     class FakeIndexClient implements IndexClient {
