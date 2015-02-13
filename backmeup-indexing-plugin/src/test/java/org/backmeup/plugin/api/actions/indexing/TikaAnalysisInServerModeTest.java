@@ -40,7 +40,7 @@ public class TikaAnalysisInServerModeTest {
 
     @Test
     public void testCallTikaIsAlive() {
-        assertTrue(TikaServerStub.isTikaAlive());
+        assertTrue(this.tika.isTikaAlive());
     }
 
     @Test

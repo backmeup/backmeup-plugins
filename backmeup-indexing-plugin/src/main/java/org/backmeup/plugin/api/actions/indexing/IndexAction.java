@@ -61,7 +61,7 @@ public class IndexAction implements Action {
         this.logger.debug("Starting file analysis...");
         progressor.progress(START_INDEX_PROCESS);
 
-        TikaAnalyzer analyzer = new TikaAnalyzer();
+        TikaAnalyzer analyzer = new TikaAnalyzer(progressor);
 
         Date indexingTimestamp = new Date();
 

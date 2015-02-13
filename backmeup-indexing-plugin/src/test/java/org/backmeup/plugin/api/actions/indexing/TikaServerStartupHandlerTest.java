@@ -13,6 +13,7 @@ import org.junit.runners.MethodSorters;
 public class TikaServerStartupHandlerTest {
 
     private static TikaServerStartupHandler h = new TikaServerStartupHandler();
+    private TikaServerStub tika = new TikaServerStub();
 
     @BeforeClass
     public static void before() throws InterruptedException {
@@ -27,14 +28,14 @@ public class TikaServerStartupHandlerTest {
 
     @Test
     public void testCheckTikaServerIsRunning() {
-        boolean b = TikaServerStub.isTikaAlive();
+        boolean b = this.tika.isTikaAlive();
         assertTrue("Tika Server is not responding", b);
     }
 
     @Test
     @Ignore("We can't bring down tika as it spins of its own process once started")
     public void testTikaShutdown() throws InterruptedException {
-        boolean b = TikaServerStub.isTikaAlive();
+        boolean b = this.tika.isTikaAlive();
         assertTrue("Tika Server is not responding", b);
 
         //now issue shutdown
@@ -44,7 +45,7 @@ public class TikaServerStartupHandlerTest {
         int iMax = 5;
         boolean bShutdown = false;
         for (int i = 0; i < iMax; i++) {
-            b = TikaServerStub.isTikaAlive();
+            b = this.tika.isTikaAlive();
             if (!b) {
                 bShutdown = true;
                 i = iMax;

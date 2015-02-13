@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -33,29 +34,32 @@ import org.slf4j.LoggerFactory;
  */
 public class TikaServerStub {
 
-    private static final Logger log = LoggerFactory.getLogger(TikaServerStub.class);
-    private static final String SERVER_AND_PORT = "http://localhost:9998/";
+    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final String SERVER_AND_PORT = "http://localhost:9998/";
+    // set the connection timeout value to 10 seconds (10000 milliseconds)
+    RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(10 * 1000).setSocketTimeout(10 * 1000)
+            .build();
 
-    public static boolean isTikaAlive() {
+    public boolean isTikaAlive() {
 
-        HttpGet httpget = new HttpGet(SERVER_AND_PORT + "tika");
+        HttpGet httpget = new HttpGet(this.SERVER_AND_PORT + "tika");
 
-        CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+        CloseableHttpClient httpclient = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
         HttpResponse response;
         try {
             response = httpclient.execute(httpget);
             String responseBody = EntityUtils.toString(response.getEntity());
             httpclient.close();
             if (response.getStatusLine().getStatusCode() == 200) {
-                log.debug("is Tika Server alive? true");
+                this.log.debug("is Tika Server alive? true");
                 return true;
             } else {
-                log.debug("is Tika Server alive? false");
+                this.log.debug("is Tika Server alive? false");
                 return false;
             }
 
         } catch (IOException e) {
-            log.debug("is Tika alive? false ", e);
+            this.log.debug("is Tika alive? false ", e);
             return false;
         } finally {
             try {
@@ -89,10 +93,10 @@ public class TikaServerStub {
             //execute the call
             HttpResponse response = httpclient.execute(httpput);
             System.out.println(response.toString());
-            log.debug(response.toString());
+            this.log.debug(response.toString());
             return response;
         } catch (IOException e) {
-            log.debug("Error calling Tika ", e);
+            this.log.debug("Error calling Tika ", e);
             throw e;
         } finally {
             if (is != null) {
@@ -114,9 +118,9 @@ public class TikaServerStub {
      * @throws IOException
      */
     public String detectContentType(DataObject dob) throws IOException {
-        CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+        CloseableHttpClient httpclient = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
         try {
-            HttpPut httpput = new HttpPut(SERVER_AND_PORT + "detect/stream");
+            HttpPut httpput = new HttpPut(this.SERVER_AND_PORT + "detect/stream");
             //add content disposition header to get better Tika discovery results
             //e.g. httpput.addHeader("Content-Disposition", "attachment; filename=creative-commons.pdf");
             httpput.addHeader("Content-Disposition", "attachment; filename=" + getFilename(dob.getPath()));
@@ -176,11 +180,10 @@ public class TikaServerStub {
      */
     public String extractFullText(DataObject dob, String contentType) throws IOException {
 
-        log.debug("calling Tika FullText extraction on content type: " + contentType + " for " + dob.getPath());
-
-        CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+        this.log.debug("calling Tika FullText extraction on content type: " + contentType + " for " + dob.getPath());
+        CloseableHttpClient httpclient = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
         try {
-            HttpPut httpput = new HttpPut(SERVER_AND_PORT + "tika");
+            HttpPut httpput = new HttpPut(this.SERVER_AND_PORT + "tika");
 
             //we accept plain text as return value
             httpput.addHeader("Accept", "text/plain");
@@ -238,10 +241,10 @@ public class TikaServerStub {
      * @throws IOException
      */
     public Map<String, String> extractMetaData(DataObject dob, String contentType) throws IOException {
-        log.debug("calling Tika Metadata extraction on content type: " + contentType + " for " + dob.getPath());
-        CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+        this.log.debug("calling Tika Metadata extraction on content type: " + contentType + " for " + dob.getPath());
+        CloseableHttpClient httpclient = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
         try {
-            HttpPut httpput = new HttpPut(SERVER_AND_PORT + "meta");
+            HttpPut httpput = new HttpPut(this.SERVER_AND_PORT + "meta");
 
             //we accept plain text as return value (other possibilities: application/rdf+xml or application/json)
             httpput.addHeader("Accept", "text/csv");
@@ -255,8 +258,8 @@ public class TikaServerStub {
             //check on status code
             if (response.getStatusLine().getStatusCode() == 200) {
                 String responseBody = EntityUtils.toString(response.getEntity());
-                log.debug("Extracted Metadata for " + dob.getPath() + " and content-type: " + contentType + " was: "
-                        + responseBody);
+                this.log.debug("Extracted Metadata for " + dob.getPath() + " and content-type: " + contentType
+                        + " was: " + responseBody);
                 httpclient.close();
                 return convertCSV2Map(responseBody);
             } else {
