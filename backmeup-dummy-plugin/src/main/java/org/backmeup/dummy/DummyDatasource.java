@@ -27,6 +27,7 @@ public class DummyDatasource implements Datasource, Validationable {
     static {
         BACKUP_OPTIONS.add("option1");
         BACKUP_OPTIONS.add("option2");
+        BACKUP_OPTIONS.add("fail");
     }
 
     private InputStream stringToStream(String input) {
@@ -100,6 +101,9 @@ public class DummyDatasource implements Datasource, Validationable {
             if (!BACKUP_OPTIONS.contains(option)) {
                 notes.addValidationEntry(ValidationExceptionType.ConfigException, DummyDescriptor.DUMMY_ID, "Option \""+option+"\" not available");
             }
+        }
+        if (options.contains("fail")) {
+            notes.addValidationEntry(ValidationExceptionType.ConfigException, DummyDescriptor.DUMMY_ID, "Option fail selected -> failing");
         }
         return notes;
     }
