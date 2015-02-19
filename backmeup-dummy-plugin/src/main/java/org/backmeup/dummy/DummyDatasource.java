@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
+import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.model.spi.ValidationExceptionType;
 import org.backmeup.model.spi.Validationable;
 import org.backmeup.plugin.api.Metainfo;
@@ -27,7 +28,8 @@ public class DummyDatasource implements Datasource, Validationable {
     static {
         BACKUP_OPTIONS.add("option1");
         BACKUP_OPTIONS.add("option2");
-        BACKUP_OPTIONS.add("fail");
+        BACKUP_OPTIONS.add("fail validation");
+        BACKUP_OPTIONS.add("fail hard");
     }
 
     private InputStream stringToStream(String input) {
@@ -102,8 +104,11 @@ public class DummyDatasource implements Datasource, Validationable {
                 notes.addValidationEntry(ValidationExceptionType.ConfigException, DummyDescriptor.DUMMY_ID, "Option \""+option+"\" not available");
             }
         }
-        if (options.contains("fail")) {
+        if (options.contains("fail validation")) {
             notes.addValidationEntry(ValidationExceptionType.ConfigException, DummyDescriptor.DUMMY_ID, "Option fail selected -> failing");
+        }
+        if (options.contains("fail hard")) {
+            throw new PluginException(DummyDescriptor.DUMMY_ID, "forced to fail hard!");
         }
         return notes;
     }
