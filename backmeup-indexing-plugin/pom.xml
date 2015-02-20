@@ -176,5 +176,15 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<resources>
+        	<resource>
+            	<directory>src/main/resources</directory>
+            	<!--  we don't want the 75 MB Tika jar file ending up within our plugin.jar -->
+            	<excludes>
+                	<exclude>processisolatedtika-0.0.4-SNAPSHOT-jar-with-dependencies.jar</exclude>
+            	</excludes>
+            	<filtering>false</filtering>
+        	</resource>
+    	</resources>
 	</build>
 </project>
