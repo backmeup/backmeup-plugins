@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.backmeup.index.api.IndexClient;
 import org.backmeup.index.api.IndexFields;
@@ -63,6 +64,7 @@ public class ElasticSearchIndexer {
         document.field(IndexFields.FIELD_BACKUP_AT, timestamp.getTime());
         document.field(IndexFields.FIELD_JOB_ID, job.getJobId());
         document.field(IndexFields.FIELD_JOB_NAME, job.getJobTitle());
+        document.field(IndexFields.FIELD_INDEX_DOCUMENT_UUID, UUID.randomUUID().toString());
 
         // There is currently only one source per job!
         PluginProfileDTO sourceProfile = job.getSource();
