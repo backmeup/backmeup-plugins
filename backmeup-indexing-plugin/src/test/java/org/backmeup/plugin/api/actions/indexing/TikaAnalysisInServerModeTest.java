@@ -73,10 +73,16 @@ public class TikaAnalysisInServerModeTest {
         try {
             String fullText = this.tika.extractFullText(this.pdf1);
             assertTrue(fullText.contains("Crawford starts with her own bookshelf, pulling letters"));
+            assertFalse("we don't want to have the header information in the fulltext",
+                    fullText.contains("Content-Disposition"));
+            assertFalse("we don't want to have the header information in the fulltext",
+                    fullText.contains("Content-Type"));
+            assertFalse("we don't want to have the header information in the fulltext",
+                    fullText.contains("Content-Transfer-Encoding"));
 
             //in this case content type is recognised as text/plain and fulltext from binary
             fullText = this.tika.extractFullText(this.pdf2);
-            assertTrue(fullText.contains("Ã0ï¿½Â¼Ã»+|Â´Â¥ÃxÃÂ»Ã¶Å¡#ï¿½!UBÂ¢Ã"));
+            assertTrue(fullText.contains("´�dr?�»n�ÙýzÈ�áa�"));
 
             try {
                 //we should get status code 500 for png
@@ -96,6 +102,12 @@ public class TikaAnalysisInServerModeTest {
 
             fullText = this.tika.extractFullText(this.txt1);
             assertTrue(fullText.contains("hallo mihai und peter"));
+            assertFalse("we don't want to have the header information in the fulltext",
+                    fullText.contains("Content-Disposition"));
+            assertFalse("we don't want to have the header information in the fulltext",
+                    fullText.contains("Content-Type"));
+            assertFalse("we don't want to have the header information in the fulltext",
+                    fullText.contains("Content-Transfer-Encoding"));
 
         } catch (IOException e) {
             assertTrue(e.toString(), false);

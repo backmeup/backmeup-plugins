@@ -196,9 +196,9 @@ public class TikaServerStub {
 
             //check on status code
             if (response.getStatusLine().getStatusCode() == 200) {
-                String responseBody = EntityUtils.toString(response.getEntity());
+                String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
                 httpclient.close();
-                return responseBody.toString();
+                return cleanupFullTextResult(responseBody);
             } else {
                 throw new IOException("received status code " + response.getStatusLine().getStatusCode());
             }
@@ -209,6 +209,28 @@ public class TikaServerStub {
             }
         }
 
+    }
+
+    /**
+     * Helper method which tries to clean out unwanted metadata returned by tika JAX-RS fulltext webservic, as the
+     * service cannot be told to not return metadata for content-type application/octet-stream A sample fulltext
+     * extraction might look like this --0iVbEwmn76dgD6esDhjphX4B9pFLoCL4215l Content-Disposition: form-data;
+     * name="data"; filename="stream2file2902843841687661954.tmp" Content-Type: application/octet-stream
+     * Content-Transfer-Encoding: binary hallo mihai und peter --0iVbEwmn76dgD6esDhjphX4B9pFLoCL4215l-- .
+     * 
+     * Do nothing if the keywords are not detected
+     */
+    private String cleanupFullTextResult(String t) {
+        int a = t.indexOf("--");
+        int b = t.indexOf("Content-Disposition");
+        int c = t.indexOf("Content-Type");
+        int d = t.indexOf("Content-Transfer-Encoding");
+        if (a < b && b < c && c < d) {
+            t = t.substring(d + 37, t.length());
+            int y = t.indexOf("--", t.length() - 55);
+            t = t.substring(0, y);
+        }
+        return t;
     }
 
     /**
