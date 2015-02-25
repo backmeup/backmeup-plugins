@@ -226,7 +226,7 @@ public class TikaServerStub {
         int c = t.indexOf("Content-Type");
         int d = t.indexOf("Content-Transfer-Encoding");
         if (a < b && b < c && c < d) {
-            t = t.substring(d + 37, t.length());
+            t = t.substring(d + 35, t.length());
             int y = t.indexOf("--", t.length() - 55);
             t = t.substring(0, y);
         }
@@ -275,7 +275,7 @@ public class TikaServerStub {
                 httpput.addHeader("Content-Type", contentType);
             }
 
-            HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, true);
+            HttpResponse response = addPayloadAndExecuteCall(httpclient, httpput, dob, false);
 
             //check on status code
             if (response.getStatusLine().getStatusCode() == 200) {
