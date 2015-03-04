@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"	
+	default-activation="lazy">
+	<service id="sftpDescriptorService" ref="sftpDescriptor" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.sftp"/>
+		</service-properties>
+	</service>
+	<service id="sftpAuthService" ref="sftpAuthenticator" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.sftp"/>
+		</service-properties>
+	</service>
+	<service id="sftpDatasourceService" ref="sftpDatasource" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.sftp"/>
+		</service-properties>
+	</service>
+</blueprint>
