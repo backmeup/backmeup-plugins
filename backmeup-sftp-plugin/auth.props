@@ -1,6 +1,6 @@
 #Tue Feb 24 14:34:48 CET 2015
 Username=mihai
 Host=localhost
-Folder=src/test/resources/ftp/mihai
+Folder=src/test/resources/sftp/mihai
 Password=Test123.
 Port=22

@@ -22,6 +22,7 @@
         <module>backmeup-mail-plugin</module>
         <module>backmeup-storage-plugin</module>
         <module>backmeup-thumbnail-plugin</module>
+        <module>backmeup-sftp-plugin</module>
     </modules>
 
     <properties>

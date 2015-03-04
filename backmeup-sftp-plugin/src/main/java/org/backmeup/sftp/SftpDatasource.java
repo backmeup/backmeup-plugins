@@ -55,8 +55,8 @@ public class SftpDatasource implements Datasource {
 	private static final String SFTP = "sftp";
 
     private final ResourceBundle textBundle = ResourceBundle.getBundle(SftpDatasource.class.getSimpleName());
-    private static final String INDEX_HTML_WRAP = "org.backmeup.ftp.FtpDatasource.INDEX_HTML_WRAP";
-    private static final String INDEX_HTML_ENTRY = "org.backmeup.ftp.FtpDatasource.INDEX_HTML_ENTRY";
+    private static final String INDEX_HTML_WRAP = "org.backmeup.sftp.SftpDatasource.INDEX_HTML_WRAP";
+    private static final String INDEX_HTML_ENTRY = "org.backmeup.sftp.SftpDatasource.INDEX_HTML_ENTRY";
 
     public SftpDatasource() {
     }
@@ -142,11 +142,11 @@ public class SftpDatasource implements Datasource {
         progressor.progress("Get list of folders");
         Vector<ChannelSftp.LsEntry> vEntries = sftpChannel.ls(folder);
         for (LsEntry entry : vEntries) {
-        
+        	String fname = entry.getFilename();
+        	if (fname.equals(".") || fname.equals(".."))
+        		continue;
 	        MetainfoContainer cont = new MetainfoContainer();
 	        SftpATTRS attrs = entry.getAttrs();
-	        String fname = entry.getFilename();
-	            
 	        if(attrs.isDir()) {
 	        	cont.addMetainfo(create("1", "directory", fname));
 	        	toVisit.add(entry.getFilename());
@@ -155,7 +155,7 @@ public class SftpDatasource implements Datasource {
 	        	xName = xName.substring(2);
 	        	String type = new MimetypesFileTypeMap().getContentType(fname);
 		        cont.addMetainfo(create("1", type, fname));
-	        	InputStream is = sftpChannel.get(folder+"/"+fname);
+	        	InputStream is = sftpChannel.get(xName);
 	        	
 		        storage.addFile(is, xName, cont);
 	        	sb.append( MessageFormat.format(this.textBundle.getString(INDEX_HTML_ENTRY), xName, attrs.getPermissionsString(),

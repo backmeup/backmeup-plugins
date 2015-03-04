@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" default-activation="lazy">	
-	<bean id="sftpDescriptor" class="org.backmeup.sftp.FtpDescriptor"/>
-	<bean id="sftpAuthenticator" class="org.backmeup.sftp.FtpAuthenticator"/>
-	<bean id="sftpDatasource" class="org.backmeup.sftp.FtpDatasource"/>	
+	<bean id="sftpDescriptor" class="org.backmeup.sftp.SftpDescriptor"/>
+	<bean id="sftpAuthenticator" class="org.backmeup.sftp.SftpAuthenticator"/>
+	<bean id="sftpDatasource" class="org.backmeup.sftp.SftpDatasource"/>	
 </blueprint>
