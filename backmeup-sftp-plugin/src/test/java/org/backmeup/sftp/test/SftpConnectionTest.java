@@ -50,7 +50,7 @@ public class SftpConnectionTest {
 
             assertTrue("sftp connected", channel.isConnected());
 
-            sftpChannel.cd("src/test/resources/ftp/testUser1");
+            sftpChannel.cd("src/test/resources/sftp/mihai");
 
             //browse root ftp directory
             Vector<LsEntry> vEntries = sftpChannel.ls(".");
@@ -67,9 +67,9 @@ public class SftpConnectionTest {
             }
 
             //reads TestSrc from sftpServer and writes it to localfile.txt
-            sftpChannel.get("TestSrc.txt", "src/test/resources/ftp/localfile.txt");
+            sftpChannel.get("TestSrc.txt", "src/test/resources/sftp/localfile.txt");
 
-            File fTest = new File("src/test/resources/ftp/localfile.txt");
+            File fTest = new File("src/test/resources/sftp/localfile.txt");
             assertTrue(fTest.exists());
 
             sftpChannel.exit();
