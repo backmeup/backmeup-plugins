@@ -3,4 +3,4 @@ Username=mihai
 Host=localhost
 Folder=src/test/resources/sftp/mihai
 Password=Test123.
-Port=22
+Port=2222

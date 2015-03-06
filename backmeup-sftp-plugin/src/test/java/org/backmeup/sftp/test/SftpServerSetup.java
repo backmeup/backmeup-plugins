@@ -26,7 +26,7 @@ import org.junit.rules.ExternalResource;
 public class SftpServerSetup extends ExternalResource {
 
     private SshServer sshd;
-    public static final int PORT = 22;
+    public static final int PORT = 2222;
     File sftpWorkingDir = new File("src/test/resources/sftp");
 
     public SftpServerSetup() {
