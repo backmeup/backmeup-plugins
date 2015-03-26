@@ -15,7 +15,6 @@ import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -92,7 +91,7 @@ public class TikaAnalysisInServerModeTest {
 
         //in this case content type is recognised as text/plain and fulltext from binary
         fullText = this.tika.extractFullText(this.pdf2);
-        assertTrue(fullText.contains("´�dr?�»n�ÙýzÈ�áa�"));
+        assertTrue(fullText.contains("/Size 12 /Root 1 0 R /Info 2 0 R"));
 
         fullText = this.tika.extractFullText(this.txt1);
         assertTrue(fullText.contains("hallo mihai und peter"));
@@ -106,26 +105,21 @@ public class TikaAnalysisInServerModeTest {
 
     @Test
     public void testFullTextExtractionImagesPNG() throws IOException {
-        //fulltext extraction for png not possible expecting status code 500
-        this.thrown.expectMessage("received status code 500");
-        this.thrown.expect(IOException.class); //expecting IOException to be thrown
-        this.tika.extractFullText(this.png1);
+        String s = this.tika.extractFullText(this.png1);
+        assertNotNull(s);
+        assertTrue(s.equals(""));
     }
 
     @Test
     public void testFullTextExtractionImagesJPEG() throws IOException {
-        //fulltext extraction for jpeg not possible expecting status code 500
-        this.thrown.expect(IOException.class); //expecting IOException to be thrown
-        this.thrown.expectMessage("received status code 500");
-        this.tika.extractFullText(this.jpg1);
+        String s = this.tika.extractFullText(this.jpg1);
+        assertNotNull(s);
+        assertTrue(s.equals(""));
     }
 
     @Test
-    @Ignore("//TODO AL refs #193")
     public void testFullTextExtractionDocumentsDOCX() throws IOException {
-        //TODO doxc fulltext extraction not working
         String fullText = this.tika.extractFullText(this.docx1);
-        System.out.println(fullText);
         assertTrue(fullText.contains("Download the latest stable source from"));
     }
 
@@ -141,7 +135,7 @@ public class TikaAnalysisInServerModeTest {
         meta = this.tika.extractMetaData(this.pdf2);
         assertTrue(meta.containsKey("X-Parsed-By"));
         assertTrue(meta.get("X-Parsed-By").contains("org.apache.tika.parser.txt.TXTParser"));
-        assertEquals("windows-1252", meta.get("Content-Encoding"));
+        assertEquals("ISO-8859-15", meta.get("Content-Encoding"));
 
         meta = this.tika.extractMetaData(this.html1);
         assertNotNull(meta.get("title"));
@@ -151,29 +145,27 @@ public class TikaAnalysisInServerModeTest {
     @Test
     public void testMetadataExtractionImagesPNG() throws IOException {
         //metadata extraction for png not possible expecting status code 500
-        this.thrown.expectMessage("received status code 500");
-        this.thrown.expect(IOException.class); //expecting IOException to be thrown
-        this.tika.extractMetaData(this.png1);
+        Map<String, String> metadata = this.tika.extractMetaData(this.png1);
+        assertNotNull(metadata);
+        assertEquals("8 8 8 8", metadata.get("Data BitsPerSample"));
+        assertEquals("true", metadata.get("Compression Lossless"));
     }
 
     @Test
-    @Ignore("TODO AL refs #193")
     public void testMetadataExtractionImagesJPEG() throws IOException {
-        //TODO images with and without exif information work on command line but not via JAX-RS calls
         //curl -H "Accept: text/csv" -T tika_analyser_exif.jpg http://localhost:9998/meta
         Map<String, String> meta = this.tika.extractMetaData(this.jpg1);
-        assertTrue(meta.containsKey("X-Parsed-By"));
         assertTrue(meta.get("X-Parsed-By").contains("org.apache.tika.parser.jpeg.JpegParser"));
+        assertEquals("375 pixels", meta.get("Image Height"));
     }
 
     @Test
-    @Ignore("TODO AL refs #193")
     public void testMetadataExtractionDocumentsDOCX() throws IOException {
-        //TODO doxc and images with exif information work via curl but not via JAX-RS calls
         //curl -H "Accept: text/csv" -T tika_analyser.docx http://localhost:9998/meta
         Map<String, String> meta = this.tika.extractMetaData(this.docx1);
         assertTrue(meta.get("X-Parsed-By").contains("org.apache.tika.parser.microsoft.ooxml.OOXMLParser"));
         assertTrue(meta.get("meta:character-count-with-spaces").equals("9162"));
+        assertEquals("Lindley Andrew", meta.get("dc:creator"));
     }
 
     @Test
@@ -181,13 +173,6 @@ public class TikaAnalysisInServerModeTest {
         this.thrown.expect(IOException.class); //expecting IOException to be thrown
         this.thrown.expectMessage("received status code 415");
         this.tika.extractFullText(this.pdf1, "application/bogus");
-    }
-
-    @Test
-    public void testFullTextNegativeCallExample2() throws IOException {
-        this.thrown.expect(IOException.class); //expecting IOException to be thrown
-        this.thrown.expectMessage("received status code 415");
-        this.tika.extractFullText(this.pdf1, null);
     }
 
     /**

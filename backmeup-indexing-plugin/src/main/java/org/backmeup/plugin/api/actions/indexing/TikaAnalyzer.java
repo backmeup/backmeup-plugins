@@ -67,12 +67,16 @@ public class TikaAnalyzer {
      * @param contentType
      * @return
      */
-    public String extractFullText(DataObject dob, String contentType) {
+    public String extractFullText(DataObject dob) {
         String fulltext = null;
         try {
-            fulltext = this.tika.extractFullText(dob, contentType);
+            fulltext = this.tika.extractFullText(dob);
         } catch (IOException e) {
             this.log.debug("Error calling tika server on fulltext for " + dob.getPath() + " :" + e.toString());
+        }
+        //Tika returns empty String for certain types as Images
+        if (fulltext.equals("")) {
+            fulltext = null;
         }
         return fulltext;
     }

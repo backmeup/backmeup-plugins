@@ -81,7 +81,7 @@ public class IndexAction implements Action {
                         meta = analyzer.analyze(dob);
                         mime = meta.get(IndexFields.FIELD_CONTENT_TYPE);
                         if (mime != null) {
-                            fulltext = analyzer.extractFullText(dob, meta.get(IndexFields.FIELD_CONTENT_TYPE));
+                            fulltext = analyzer.extractFullText(dob);
                             if (fulltext != null) {
                                 meta.put(IndexFields.FIELD_FULLTEXT, fulltext);
                             }
