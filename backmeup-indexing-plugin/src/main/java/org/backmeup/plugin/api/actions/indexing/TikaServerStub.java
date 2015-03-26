@@ -13,8 +13,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -76,18 +76,17 @@ public class TikaServerStub {
         try {
             //add an InputStreamBody to httpput entity
             is = new ByteArrayInputStream(dob.getBytes());
-            MultipartEntityBuilder multipartEntity = MultipartEntityBuilder.create();
             if (useInputStreamBody) {
                 //add a inputstream body
+                MultipartEntityBuilder multipartEntity = MultipartEntityBuilder.create();
                 multipartEntity.addPart("data", new InputStreamBody(is, getFilename(dob.getPath())));
                 httpput.setEntity(multipartEntity.build());
             } else {
                 //add a file body - as some Tika JAX-RS endpoints can't handle streaming
                 File fileToUse = stream2file(is);
-                FileBody data = new FileBody(fileToUse);
-                multipartEntity = MultipartEntityBuilder.create();
-                multipartEntity.addPart("data", data);
-                httpput.setEntity(multipartEntity.build());
+                //HTTP PUT can't cope with MultipartEntities or Strings. Must be delivered as binary using FileEntity
+                FileEntity fe = new FileEntity(fileToUse);
+                httpput.setEntity(fe);
             }
 
             //execute the call
@@ -178,7 +177,7 @@ public class TikaServerStub {
      * @param contentType
      * @return
      */
-    public String extractFullText(DataObject dob, String contentType) throws IOException {
+    protected String extractFullText(DataObject dob, String contentType) throws IOException {
 
         this.log.debug("calling Tika FullText extraction on content type: " + contentType + " for " + dob.getPath());
         CloseableHttpClient httpclient = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
