@@ -19,6 +19,7 @@ import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.backmeup.index.api.IndexFields;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -319,7 +320,8 @@ public class TikaServerStub {
 
                 }
             }
-            maps.put(key, value);
+            //Tika properties receive 'tikaprop_'prefix
+            maps.put(IndexFields.TIKA_FIELDS_PREFIX + key, value);
         }
         return maps;
     }
