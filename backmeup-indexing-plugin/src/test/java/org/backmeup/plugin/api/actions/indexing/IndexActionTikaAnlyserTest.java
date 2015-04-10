@@ -7,17 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.backmeup.index.api.IndexClient;
-import org.backmeup.index.model.FileInfo;
-import org.backmeup.index.model.FileItem;
+import org.backmeup.index.api.IndexDocumentUploadClient;
 import org.backmeup.index.model.IndexDocument;
-import org.backmeup.index.model.SearchResultAccumulator;
 import org.backmeup.model.dto.BackupJobDTO;
 import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.dto.UserDTO;
@@ -32,7 +27,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-@Deprecated
+@Deprecated()
+//switched to using Tika in Server Mode
 public class IndexActionTikaAnlyserTest {
 
     private IndexDocument actualDocument;
@@ -71,16 +67,22 @@ public class IndexActionTikaAnlyserTest {
         assertEquals("application/pdf", this.actualDocument.getFields().get("Content-Type"));
     }
 
-    class FakeIndexClient implements IndexClient {
+    class FakeIndexClient implements IndexDocumentUploadClient {
 
         @Override
+        public String uploadForSharing(IndexDocument document) throws IOException {
+            IndexActionTikaAnlyserTest.this.actualDocument = document;
+            return "done";
+        }
+
+        /*@Override
         public void index(IndexDocument document) throws IOException {
             IndexActionTikaAnlyserTest.this.actualDocument = document;
-        }
+        }*/
 
         // here for tests...
 
-        @Override
+        /*@Override
         public SearchResultAccumulator queryBackup(String query, String filterBySource, String filterByType,
                 String filterByJob, String username) {
             Assert.fail("do not call");
@@ -113,7 +115,7 @@ public class IndexActionTikaAnlyserTest {
         @Override
         public void deleteRecordsForJobAndTimestamp(Long jobId, Date timestamp) {
             Assert.fail("do not call");
-        }
+        }*/
 
         @Override
         public void close() {

@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.backmeup.index.api.IndexClient;
+import org.backmeup.index.api.IndexDocumentUploadClient;
 import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.model.IndexDocument;
 import org.backmeup.index.serializer.Json;
@@ -37,10 +37,12 @@ import org.slf4j.LoggerFactory;
  */
 public class ElasticSearchIndexer {
 
-    private final IndexClient client;
+    private final IndexDocumentUploadClient client;
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    public ElasticSearchIndexer(IndexClient client) {
+    //used to be pushing elements directly to ES via the IndexClient
+    //now dropp-off in queue for sharing distribution
+    public ElasticSearchIndexer(IndexDocumentUploadClient client) {
         this.client = client;
     }
 
@@ -119,10 +121,10 @@ public class ElasticSearchIndexer {
             document.largeField("thumbnail_path", relThumbPathOnStorage);
         }
 
-        this.log.debug("Started pushing IndexDocument to ES from Indexing Plugin " + Json.serialize(document));
-        // Push to ES index
-        this.client.index(document);
-        this.log.debug("Completed pushing IndexDocument to ES from Indexing Plugin ");
+        this.log.debug("Started uploading IndexDocument to queue from Indexing Plugin " + Json.serialize(document));
+        // no direct indexing within the plugin anymore -> upload to drop-of queue for further distribution
+        String message = this.client.uploadForSharing(document);
+        this.log.debug("Completed uploading IndexDocument to queue from Indexing Plugin: " + message);
 
         //TODO AL Persist document for later ingestion instead pushing to ES.
     }

@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.backmeup.index.api.IndexClient;
+import org.backmeup.index.api.IndexDocumentUploadClient;
 import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.client.IndexClientFactory;
 import org.backmeup.model.dto.BackupJobDTO;
@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class IndexAction implements Action {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private IndexClient client;
+    private IndexDocumentUploadClient client;
 
     /**
      * This class must be public and have a public default constructor for it to be usable by the osgi Service Component
@@ -36,7 +36,7 @@ public class IndexAction implements Action {
      * 
      * @param client
      */
-    public IndexAction(IndexClient client) {
+    public IndexAction(IndexDocumentUploadClient client) {
         this.client = client;
     }
 
@@ -98,7 +98,7 @@ public class IndexAction implements Action {
 
                     if (needsESIndexing(dob)) {
                         this.logger.debug("Indexing " + dob.getPath());
-                        //push information to ElasticSearch
+                        //extract information to ElasticSearch compatible format and upload to queue
                         indexer.doIndexing(properties, job, dob, meta, indexingTimestamp);
                         indexedItems_OK++;
                         progressor.progress(INDEXING_OBJECT_COMPLETED + dob.getPath());
@@ -158,7 +158,7 @@ public class IndexAction implements Action {
 
     private void initIndexClient(Long userId) {
         if (userId != null) {
-            this.client = new IndexClientFactory().getIndexClient(userId);
+            this.client = new IndexClientFactory().getIndexDocumentUploadClient(userId);
         }
     }
 
