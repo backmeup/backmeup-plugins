@@ -127,19 +127,19 @@ public class TikaAnalysisInServerModeTest {
     public void testMetadataExtraction() throws IOException {
 
         Map<String, String> meta = this.tika.extractMetaData(this.pdf1);
-        assertTrue(meta.containsKey("pdf:PDFVersion"));
-        assertEquals("1.4", meta.get("pdf:PDFVersion"));
-        assertEquals("Adobe PDF Library 7.0", meta.get("producer"));
-        assertEquals("2007-03-02T21:50:25Z", meta.get("meta:creation-date"));
+        assertTrue(meta.containsKey("tikaprop_pdf:PDFVersion"));
+        assertEquals("1.4", meta.get("tikaprop_pdf:PDFVersion"));
+        assertEquals("Adobe PDF Library 7.0", meta.get("tikaprop_producer"));
+        assertEquals("2007-03-02T21:50:25Z", meta.get("tikaprop_meta:creation-date"));
 
         meta = this.tika.extractMetaData(this.pdf2);
-        assertTrue(meta.containsKey("X-Parsed-By"));
-        assertTrue(meta.get("X-Parsed-By").contains("org.apache.tika.parser.txt.TXTParser"));
-        assertEquals("ISO-8859-15", meta.get("Content-Encoding"));
+        assertTrue(meta.containsKey("tikaprop_X-Parsed-By"));
+        assertTrue(meta.get("tikaprop_X-Parsed-By").contains("org.apache.tika.parser.txt.TXTParser"));
+        assertEquals("ISO-8859-15", meta.get("tikaprop_Content-Encoding"));
 
         meta = this.tika.extractMetaData(this.html1);
-        assertNotNull(meta.get("title"));
-        assertEquals("Your e-mail backup", meta.get("title"));
+        assertNotNull(meta.get("tikaprop_title"));
+        assertEquals("Your e-mail backup", meta.get("tikaprop_title"));
     }
 
     @Test
@@ -147,25 +147,25 @@ public class TikaAnalysisInServerModeTest {
         //metadata extraction for png not possible expecting status code 500
         Map<String, String> metadata = this.tika.extractMetaData(this.png1);
         assertNotNull(metadata);
-        assertEquals("8 8 8 8", metadata.get("Data BitsPerSample"));
-        assertEquals("true", metadata.get("Compression Lossless"));
+        assertEquals("8 8 8 8", metadata.get("tikaprop_Data BitsPerSample"));
+        assertEquals("true", metadata.get("tikaprop_Compression Lossless"));
     }
 
     @Test
     public void testMetadataExtractionImagesJPEG() throws IOException {
         //curl -H "Accept: text/csv" -T tika_analyser_exif.jpg http://localhost:9998/meta
         Map<String, String> meta = this.tika.extractMetaData(this.jpg1);
-        assertTrue(meta.get("X-Parsed-By").contains("org.apache.tika.parser.jpeg.JpegParser"));
-        assertEquals("375 pixels", meta.get("Image Height"));
+        assertTrue(meta.get("tikaprop_X-Parsed-By").contains("org.apache.tika.parser.jpeg.JpegParser"));
+        assertEquals("375 pixels", meta.get("tikaprop_Image Height"));
     }
 
     @Test
     public void testMetadataExtractionDocumentsDOCX() throws IOException {
         //curl -H "Accept: text/csv" -T tika_analyser.docx http://localhost:9998/meta
         Map<String, String> meta = this.tika.extractMetaData(this.docx1);
-        assertTrue(meta.get("X-Parsed-By").contains("org.apache.tika.parser.microsoft.ooxml.OOXMLParser"));
-        assertTrue(meta.get("meta:character-count-with-spaces").equals("9162"));
-        assertEquals("Lindley Andrew", meta.get("dc:creator"));
+        assertTrue(meta.get("tikaprop_X-Parsed-By").contains("org.apache.tika.parser.microsoft.ooxml.OOXMLParser"));
+        assertTrue(meta.get("tikaprop_meta:character-count-with-spaces").equals("9162"));
+        assertEquals("Lindley Andrew", meta.get("tikaprop_dc:creator"));
     }
 
     @Test
