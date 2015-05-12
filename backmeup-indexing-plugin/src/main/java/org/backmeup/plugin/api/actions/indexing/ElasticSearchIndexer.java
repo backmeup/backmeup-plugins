@@ -11,7 +11,7 @@ import org.backmeup.index.api.IndexDocumentUploadClient;
 import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.model.IndexDocument;
 import org.backmeup.index.serializer.Json;
-import org.backmeup.model.dto.BackupJobDTO;
+import org.backmeup.model.dto.BackupJobExecutionDTO;
 import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.Metainfo;
@@ -46,7 +46,7 @@ public class ElasticSearchIndexer {
         this.client = client;
     }
 
-    public void doIndexing(Map<String, String> externalProps, BackupJobDTO job, DataObject dataObject,
+    public void doIndexing(Map<String, String> externalProps, BackupJobExecutionDTO job, DataObject dataObject,
             Map<String, String> meta, Date timestamp) throws IOException {
         // Build the index object
         IndexDocument document = new IndexDocument();
@@ -65,7 +65,7 @@ public class ElasticSearchIndexer {
         document.field(IndexFields.FIELD_FILE_HASH, dataObject.getMD5Hash());
         document.field(IndexFields.FIELD_BACKUP_AT, timestamp.getTime());
         document.field(IndexFields.FIELD_JOB_ID, job.getJobId());
-        document.field(IndexFields.FIELD_JOB_NAME, job.getJobTitle());
+        document.field(IndexFields.FIELD_JOB_NAME, job.getName());
         document.field(IndexFields.FIELD_INDEX_DOCUMENT_UUID, UUID.randomUUID().toString());
 
         // There is currently only one source per job!

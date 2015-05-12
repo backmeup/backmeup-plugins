@@ -13,7 +13,7 @@ import java.util.Iterator;
 import org.apache.commons.io.IOUtils;
 import org.backmeup.index.api.IndexDocumentUploadClient;
 import org.backmeup.index.model.IndexDocument;
-import org.backmeup.model.dto.BackupJobDTO;
+import org.backmeup.model.dto.BackupJobExecutionDTO;
 import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.dto.UserDTO;
 import org.backmeup.model.spi.PluginDescribable.PluginType;
@@ -46,7 +46,7 @@ public class IndexActionTikaAnlyserTest {
                 System.out.println(message);
             }
         };
-        BackupJobDTO job = new BackupJobDTO();
+        BackupJobExecutionDTO job = new BackupJobExecutionDTO();
         UserDTO user = new UserDTO() {
             @Override
             public Long getUserId() {
