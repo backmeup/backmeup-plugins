@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.backmeup.model.dto.BackupJobDTO;
+import org.backmeup.model.dto.BackupJobExecutionDTO;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Action;
@@ -84,7 +84,7 @@ public class ThumbnailAction implements Action {
 
     @Override
     public void doAction(Map<String, String> accessData, Map<String, String> properties, List<String> options,
-            Storage storage, BackupJobDTO job, Progressable progressor) throws ActionException {
+            Storage storage, BackupJobExecutionDTO job, Progressable progressor) throws ActionException {
 
         progressor.progress("Starting thumbnail rendering");
 
