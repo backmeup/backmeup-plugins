@@ -298,30 +298,36 @@ public class TikaServerStub {
     private Map<String, String> convertCSV2Map(String responsebody) {
         Map<String, String> maps = new HashMap<String, String>();
 
-        String[] lines = responsebody.split("\r\n|\r|\n");
-        for (String line : lines) {
-            //split only at commas which are followed by an even (or zero) number of quotes (and thus not inside quotes)
-            String[] res = line.split(",(?=([^\"]|\"[^\"]*\")*$)");
-            boolean keyFound = false;
-            String key = "";
-            String value = "";
-            for (String s : res) {
-                s = s.replace("\"", "");
-                if (!keyFound) {
-                    //first element in csv file is the key
-                    key = s;
-                    keyFound = true;
-                } else {
-                    if (value.equals("")) {
-                        value += s;
+        try {
+            String[] lines = responsebody.split("\r\n|\r|\n");
+            for (String line : lines) {
+                //split only at commas which are followed by an even (or zero) number of quotes (and thus not inside quotes)
+                String[] res = line.split(",(?=([^\"]|\"[^\"]*\")*$)");
+                boolean keyFound = false;
+                String key = "";
+                String value = "";
+                for (String s : res) {
+                    s = s.replace("\"", "");
+                    if (!keyFound) {
+                        //first element in csv file is the key
+                        key = s;
+                        keyFound = true;
                     } else {
-                        value += ", " + s;
-                    }
+                        if (value.equals("")) {
+                            value += s;
+                        } else {
+                            value += ", " + s;
+                        }
 
+                    }
                 }
+                //Tika properties receive 'tikaprop_'prefix
+                maps.put(IndexFields.TIKA_FIELDS_PREFIX + key, value);
             }
-            //Tika properties receive 'tikaprop_'prefix
-            maps.put(IndexFields.TIKA_FIELDS_PREFIX + key, value);
+        } catch (StackOverflowError e) {
+            //@see http://stackoverflow.com/questions/2535723/try-catch-on-stack-overflows-in-java
+            //TODO refactor split expression - for now catch the Error and return empty map
+            //http://themis-buildsrv01.backmeup.at/redmine/issues/228
         }
         return maps;
     }
