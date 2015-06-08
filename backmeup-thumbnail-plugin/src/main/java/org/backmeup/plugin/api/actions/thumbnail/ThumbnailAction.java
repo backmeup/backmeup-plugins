@@ -79,7 +79,38 @@ public class ThumbnailAction implements Action {
             IOUtils.closeQuietly(is);
         }
 
+        cleanupMultipageThumbnails(thumbnailPath);
         return thumbnailPath;
+    }
+
+    /**
+     * For some file formats GraphicsMagick produces one jpg for every page (e.g. pdf input). In this case the output
+     * will be located in thumbnailPath.0 for page 1, thumbnailPath.1 for page2, etc.
+     */
+    public void cleanupMultipageThumbnails(String thumbnailPath) {
+        File f = new File(thumbnailPath);
+        if (f.exists()) {
+            //if only one thumbnail was generated then we're already fine
+            return;
+        }
+        File f2 = new File(thumbnailPath + ".0");
+        if (f2.exists()) {
+            //rename the file and return the proper thumbnailPath
+            boolean success = f2.renameTo(f);
+            LOGGER.debug("rename of multi-page image thumbnail success?: " + success);
+        }
+        int i = 1;
+        boolean loop = true;
+        while (loop) {
+            File f3 = new File(thumbnailPath + "." + i);
+            if (f3.exists()) {
+                LOGGER.debug("deleted unused multi-page image thumbnail : " + f3.getAbsolutePath());
+                f3.delete();
+                i++;
+            } else {
+                loop = false;
+            }
+        }
     }
 
     @Override
