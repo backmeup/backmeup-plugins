@@ -80,7 +80,12 @@ public class ThumbnailAction implements Action {
         }
 
         cleanupMultipageThumbnails(thumbnailPath);
-        return thumbnailPath;
+        File f = new File(thumbnailPath);
+        if (f.exists()) {
+            return thumbnailPath;
+        } else {
+            throw new IOException("Was not able to generate thumbnail");
+        }
     }
 
     /**
