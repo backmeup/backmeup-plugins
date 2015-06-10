@@ -12,9 +12,6 @@ public final class Constants {
     public static final String PROP_STORAGE_URL = "storage.url";
     public static final String PROP_DOWNLOAD_BASE = "storage.downloadBase";
     
-    public static final String ACCESS_TOKEN = "backmeupStorageAccessToken";
-    public static final String CONNECTION_STRING = "connectionString";
-    
     private Constants() {
         // Utility classes should not have a public constructor
     }
