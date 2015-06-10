@@ -49,12 +49,19 @@ public class BackmeupStorageDatasink implements Datasink {
         String storageUrl = authData.get(Constants.PROP_STORAGE_URL);
         progressor.progress("Storage url= " + storageUrl);
 
-        String accessToken = authData.get(Constants.ACCESS_TOKEN);
-        progressor.progress("Using Token=" + accessToken);
-
+        progressor.progress("Initialized storage client");
         StorageClient client = new BackmeupStorageClient(storageUrl);
 
-        progressor.progress("Initialized storage client");
+        String accessToken;
+        try {
+            progressor.progress("Authenticate user");
+            String username = authData.get(Constants.PROP_USERNAME);
+            String password = authData.get(Constants.PROP_PASSWORD);
+            accessToken = client.authenticate(username, password);
+            progressor.progress("Using Token=" + accessToken);
+        } catch (IOException e) {
+            throw new StorageException(e);
+        }
 
         Iterator<DataObject> it = storage.getDataObjects();
         int i = 1;
@@ -129,20 +136,10 @@ public class BackmeupStorageDatasink implements Datasink {
 
         if ((thumbStorageDestinationPath != null)) {
             progressor.progress("Uploading thumbnail to: " + thumbStorageDestinationPath);
-            InputStream is = null;
-            try {
-                is = new FileInputStream(thumbLocalStorageLocation);
+            try (InputStream is = new FileInputStream(thumbLocalStorageLocation)) {
                 client.saveFile(accessToken, thumbStorageDestinationPath, true, is.available(), is);
-                is.close();
-            } catch (IOException | PluginException e) {
+            } catch (PluginException | IOException e) {
                 progressor.progress("Error handing over thumbnail to storage");
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                    }
-                }
             }
         }
     }

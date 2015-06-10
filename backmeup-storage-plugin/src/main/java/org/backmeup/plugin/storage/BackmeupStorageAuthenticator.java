@@ -30,12 +30,11 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
             
             String storageUrl = PropertiesUtil.getInstance().getProperty(Constants.PROP_STORAGE_URL);
             StorageClient storageClient = new BackmeupStorageClient(storageUrl);
-            String accessToken = storageClient.authenticate(username, password);
+            storageClient.authenticate(username, password);
             
-            authData.put(Constants.ACCESS_TOKEN, accessToken);
             authData.put(Constants.PROP_STORAGE_URL, storageUrl);
             
-            return "User";
+            return username;
         } catch (Exception e) {
             throw new PluginException(BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID, 
                     "An error occurred during authorization: " + e.getMessage());
@@ -57,7 +56,7 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
             new RequiredInputField(
                 Constants.PROP_PASSWORD, 
                 Constants.PROP_PASSWORD_LABEL, 
-                Constants.PROP_PASSWROD_DESC, true, 1, Type.Password, "")
+                Constants.PROP_PASSWROD_DESC, true, 2, Type.Password, "")
         );
 
         return inputs;
