@@ -1,0 +1,94 @@
+@keyframes showMenuBar {
+
+  from {margin-top:-40px;background-color: #45619D;}
+  to {margin-top:0px;background-color: #85A1DD;}
+}
+
+@keyframes revshowMenuBar {
+
+  from {margin-top:0px;background-color: #85A1DD;}
+  to {margin-top:-40px;background-color: #45619D;}
+}
+
+@keyframes hoverA {
+
+  from {background-color:#C0C0C0;}
+  to {background-color:#808080;}
+}
+
+@keyframes revhoverA {
+
+  from {background-color:#808080;}
+  to {background-color:#C0C0C0;}
+}
+
+.navContainer {
+
+  background-color: #45619D;
+  background: linear-gradient(#45619D, #5571AD 50%, #45619D 100%);
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  height:60px;
+  width:80%;
+  margin-left:auto;
+  margin-right:auto;
+  margin-bottom:60px;
+  text-align:justify;
+  margin-top:-40px;
+  animation-name:revshowMenuBar;
+  animation-duration:0.5s;
+  box-shadow:0px 0px 10px #000000;
+}
+
+.navContainer:hover {
+
+  margin-top:0px;
+  animation-name:showMenuBar;
+  background-color:#85A1DD;
+}
+
+.navContainer  ul{
+
+  display:flex;
+  justify-content: space-between;
+  list-style:none;
+  width:200px;
+  height:60px;
+  margin-top:0px;
+  margin-left:auto;
+  margin-right:auto;
+  padding:0px;
+  text-align:justify;
+}
+
+.navContainer li{
+
+  text-align:justify;
+}
+
+.navContainer a {
+
+  display:table-cell;
+  background: radial-gradient(#F0F0F0, rgba(255, 255, 255, 0));
+  background-color:#C0C0C0;
+  color: #45619D;
+  text-decoration:none;
+  text-align:center;
+  border-bottom-left-radius:20px;
+  border-bottom-right-radius:20px;
+  box-sizing: border-box;
+  height:30px;
+  padding-bottom:5px;
+  vertical-align:middle;
+  width:80px;
+  font-size:14pt;
+  box-shadow:0px 3px 7px #000000;
+  animation-name:revhoverA;
+  animation-duration:0.5s;
+}
+
+.navContainer a:hover {
+
+  background-color:#808080;
+  animation-name:hoverA;
+}
