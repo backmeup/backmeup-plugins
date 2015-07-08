@@ -18,7 +18,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4</version>
+      <version>4.11</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -32,9 +32,9 @@
   <version>1.0</version>
 </dependency>
 <dependency>
-  <groupId>com.google.code</groupId>
-  <artifactId>restfb</artifactId>
-  <version>1.0</version>
+	<groupId>com.restfb</groupId>
+	<artifactId>restfb</artifactId>
+	<version>1.11.0</version>
 </dependency>
   </dependencies>
 </project>
