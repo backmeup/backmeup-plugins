@@ -8,8 +8,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Properties;
 
 import com.hp.gagawa.java.Document;
@@ -22,7 +25,10 @@ import com.hp.gagawa.java.elements.Li;
 import com.hp.gagawa.java.elements.Link;
 import com.hp.gagawa.java.elements.Meta;
 import com.hp.gagawa.java.elements.P;
+import com.hp.gagawa.java.elements.Table;
+import com.hp.gagawa.java.elements.Td;
 import com.hp.gagawa.java.elements.Title;
+import com.hp.gagawa.java.elements.Tr;
 import com.hp.gagawa.java.elements.Ul;
 
 import facebook.storage.AlbumInfoKeys;
@@ -172,7 +178,13 @@ public class MainGenerator
 						e.printStackTrace();
 					}
 			}
+
+			Div sideInfos = new Div();
+			sideInfos.setCSSClass("sidebar");
+			sideInfos.appendChild(wrapAlbumInfos(AlbumInfoKeys.values(), albumXml, true));
+
 			photoContainer.appendChild(photoList);
+			albumFile.body.appendChild(sideInfos);
 			albumFile.body.appendChild(photoContainer);
 			fw.write(albumFile.write());
 
@@ -182,6 +194,47 @@ public class MainGenerator
 			e.printStackTrace();
 		}
 	}
+
+	private Table wrapAlbumInfos(AlbumInfoKeys[] aik, Properties albumsProps, boolean skipinvalid)
+	{
+		Table table = new Table();
+		for (AlbumInfoKeys key : aik)
+		{
+			String value = albumsProps.getProperty(key.toString());
+			if ((value != null && !value.equals("")) || !skipinvalid)
+			{
+				if (value == null)
+					value = "keine Infos vorhanden";
+				if (key.isDate())
+				{
+					GregorianCalendar time = new GregorianCalendar();
+					Date d = new Date(Long.parseLong(value));
+					time.setTime(d);
+					value = "am ";
+					SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+					value += sdf.format(time.getTime()) + " um ";
+					sdf = new SimpleDateFormat("HH:mm:ss");
+					value += sdf.format(time.getTime()) + " Uhr";
+				}
+				if (key.isLink())
+				{
+					A link = new A();
+					link.appendText(key.getLabel());
+					link.setHref(value);
+					value = link.write();
+				}
+				Tr row = new Tr();
+				row.appendChild(new Td().appendText(key.getLabel()));
+				row.appendChild(new Td().appendText(value));
+				table.appendChild(row);
+			}
+		}
+		return table;
+	}
+
+	/*
+	 * public static Date getDateFromString() { Calendar. }
+	 */
 
 	public Node menuGenerator()
 	{

@@ -23,12 +23,12 @@ import com.restfb.types.Photo;
 import com.restfb.types.User;
 
 public class Serializer
-{	
+{
 	public Serializer(String workingdir)
 	{
 		this.path = workingdir;
 	}
-	
+
 	private String path;
 
 	public HashMap<Object, Object> userInfo(User user, FacebookClient fcb, boolean thisIsMe, boolean makeDirs)
@@ -37,7 +37,7 @@ public class Serializer
 			return new HashMap<Object, Object>();
 		HashMap<Object, Object> infos = new HashMap<Object, Object>();
 		infos.put(UserInfoKeys.ABOUT, user.getAbout());
-		infos.put(UserInfoKeys.DATE_OF_BIRTH, user.getBirthdayAsDate().toString());
+		infos.put(UserInfoKeys.DATE_OF_BIRTH, user.getBirthdayAsDate().getTime());
 		infos.put(UserInfoKeys.FIRST_NAME, user.getFirstName());
 		infos.put(UserInfoKeys.LAST_NAME, user.getLastName());
 		infos.put(UserInfoKeys.GENDER, user.getGender());
@@ -78,9 +78,9 @@ public class Serializer
 			return infos;
 		infos.put(AlbumInfoKeys.COUNT, album.getCount());
 		infos.put(AlbumInfoKeys.COVER_PHOTO_ID, album.getCoverPhoto());
-		infos.put(AlbumInfoKeys.CREATED, album.getCreatedTime());
+		infos.put(AlbumInfoKeys.CREATED, album.getCreatedTime().getTime());
 		infos.put(AlbumInfoKeys.DESCRIPTION, album.getDescription());
-		infos.put(AlbumInfoKeys.LAST_UPDATE, album.getUpdatedTime());
+		infos.put(AlbumInfoKeys.LAST_UPDATE, album.getUpdatedTime().getTime());
 		infos.put(AlbumInfoKeys.ORIGINAL_LINK, album.getLink());
 		infos.put(AlbumInfoKeys.PRIVACY, album.getPrivacy());
 		infos.put(AlbumInfoKeys.NAME, album.getName());
@@ -112,14 +112,14 @@ public class Serializer
 		if (photo == null)
 			return infos;
 		infos.put(PhotoInfoKeys.FILE, photo.getId() + ".jpg");
-		infos.put(PhotoInfoKeys.BACK_DATE, photo.getBackdatedTime());
+		infos.put(PhotoInfoKeys.BACK_DATE, (photo.getBackdatedTime() == null) ? null : photo.getBackdatedTime().getTime());
 		infos.put(PhotoInfoKeys.COMMENT_DIR, photo.getId() + "_COMMENTS");
-		infos.put(PhotoInfoKeys.LAST_UPDATE, photo.getUpdatedTime());
+		infos.put(PhotoInfoKeys.LAST_UPDATE, photo.getUpdatedTime().getTime());
 		infos.put(PhotoInfoKeys.ORIGINAL_LINK, photo.getLink());
 		infos.put(PhotoInfoKeys.LIKES_FROM_PEOPLE, genLikes(photo.getLikes()));
 		infos.put(PhotoInfoKeys.LIKES, photo.getLikes().size());
 		infos.put(PhotoInfoKeys.PLACE, photo.getPlace());
-		infos.put(PhotoInfoKeys.PUBLISH_DATE, photo.getCreatedTime());
+		infos.put(PhotoInfoKeys.PUBLISH_DATE, photo.getCreatedTime().getTime());
 		infos.put(PhotoInfoKeys.ID, photo.getId());
 		HashMap<String, String> newinfos = dataValidatot(infos);
 		Properties props = new Properties();
@@ -161,14 +161,11 @@ public class Serializer
 			Object value = userInfos.get(uik);
 			if (value != null)
 			{
-				/*if (value instanceof Collection<?>)
-				{
-					Collection<?> coll = (Collection<?>) value;
-					for (Object o : coll)
-					{
-						System.out.println(o);
-					}
-				}*/
+				/*
+				 * if (value instanceof Collection<?>) { Collection<?> coll =
+				 * (Collection<?>) value; for (Object o : coll) {
+				 * System.out.println(o); } }
+				 */
 				infos.put(uik.toString(), value.toString());
 			}
 		}
