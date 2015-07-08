@@ -6,7 +6,7 @@ public enum FilePaths
 	ALBUMS_DIRECTORY("albums"),
 	ALBUM_DIRECTORY("" + ALBUMS_DIRECTORY + SDO.SLASH + ReplaceID.ALBUM_ID),
 	ALBUM_INFO("" + ALBUM_DIRECTORY + SDO.SLASH + "albuminfo.xml"),
-	PHOTO_INFO("" +ReplaceID.PHOTO_ID + ".xml");
+	PHOTO_INFO("" + ReplaceID.PHOTO_ID + ".xml");
 
 	private String path;
 

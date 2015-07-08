@@ -11,7 +11,8 @@ package facebook.storage;
 
 public enum SDO
 {
-	SLASH(System.getProperty("file.separator")+""), NEW_LINE(System.getProperty("line.separator")+"");
+	SLASH(System.getProperty("file.separator") + ""),
+	NEW_LINE(System.getProperty("line.separator") + "");
 
 	private String operator;
 

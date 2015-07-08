@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -24,10 +23,15 @@ import com.restfb.types.Photo;
 import com.restfb.types.User;
 
 public class Serializer
-{
-	public static String PATH = "/home/richard";
+{	
+	public Serializer(String workingdir)
+	{
+		this.path = workingdir;
+	}
+	
+	private String path;
 
-	public static HashMap<Object, Object> userInfo(User user, FacebookClient fcb, boolean thisIsMe, boolean makeDirs)
+	public HashMap<Object, Object> userInfo(User user, FacebookClient fcb, boolean thisIsMe, boolean makeDirs)
 	{
 		if (user == null)
 			return new HashMap<Object, Object>();
@@ -58,7 +62,7 @@ public class Serializer
 		props.putAll(newinfos);
 		try
 		{
-			props.storeToXML(new FileOutputStream(new File(PATH + SDO.SLASH + FilePaths.USER_FILE)), "General user info");
+			props.storeToXML(new FileOutputStream(new File(path + SDO.SLASH + FilePaths.USER_FILE)), "General user info");
 		} catch (IOException e)
 		{
 			// TODO Auto-generated catch block
@@ -67,7 +71,7 @@ public class Serializer
 		return infos;
 	}
 
-	public static HashMap<Object, Object> albumInfo(Album album, FacebookClient fcb)
+	public HashMap<Object, Object> albumInfo(Album album, FacebookClient fcb)
 	{
 		HashMap<Object, Object> infos = new HashMap<>();
 		if (album == null)
@@ -80,7 +84,7 @@ public class Serializer
 		infos.put(AlbumInfoKeys.ORIGINAL_LINK, album.getLink());
 		infos.put(AlbumInfoKeys.PRIVACY, album.getPrivacy());
 		infos.put(AlbumInfoKeys.NAME, album.getName());
-		File dir = new File(PATH + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace("" + ReplaceID.ALBUM_ID, album.getId()));
+		File dir = new File(path + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace("" + ReplaceID.ALBUM_ID, album.getId()));
 
 		for (Photo photo : fcb.fetchConnection(album.getId() + "/photos", Photo.class).getData())
 		{
@@ -157,14 +161,14 @@ public class Serializer
 			Object value = userInfos.get(uik);
 			if (value != null)
 			{
-				if (value instanceof Collection<?>)
+				/*if (value instanceof Collection<?>)
 				{
 					Collection<?> coll = (Collection<?>) value;
 					for (Object o : coll)
 					{
 						System.out.println(o);
 					}
-				}
+				}*/
 				infos.put(uik.toString(), value.toString());
 			}
 		}

@@ -3,11 +3,11 @@ package facebook.main;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.JUnitCore;
 
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
@@ -16,6 +16,8 @@ import com.restfb.exception.FacebookOAuthException;
 import com.restfb.experimental.api.Facebook;
 import com.restfb.types.Album;
 
+import facebook.files.ConfLoader;
+import facebook.files.PropertyOption;
 import facebook.storage.FilePaths;
 import facebook.storage.ReplaceID;
 import facebook.storage.SDO;
@@ -28,32 +30,31 @@ public class MainTester
 	public static String CURRENT_ACCESSTOKEN = "";
 	FacebookClient fbc = new DefaultFacebookClient(CURRENT_ACCESSTOKEN, Version.VERSION_2_3);
 	Facebook facebook = new Facebook(fbc);
+	private Serializer ser;
+	private String path;
 
-	@Before
-	public void forceJUnit()
-	{
-		JUnitCore.runClasses(FirstTest.class);
-		System.out.println("sSkM");
-	}
-	
 	@Test
 	public void testUserInfo()
 	{
 		try
 		{
-			Serializer.userInfo(null, null, true, true);
+			ser.userInfo(null, null, true, true);
 		} catch (NullPointerException e)
 		{
 			fail("NullPointerException on: " + e.getStackTrace()[0].toString());
 		}
-		Serializer.userInfo(facebook.users().getMe(), fbc, true, true);
-		if (!new File(Serializer.PATH).exists())
-			fail(Serializer.PATH + " does not exist");
+		ser.userInfo(facebook.users().getMe(), fbc, true, true);
+		if (!new File(path).exists())
+			fail(path + " does not exist");
 	}
 
 	@Before
 	public void testExpiredSession()
 	{
+		System.out.println("Token: "+CURRENT_ACCESSTOKEN);
+		Properties props = ConfLoader.getProperties();
+		path = props.getProperty(PropertyOption.DIRECTORY.toString());
+		ser = new Serializer(path);
 		try
 		{
 			fbc.fetchConnection("me/albums", Album.class);
@@ -64,6 +65,7 @@ public class MainTester
 			else
 				fail("Other reason: " + fe.getMessage());
 		}
+
 	}
 
 	@Test
@@ -71,7 +73,7 @@ public class MainTester
 	{
 		try
 		{
-			Serializer.albumInfo(null, null);
+			ser.albumInfo(null, null);
 		} catch (NullPointerException e)
 		{
 			fail("NullPointerException on: " + e.getStackTrace()[0].toString());
@@ -87,8 +89,8 @@ public class MainTester
 			Album a = new Album();
 			String id = "Test-" + Math.random();
 			a.setId(id);
-			Serializer.albumInfo(a, fbc);
-			if (new File("" + Serializer.PATH + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace("" + ReplaceID.ALBUM_ID, id)).exists())
+			ser.albumInfo(a, fbc);
+			if (new File("" + path + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace("" + ReplaceID.ALBUM_ID, id)).exists())
 				fail("Album with id " + id + "does not exist");
 		}
 	}
@@ -96,7 +98,7 @@ public class MainTester
 	@After
 	public void checkEmptyDirs()
 	{
-		File root = new File(Serializer.PATH);
+		File root = new File(path);
 		if (circles == 2)
 		{
 			String list = emptyDirs(root);
@@ -111,7 +113,7 @@ public class MainTester
 		StringBuilder sb = new StringBuilder();
 		if (file.exists() && file.isDirectory())
 		{
-			if (file.listFiles().length == 0 && !file.toString().equals(Serializer.PATH))
+			if (file.listFiles().length == 0 && !file.toString().equals(path))
 				sb.append(file.toString() + "\n");
 			else
 				for (File f : file.listFiles())

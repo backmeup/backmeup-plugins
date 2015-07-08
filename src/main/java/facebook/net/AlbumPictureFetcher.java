@@ -34,10 +34,10 @@ public class AlbumPictureFetcher
 		}
 	}
 
-	public static void fetchPhoto(Photo photo,String parent)
+	public static void fetchPhoto(Photo photo, String parent)
 	{
 		System.out.println("PhotoLink: " + photo.getSource());
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); FileOutputStream fw = new FileOutputStream(parent+"/" + photo.getId() + ".jpg"); BufferedInputStream br = new BufferedInputStream(new URL(photo.getSource()).openStream());)
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); FileOutputStream fw = new FileOutputStream(parent + "/" + photo.getId() + ".jpg"); BufferedInputStream br = new BufferedInputStream(new URL(photo.getSource()).openStream());)
 		{
 			byte[] puffer = new byte[1024];
 			int i = 0;
@@ -53,17 +53,17 @@ public class AlbumPictureFetcher
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void drawProgress(int length, int progress)
 	{
-		if(progress>0)
-			for(int i = 0; i < length+2;i++)
+		if (progress > 0)
+			for (int i = 0; i < length + 2; i++)
 				System.out.print("\b");
 		StringBuilder out = new StringBuilder();
 		out.append("[");
-		for(int i = 0; i< length;i++)
+		for (int i = 0; i < length; i++)
 		{
-			if(i<progress)
+			if (i < progress)
 				out.append("#");
 			else
 				out.append("-");

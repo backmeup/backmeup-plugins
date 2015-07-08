@@ -35,25 +35,31 @@ import facebook.utils.FileUtils;
 
 public class MainGenerator
 {
-	public static String DATA_PATH = "", OUTPUT_FOLDER = DATA_PATH + "/out";
-	public static File WORKING_DIR, OUT_DIR;
+	private String working_dir = "", output_folder;
+	private File work_dir, out_dir;
 
-	public static void genOverview()
+	public MainGenerator(String workingdir)
 	{
-		System.out.println("baum");
-		WORKING_DIR = new File(DATA_PATH);
-		if (!WORKING_DIR.exists())
-			WORKING_DIR.mkdirs();
-		OUT_DIR = new File(OUTPUT_FOLDER);
-		if (!OUT_DIR.exists())
-			OUT_DIR.mkdirs();
+		this.working_dir = workingdir;
+		this.output_folder = working_dir + "/out";
+		work_dir = new File(working_dir);
+		if (!work_dir.exists())
+			work_dir.mkdirs();
+		out_dir = new File(output_folder);
+		if (!out_dir.exists())
+			out_dir.mkdirs();
+	}
+
+	public void genOverview()
+	{
+
 		Document index = new Document(DocumentType.HTMLTransitional);
 		Title title = new Title();
 		title.appendText("Der Account");
 		index.head.appendChild(title);
 		index.body.appendChild(menuGenerator());
 		genAlbums(index);
-		try (FileWriter fw = new FileWriter("" + OUT_DIR + SDO.SLASH + "index.html"))
+		try (FileWriter fw = new FileWriter("" + out_dir + SDO.SLASH + "index.html"))
 		{
 			fw.write(index.write());
 		} catch (IOException e)
@@ -63,35 +69,35 @@ public class MainGenerator
 		}
 	}
 
-	private static void genAlbums(Document index)
+	private void genAlbums(Document index)
 	{
 		// File albumfile = new File("" + OUT_DIR + SDO.SLASH + "albums.html");
-		File albumFolder = new File("" + OUT_DIR + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY);
+		File albumFolder = new File("" + out_dir + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY);
 		if (!albumFolder.exists())
 			albumFolder.mkdirs();
 		Document albums = new Document(DocumentType.HTMLTransitional);
-		File target = new File("" + OUT_DIR + SDO.SLASH + "albums.html");
+		File target = new File("" + out_dir + SDO.SLASH + "albums.html");
 		albums = initDocumentHeader(albums, "Alben", target, null, true);
 		Div albumContainer = new Div();
 		albumContainer.setCSSClass("picture_container");
 		Ul albumlist = new Ul();
-		for (File albumfolder : new File("" + WORKING_DIR + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY).listFiles())
+		for (File albumfolder : new File("" + work_dir + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY).listFiles())
 		{
 			Properties albumsProps = new Properties();
-			File albumInfoFile = new File("" + WORKING_DIR + SDO.SLASH + FilePaths.ALBUM_INFO.toString().replace("" + ReplaceID.ALBUM_ID, albumfolder.getName()));
+			File albumInfoFile = new File("" + work_dir + SDO.SLASH + FilePaths.ALBUM_INFO.toString().replace("" + ReplaceID.ALBUM_ID, albumfolder.getName()));
 			try (FileInputStream fis = new FileInputStream(albumInfoFile))
 			{
 				albumsProps.loadFromXML(fis);
 				Div innerItem = new Div();
 				Li item = new Li();
 				// item.appendText(albumsProps.getProperty(AlbumInfoKeys.LAST_UPDATE.toString()));
-				String relativeImg = FileUtils.getWayTo(OUT_DIR, albumfolder) + SDO.SLASH + albumsProps.getProperty(AlbumInfoKeys.COVER_PHOTO_ID.toString()) + ".jpg";
+				String relativeImg = FileUtils.getWayTo(out_dir, albumfolder) + SDO.SLASH + albumsProps.getProperty(AlbumInfoKeys.COVER_PHOTO_ID.toString()) + ".jpg";
 				A albumLink = new A();
 				Img cover = new Img("baum", relativeImg);
 				innerItem.setCSSClass("album_picture");
 				innerItem.appendChild(cover);
 				albumLink.appendChild(innerItem);
-				albumLink.setHref(FileUtils.getWayTo(OUT_DIR, new File("" + OUT_DIR + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY + SDO.SLASH + albumfolder.getName() + ".html")));
+				albumLink.setHref(FileUtils.getWayTo(out_dir, new File("" + out_dir + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY + SDO.SLASH + albumfolder.getName() + ".html")));
 				// innerItem.appendChild(albumLink);
 				String albumName = albumsProps.getProperty(AlbumInfoKeys.NAME.toString());
 				String desc = albumsProps.getProperty(AlbumInfoKeys.DESCRIPTION.toString());
@@ -121,7 +127,7 @@ public class MainGenerator
 		}
 	}
 
-	private static void genAlbum(File albumsFolder, String albumID)
+	private void genAlbum(File albumsFolder, String albumID)
 	{
 		// TODO: Seite erstellen, wo pro Album die einzelnen Bilder verlinkt
 		// werden
@@ -131,10 +137,10 @@ public class MainGenerator
 			photoHtmlContainer.mkdirs();
 		Properties albumXml = new Properties();
 		File target = new File("" + albumsFolder + SDO.SLASH + albumID + ".html");
-		try (FileInputStream fis = new FileInputStream("" + WORKING_DIR + SDO.SLASH + FilePaths.ALBUM_INFO.toString().replace(ReplaceID.ALBUM_ID.toString(), albumID)); FileWriter fw = new FileWriter(target))
+		try (FileInputStream fis = new FileInputStream("" + work_dir + SDO.SLASH + FilePaths.ALBUM_INFO.toString().replace(ReplaceID.ALBUM_ID.toString(), albumID)); FileWriter fw = new FileWriter(target))
 		{
 			albumXml.loadFromXML(fis);
-			File originalAlbumFolder = new File("" + WORKING_DIR + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace(ReplaceID.ALBUM_ID.toString(), albumID));
+			File originalAlbumFolder = new File("" + work_dir + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace(ReplaceID.ALBUM_ID.toString(), albumID));
 			File cover = new File("" + originalAlbumFolder + SDO.SLASH + albumXml.getProperty(AlbumInfoKeys.COVER_PHOTO_ID.toString()) + ".jpg");
 			albumFile = initDocumentHeader(albumFile, albumXml.getProperty(AlbumInfoKeys.NAME.toString(), "Album"), target, cover, true);
 			Div photoContainer = new Div();
@@ -177,13 +183,13 @@ public class MainGenerator
 		}
 	}
 
-	public static Node menuGenerator()
+	public Node menuGenerator()
 	{
 		Div menubar = new Div();
 		Ul items = new Ul();
 		Li albumListedLink = new Li();
 		A albumLink = new A();
-		albumLink.setHref(FileUtils.getWayTo(OUT_DIR, new File("" + OUT_DIR + SDO.SLASH + "albums.html")));
+		albumLink.setHref(FileUtils.getWayTo(out_dir, new File("" + out_dir + SDO.SLASH + "albums.html")));
 		albumListedLink.appendChild(albumLink);
 		albumLink.appendText("Alben");
 		items.appendChild(albumListedLink);
@@ -192,13 +198,13 @@ public class MainGenerator
 	}
 
 	/*
-	 * public static Link getMainCSS(File dir) { Link link = new Link();
+	 * public Link getMainCSS(File dir) { Link link = new Link();
 	 * link.setType("text/css"); link.setRel("stylesheet");
 	 * link.setHref(FileUtils.getWayTo(dir, new File("" + OUT_DIR + SDO.SLASH +
 	 * "main.css"))); return link; }
 	 */
 
-	public static void genPhotoFile(Properties photoProps, File dir, File albumDir)
+	public void genPhotoFile(Properties photoProps, File dir, File albumDir)
 	{
 		File target = new File("" + dir + SDO.SLASH + photoProps.getProperty(PhotoInfoKeys.ID.toString()) + ".html");
 		File icon = new File("" + albumDir + SDO.SLASH + photoProps.getProperty(PhotoInfoKeys.FILE.toString()));
@@ -226,18 +232,18 @@ public class MainGenerator
 		}
 	}
 
-	public static Node navGenerator(File htmlDir)
+	public Node navGenerator(File htmlDir)
 	{
 		Div container = new Div();
 		container.setCSSClass("navContainer");
 		Ul menuList = new Ul();
-		menuList = appendItem(menuList, htmlDir, new File("" + OUT_DIR + SDO.SLASH + "index.html"), "Home");
-		menuList = appendItem(menuList, htmlDir, new File("" + OUT_DIR + SDO.SLASH + "albums.html"), "Alben");
+		menuList = appendItem(menuList, htmlDir, new File("" + out_dir + SDO.SLASH + "index.html"), "Home");
+		menuList = appendItem(menuList, htmlDir, new File("" + out_dir + SDO.SLASH + "albums.html"), "Alben");
 		container.appendChild(menuList);
 		return container;
 	}
 
-	private static Ul appendItem(Ul menuList, File from, File to, String Label)
+	private Ul appendItem(Ul menuList, File from, File to, String Label)
 	{
 		Li listItem = new Li();
 		A link = new A();
@@ -248,7 +254,7 @@ public class MainGenerator
 		return menuList;
 	}
 
-	private static Document initDocumentHeader(Document doc, String title, File targetFile, File icon, boolean menuBar, File... cssFiles)
+	private Document initDocumentHeader(Document doc, String title, File targetFile, File icon, boolean menuBar, File... cssFiles)
 	{
 		System.out.println(targetFile);
 		Meta headMeta = new Meta("content-type");
@@ -261,8 +267,8 @@ public class MainGenerator
 		iconLink.setHref(FileUtils.getWayTo(targetFile.getParentFile(), icon));
 		iconLink.setRel("icon");
 		ArrayList<File> instantcssFiles = new ArrayList<>();
-		instantcssFiles.add(new File("" + OUT_DIR + SDO.SLASH + "menu.css"));
-		instantcssFiles.add(new File("" + OUT_DIR + SDO.SLASH + "main.css"));
+		instantcssFiles.add(new File("" + out_dir + SDO.SLASH + "menu.css"));
+		instantcssFiles.add(new File("" + out_dir + SDO.SLASH + "main.css"));
 		ArrayList<File> revList = new ArrayList<>();
 		if (cssFiles != null)
 			revList = new ArrayList<>(Arrays.asList(cssFiles));
