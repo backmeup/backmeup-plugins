@@ -1,3 +1,7 @@
+/**
+* @author Richard STöckl
+*/
+
 package facebook.htmlgenerator;
 
 import java.io.File;
