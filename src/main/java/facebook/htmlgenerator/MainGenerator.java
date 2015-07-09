@@ -282,20 +282,12 @@ public class MainGenerator
 		photoDoc = initDocumentHeader(photoDoc, photoProps.getProperty(PhotoInfoKeys.ID.toString(), "Foto"), target, icon, true);
 		String relativeImg = FileUtils.getWayTo(dir, icon);
 		Img picture = new Img("Photo", relativeImg);
+		picture.setCSSClass("picture");
 		Div sideInfos = new Div();
 		sideInfos.setCSSClass("sidebar");
 		sideInfos.appendChild(wrapInfos(PhotoInfoKeys.values(), photoProps, true));
 		photoDoc.body.appendChild(sideInfos);
 		photoDoc.body.appendChild(picture);
-		P likes = new P();
-		likes.appendText("Likes: " + photoProps.getProperty(PhotoInfoKeys.LIKES.toString()));
-		photoDoc.body.appendChild(likes);
-		if (Integer.parseInt(photoProps.getProperty(PhotoInfoKeys.LIKES.toString())) > 0)
-		{
-			P likePersons = new P();
-			likePersons.appendText("Geliked von: " + photoProps.getProperty(PhotoInfoKeys.LIKES_FROM_PEOPLE.toString()));
-			photoDoc.body.appendChild(likePersons);
-		}
 		try (FileWriter fw = new FileWriter(target))
 		{
 			fw.write(photoDoc.write());
