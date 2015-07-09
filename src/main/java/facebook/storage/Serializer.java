@@ -56,6 +56,26 @@ public class Serializer
 		infos.put(UserInfoKeys.LANGUAGES, user.getLanguages());
 		infos.put(UserInfoKeys.HOME_TOWN, user.getHometownName());
 		infos.put(UserInfoKeys.ID, user.getId());
+		infos.put(UserInfoKeys.BIO, user.getBio());
+		infos.put(UserInfoKeys.CURRENCY, user.getCurrency());
+		infos.put(UserInfoKeys.EDUCATION, user.getEducation());
+		infos.put(UserInfoKeys.EMAIL, user.getEmail());
+		infos.put(UserInfoKeys.FAVOURITE_ATHLETS, user.getFavoriteAthletes());
+		infos.put(UserInfoKeys.FAVOURITE_TEAMS, user.getFavoriteTeams());
+		infos.put(UserInfoKeys.INTERESTED_IN, user.getInterestedIn());
+		infos.put(UserInfoKeys.LAST_UPDATED, user.getUpdatedTime());
+		infos.put(UserInfoKeys.MEETING_FOR, user.getMeetingFor());
+		infos.put(UserInfoKeys.POLITICAL, user.getPolitical());
+		infos.put(UserInfoKeys.QUOTES, user.getQuotes());
+		infos.put(UserInfoKeys.RELATIONSHIP_STATUS, user.getRelationshipStatus());
+		infos.put(UserInfoKeys.RELIGION, user.getReligion());
+		infos.put(UserInfoKeys.SIGNIFICANT_OTHER, user.getSignificantOther());
+		infos.put(UserInfoKeys.SPORTS, user.getSports());
+		infos.put(UserInfoKeys.THIRD_PARTY_ID, user.getThirdPartyId());
+		infos.put(UserInfoKeys.TIMEZONE, user.getTimezone());
+		infos.put(UserInfoKeys.TOKEN_FOR_BUISSNESS, user.getTokenForBusiness());
+		infos.put(UserInfoKeys.VERIFIED, user.getVerified());
+		infos.put(UserInfoKeys.WORK, user.getWork());
 		if (thisIsMe && fcb != null)
 		{
 			Connection<Album> albums = fcb.fetchConnection("me/albums", Album.class);
@@ -182,10 +202,8 @@ public class Serializer
 					sb.append("/");
 				}
 			sb.delete(sb.length() - 1, sb.length());
-			// System.out.println(url);
 			url = sb.toString();
 		}
-		// System.out.println(url);
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); FileOutputStream fw = new FileOutputStream("" + directory + SDO.SLASH + infos.get(PhotoInfoKeys.FILE)); BufferedInputStream br = new BufferedInputStream(new URL(url).openStream());)
 		{
 			byte[] puffer = new byte[1024];
@@ -213,14 +231,7 @@ public class Serializer
 		{
 			Object value = userInfos.get(uik);
 			if (value != null)
-			{
-				/*
-				 * if (value instanceof Collection<?>) { Collection<?> coll =
-				 * (Collection<?>) value; for (Object o : coll) {
-				 * System.out.println(o); } }
-				 */
 				infos.put(uik.toString(), value.toString());
-			}
 		}
 		return infos;
 	}

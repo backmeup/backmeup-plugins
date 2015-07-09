@@ -1,5 +1,5 @@
 /**
-* @author Richard STöckl
+* @author Richard Stöckl
 */
 
 package facebook.htmlgenerator;
@@ -94,7 +94,6 @@ public class MainGenerator
 
 	private void genAlbums(Document index)
 	{
-		// File albumfile = new File("" + OUT_DIR + SDO.SLASH + "albums.html");
 		File albumFolder = new File("" + out_dir + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY);
 		if (!albumFolder.exists())
 			albumFolder.mkdirs();
@@ -113,7 +112,6 @@ public class MainGenerator
 				albumsProps.loadFromXML(fis);
 				Div innerItem = new Div();
 				Li item = new Li();
-				// item.appendText(albumsProps.getProperty(AlbumInfoKeys.LAST_UPDATE.toString()));
 				String relativeImg = FileUtils.getWayTo(out_dir, albumfolder) + SDO.SLASH + albumsProps.getProperty(AlbumInfoKeys.COVER_PHOTO_ID.toString()) + ".jpg";
 				A albumLink = new A();
 				Img cover = new Img("baum", relativeImg);
@@ -121,7 +119,6 @@ public class MainGenerator
 				innerItem.appendChild(cover);
 				albumLink.appendChild(innerItem);
 				albumLink.setHref(FileUtils.getWayTo(out_dir, new File("" + out_dir + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY + SDO.SLASH + albumfolder.getName() + ".html")));
-				// innerItem.appendChild(albumLink);
 				String albumName = albumsProps.getProperty(AlbumInfoKeys.NAME.toString());
 				String desc = albumsProps.getProperty(AlbumInfoKeys.DESCRIPTION.toString());
 				P textBelow = new P();
@@ -152,8 +149,6 @@ public class MainGenerator
 
 	private void genAlbum(File albumsFolder, String albumID)
 	{
-		// TODO: Seite erstellen, wo pro Album die einzelnen Bilder verlinkt
-		// werden
 		Document albumFile = new Document(DocumentType.HTMLTransitional);
 		File photoHtmlContainer = new File("" + albumsFolder + SDO.SLASH + albumID);
 		if (!photoHtmlContainer.exists())
@@ -172,12 +167,10 @@ public class MainGenerator
 			for (File photoXml : originalAlbumFolder.listFiles(new EndingFilter("xml")))
 			{
 				if (!photoXml.getName().equalsIgnoreCase("albuminfo.xml"))
-					// System.out.println(photoXml);
 					try (FileInputStream fisPhotoXml = new FileInputStream(photoXml))
 					{
 						Properties photoProps = new Properties();
 						photoProps.loadFromXML(fisPhotoXml);
-						// System.out.println(photoProps);
 						Li photoItem = new Li();
 						A photoLink = new A();
 						photoLink.setHref(FileUtils.getWayTo(albumsFolder, new File("" + photoHtmlContainer + SDO.SLASH + photoProps.getProperty(PhotoInfoKeys.ID.toString()))) + ".html");
@@ -249,10 +242,6 @@ public class MainGenerator
 		return table;
 	}
 
-	/*
-	 * public static Date getDateFromString() { Calendar. }
-	 */
-
 	public Node menuGenerator()
 	{
 		Div menubar = new Div();
@@ -266,13 +255,6 @@ public class MainGenerator
 		menubar.appendChild(items);
 		return menubar;
 	}
-
-	/*
-	 * public Link getMainCSS(File dir) { Link link = new Link();
-	 * link.setType("text/css"); link.setRel("stylesheet");
-	 * link.setHref(FileUtils.getWayTo(dir, new File("" + OUT_DIR + SDO.SLASH +
-	 * "main.css"))); return link; }
-	 */
 
 	public void genPhotoFile(Properties photoProps, File dir, File albumDir)
 	{

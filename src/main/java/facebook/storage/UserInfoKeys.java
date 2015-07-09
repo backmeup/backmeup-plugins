@@ -18,7 +18,28 @@ public enum UserInfoKeys implements Data
 	ID("ID", false, false),
 	ALBUMS("Alben", false, false),
 	PICTURES("Bilder", false, false),
-	PHOTOS("Fotos", false, false);
+	PHOTOS("Fotos", false, false),
+	AGE_RAND("Ansprechendes Alter",false,false),
+	BIO("Bio",false,false),
+	CURRENCY("Währung",false,false),
+	EDUCATION("Ausbildung",false,false),
+	EMAIL("EMail",true,false),
+	INTERESTED_IN("Hobbies",false,false),
+	MEETING_FOR("Treffen",false,false),
+	POLITICAL("Politik",false,false),
+	QUOTES("Anführungszeichen",false,false),
+	RELATIONSHIP_STATUS("Beziehungsstatus",false,false),
+	RELIGION("Religion",false,false),
+	SIGNIFICANT_OTHER("Andere Merkmale",false,false),
+	SPORTS("Sportarten",false,false),
+	TIMEZONE("Zeitzone",false,false),
+	LAST_UPDATED("Zuletzt aktualisiert",false,false),
+	THIRD_PARTY_ID("Drittanbieter ID",false,false),
+	TOKEN_FOR_BUISSNESS("ID für andere Unternehmen",false,false),
+	VERIFIED("Bestätigt",false,false),
+	WORK("Arbeit",false,false),
+	FAVOURITE_ATHLETS("Lieblings Sportler",false,false),
+	FAVOURITE_TEAMS("Lieblingsteams",false,false);
 
 	private String label;
 	private boolean link, date;
