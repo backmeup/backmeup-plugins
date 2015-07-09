@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,14 +23,20 @@ import com.restfb.types.NamedFacebookType;
 import com.restfb.types.Photo;
 import com.restfb.types.User;
 
+import facebook.utils.ConsoleDrawer;
+
 public class Serializer
 {
-	public Serializer(String workingdir)
+	public Serializer(String workingdir, long maxPics, ArrayList<String> skipAlbums)
 	{
 		this.path = workingdir;
+		this.maxPics = maxPics;
+		this.skipAlbums = skipAlbums;
 	}
 
 	private String path;
+	private long maxPics;
+	private ArrayList<String> skipAlbums;
 
 	public HashMap<Object, Object> userInfo(User user, FacebookClient fcb, boolean thisIsMe, boolean makeDirs)
 	{
@@ -86,23 +93,47 @@ public class Serializer
 		infos.put(AlbumInfoKeys.NAME, album.getName());
 		File dir = new File(path + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace("" + ReplaceID.ALBUM_ID, album.getId()));
 
-		for (Photo photo : fcb.fetchConnection(album.getId() + "/photos", Photo.class).getData())
+		if (!skipAlbums.contains(album.getName()))
 		{
-			if (!dir.exists())
-				dir.mkdirs();
-			photoInfo(photo, dir);
-		}
-		Properties pros = new Properties();
-		HashMap<String, String> newinfos = dataValidatot(infos);
-		pros.putAll(newinfos);
-		try
-		{
-			pros.storeToXML(new FileOutputStream(new File(dir + "/albuminfo.xml")), "Info about album " + album.getId());
-		} catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			Connection<Photo> photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class);
+			System.out.print("Fetching Photos from " + album.getName() + ". This may take a while...\t\t");
+			long iterator = 0;
+			Iterator<List<Photo>> it = photosConn.iterator();
+			boolean breakLoop = false;
+			while (it.hasNext())
+			{
+				List<Photo> photos = it.next();
+				for (Photo photo : photos)
+				{
+					if (iterator >= maxPics && maxPics >= 0)
+					{
+						breakLoop = true;
+						break;
+					}
+					ConsoleDrawer.drawProgress(20, (int) ((iterator / (((maxPics < 0) ? album.getCount() : maxPics) * 1.0)) * 20), iterator == 0);
+					if (!dir.exists())
+						dir.mkdirs();
+					photoInfo(photo, dir);
+					iterator++;
+				}
+				if (breakLoop)
+					break;
+			}
+			ConsoleDrawer.drawProgress(20, 20, false);
+			System.out.println();
+			Properties pros = new Properties();
+			HashMap<String, String> newinfos = dataValidatot(infos);
+			pros.putAll(newinfos);
+			try
+			{
+				pros.storeToXML(new FileOutputStream(new File(dir + "/albuminfo.xml")), "Info about album " + album.getId());
+			} catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else
+			System.out.println("Skipped album " + album.getName());
 		return infos;
 	}
 
@@ -133,7 +164,27 @@ public class Serializer
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); FileOutputStream fw = new FileOutputStream("" + directory + SDO.SLASH + infos.get(PhotoInfoKeys.FILE)); BufferedInputStream br = new BufferedInputStream(new URL(photo.getSource()).openStream());)
+		String url = photo.getSource();
+		String[] parts = url.split("/");
+		// remove URL parts which decrease the resolution
+		if (parts.length > 7)
+		{
+			parts[5] = null;
+			parts[6] = null;
+
+			StringBuilder sb = new StringBuilder();
+			for (String s : parts)
+				if (s != null)
+				{
+					sb.append(s);
+					sb.append("/");
+				}
+			sb.delete(sb.length() - 1, sb.length());
+			// System.out.println(url);
+			url = sb.toString();
+		}
+		// System.out.println(url);
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); FileOutputStream fw = new FileOutputStream("" + directory + SDO.SLASH + infos.get(PhotoInfoKeys.FILE)); BufferedInputStream br = new BufferedInputStream(new URL(url).openStream());)
 		{
 			byte[] puffer = new byte[1024];
 			int i = 0;

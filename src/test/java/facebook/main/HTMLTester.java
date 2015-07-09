@@ -24,26 +24,28 @@ public class HTMLTester
 	@Before
 	public void forceJunit()
 	{
-		if (circles == 0 && genConfig)
-			ConfLoader.genProperties();
-		Properties props = ConfLoader.getProperties();
-		String path = props.getProperty(PropertyOption.DIRECTORY.toString());
-		mainGen = new MainGenerator(path);
-		MainTester.CURRENT_ACCESSTOKEN = props.getProperty(PropertyOption.ACCESS_TOKEN.toString());
-		File mainCss = new File("main.css");
-		File menuCss = new File("menu.css");
-		try
+		if (circles == 0)
 		{
-			File target = new File(path);
-			if (!target.exists())
-				target.mkdirs();
-			Files.copy(mainCss.toPath(), new FileOutputStream(new File("" + target + "/out/main.css")));
-			Files.copy(menuCss.toPath(), new FileOutputStream(new File("" + target + "/out/menu.css")));
-		} catch (IOException e)
-		{
-			e.printStackTrace();
+			if (genConfig)
+				ConfLoader.genProperties();
+			Properties props = ConfLoader.getProperties();
+			String path = props.getProperty(PropertyOption.DIRECTORY.toString());
+			mainGen = new MainGenerator(path);
+			File mainCss = new File("main.css");
+			File menuCss = new File("menu.css");
+			try
+			{
+				File target = new File(path);
+				if (!target.exists())
+					target.mkdirs();
+				Files.copy(mainCss.toPath(), new FileOutputStream(new File("" + target + "/out/main.css")));
+				Files.copy(menuCss.toPath(), new FileOutputStream(new File("" + target + "/out/menu.css")));
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 		}
-		JUnitCore.runClasses(MainTester.class);
+		JUnitCore.runClasses(DownloadTester.class);
 	}
 
 	@After

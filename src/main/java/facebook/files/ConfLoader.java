@@ -27,6 +27,8 @@ public class ConfLoader
 		Properties props = new Properties();
 		props.put(PropertyOption.ACCESS_TOKEN.toString(), "yourToken");
 		props.put(PropertyOption.DIRECTORY.toString(), System.getProperty("user.home") + "/bme-fb-output");
+		props.put(PropertyOption.MAX_PHOTOS_PER_ALBUM.toString(), "-1");
+		props.put(PropertyOption.SKIP_ALBUMS.toString(), ";");
 		try (FileOutputStream fos = new FileOutputStream(new File("properties.xml")))
 		{
 			props.storeToXML(fos, "Default properties");

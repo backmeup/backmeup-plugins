@@ -319,6 +319,7 @@ public class MainGenerator
 		iconLink.setType("image/jpg");
 		iconLink.setHref(FileUtils.getWayTo(targetFile.getParentFile(), icon));
 		iconLink.setRel("icon");
+		doc.head.appendChild(iconLink);
 		ArrayList<File> instantcssFiles = new ArrayList<>();
 		instantcssFiles.add(new File("" + out_dir + SDO.SLASH + "menu.css"));
 		instantcssFiles.add(new File("" + out_dir + SDO.SLASH + "main.css"));

@@ -22,6 +22,18 @@
   to {min-height:0px;}
 }
 
+@keyframes sidebar {
+
+  from {margin-left:-310px;}
+  to {margin-left:0px;}
+}
+
+@keyframes revsidebar {
+
+  from {margin-left:0px;}
+  to {margin-left:-310px;}
+}
+
 body {
 
   margin:0px;
@@ -125,4 +137,30 @@ ul {
 .album_picture p {
 
   color:#000000;
+}
+
+.sidebar {
+
+  float:left;
+  display:inline-block;
+  background-color: #45619D;
+  background: linear-gradient(#45619D, #5571AD 50%, #45619D 100%);
+  border-bottom-right-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow:0px 0px 10px #000000;
+  width:300px;
+  height:auto;
+  padding:10px;
+  padding-right:20px;
+  margin-left:-310px;
+  animation-name:revsidebar;
+  animation-duration:0.5s;
+  position:fixed;
+  color:#FFF;
+}
+
+.sidebar:hover {
+
+  margin-left:0px;
+  animation-name:sidebar;
 }
