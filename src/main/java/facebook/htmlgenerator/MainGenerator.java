@@ -32,6 +32,7 @@ import com.hp.gagawa.java.elements.Tr;
 import com.hp.gagawa.java.elements.Ul;
 
 import facebook.storage.AlbumInfoKeys;
+import facebook.storage.Data;
 import facebook.storage.EndingFilter;
 import facebook.storage.FilePaths;
 import facebook.storage.PhotoInfoKeys;
@@ -181,7 +182,7 @@ public class MainGenerator
 
 			Div sideInfos = new Div();
 			sideInfos.setCSSClass("sidebar");
-			sideInfos.appendChild(wrapAlbumInfos(AlbumInfoKeys.values(), albumXml, true));
+			sideInfos.appendChild(wrapInfos(AlbumInfoKeys.values(), albumXml, true));
 
 			photoContainer.appendChild(photoList);
 			albumFile.body.appendChild(sideInfos);
@@ -195,10 +196,10 @@ public class MainGenerator
 		}
 	}
 
-	private Table wrapAlbumInfos(AlbumInfoKeys[] aik, Properties albumsProps, boolean skipinvalid)
+	private Table wrapInfos(Data[] aik, Properties albumsProps, boolean skipinvalid)
 	{
 		Table table = new Table();
-		for (AlbumInfoKeys key : aik)
+		for (Data key : aik)
 		{
 			String value = albumsProps.getProperty(key.toString());
 			if ((value != null && !value.equals("")) || !skipinvalid)
@@ -265,6 +266,10 @@ public class MainGenerator
 		photoDoc = initDocumentHeader(photoDoc, photoProps.getProperty(PhotoInfoKeys.ID.toString(), "Foto"), target, icon, true);
 		String relativeImg = FileUtils.getWayTo(dir, icon);
 		Img picture = new Img("Photo", relativeImg);
+		Div sideInfos = new Div();
+		sideInfos.setCSSClass("sidebar");
+		sideInfos.appendChild(wrapInfos(PhotoInfoKeys.values(), photoProps, true));
+		photoDoc.body.appendChild(sideInfos);
 		photoDoc.body.appendChild(picture);
 		P likes = new P();
 		likes.appendText("Likes: " + photoProps.getProperty(PhotoInfoKeys.LIKES.toString()));

@@ -91,6 +91,7 @@ public class Serializer
 		infos.put(AlbumInfoKeys.ORIGINAL_LINK, album.getLink());
 		infos.put(AlbumInfoKeys.PRIVACY, album.getPrivacy());
 		infos.put(AlbumInfoKeys.NAME, album.getName());
+		infos.put(AlbumInfoKeys.COMES_FROM, album.getFrom());
 		File dir = new File(path + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace("" + ReplaceID.ALBUM_ID, album.getId()));
 
 		if (!skipAlbums.contains(album.getName()))
@@ -120,6 +121,7 @@ public class Serializer
 					break;
 			}
 			ConsoleDrawer.drawProgress(20, 20, false);
+			infos.put(AlbumInfoKeys.LOCAL_COUNT, iterator);
 			System.out.println();
 			Properties pros = new Properties();
 			HashMap<String, String> newinfos = dataValidatot(infos);

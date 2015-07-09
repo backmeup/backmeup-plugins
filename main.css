@@ -159,6 +159,13 @@ ul {
   color:#FFF;
 }
 
+.sidebar table tr td {
+
+  word-wrap:break-word;
+  display:block;
+  box-sizing:border-box;
+}
+
 .sidebar:hover {
 
   margin-left:0px;
