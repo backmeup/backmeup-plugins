@@ -38,6 +38,7 @@ import facebook.storage.FilePaths;
 import facebook.storage.PhotoInfoKeys;
 import facebook.storage.ReplaceID;
 import facebook.storage.SDO;
+import facebook.storage.UserInfoKeys;
 import facebook.utils.FileUtils;
 
 public class MainGenerator
@@ -61,12 +62,27 @@ public class MainGenerator
 	{
 
 		Document index = new Document(DocumentType.HTMLTransitional);
-		Title title = new Title();
-		title.appendText("Der Account");
-		index.head.appendChild(title);
+		
 		index.body.appendChild(menuGenerator());
+		
+		Properties userProps = new Properties();
+		File target = new File("" + working_dir + SDO.SLASH + FilePaths.USER_FILE);
+		File indexTarget = new File("" + out_dir + SDO.SLASH + "index.html");
+		try (FileInputStream fis = new FileInputStream(target);)
+		{
+			userProps.loadFromXML(fis);
+		} catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		initDocumentHeader(index, userProps.getProperty(UserInfoKeys.FIRST_NAME.toString()), indexTarget, null, false);
+		Div sideInfos = new Div();
+		sideInfos.setCSSClass("sidebar");
+		sideInfos.appendChild(wrapInfos(UserInfoKeys.values(), userProps, true));
+		index.body.appendChild(sideInfos);
 		genAlbums(index);
-		try (FileWriter fw = new FileWriter("" + out_dir + SDO.SLASH + "index.html"))
+		try (FileWriter fw = new FileWriter(indexTarget))
 		{
 			fw.write(index.write());
 		} catch (IOException e)
