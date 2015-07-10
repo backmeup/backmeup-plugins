@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import com.hp.gagawa.java.elements.A;
 import com.restfb.Connection;
 import com.restfb.FacebookClient;
 import com.restfb.types.Album;
@@ -24,6 +25,8 @@ import com.restfb.types.CategorizedFacebookType;
 import com.restfb.types.Comment;
 import com.restfb.types.NamedFacebookType;
 import com.restfb.types.Photo;
+import com.restfb.types.Photo.Tag;
+import com.restfb.types.Place;
 import com.restfb.types.User;
 
 import facebook.utils.ConsoleDrawer;
@@ -298,7 +301,7 @@ public class Serializer
 				{
 				case OTHER:
 				{
-					stringValue = value.toString();
+					stringValue = packList(value);
 					break;
 				}
 				case DATE:
@@ -337,25 +340,44 @@ public class Serializer
 		return newMap;
 	}
 
-	public static String packList(List<?> list)
+	public static String packList(Object object)
 	{
-		if (list == null)
-			return "";
+		if (object == null)
+			return null;
 		StringBuilder sb = new StringBuilder();
-		for (Object o : list)
+		if (object != null)
 		{
-			if (o != null)
+			boolean check = true;
+			if (object instanceof List<?> && check)
 			{
-				if (o instanceof List<?>)
-					sb.append(packList((List<?>) o));
-				else if (o instanceof NamedFacebookType)
-					sb.append(((NamedFacebookType) o).getName());
-				else if (o instanceof CategorizedFacebookType)
-					sb.append(((CategorizedFacebookType) o).getName());
-				else
-					sb.append(o.toString());
-				sb.append(";");
-			}
+				List<?> list = (List<?>) object;
+				for (Object o : list)
+					sb.append(packList(o));
+				check = false;
+			} else if (object instanceof Place && check)
+			{
+				Place p = (Place) object;
+				A a = new A();
+				a.setHref("https://www.google.at/maps/@" + p.getLocation().getLatitude() + "," + p.getLocation().getLongitude() + ",17z");
+				a.appendText(p.getName() + ", " + p.getLocation().getCity() + ", " + p.getLocation().getCountry());
+				sb.append(a.write());
+				check = false;
+			} else if (object instanceof NamedFacebookType && check)
+			{
+				sb.append(((NamedFacebookType) object).getName());
+				check = false;
+			} else if (object instanceof CategorizedFacebookType && check)
+			{
+				sb.append(((CategorizedFacebookType) object).getName());
+				check = false;
+			} else if (object instanceof Tag && check)
+			{
+				Tag t = (Tag) object;
+				sb.append("X: " + t.getX() + "Y: " + t.getY());
+				check = false;
+			} else
+				sb.append(object.toString());
+			sb.append(";");
 		}
 		if (sb.length() > 0)
 			sb.delete(sb.length() - 1, sb.length());
