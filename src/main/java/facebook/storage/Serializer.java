@@ -20,6 +20,7 @@ import java.util.Properties;
 import com.restfb.Connection;
 import com.restfb.FacebookClient;
 import com.restfb.types.Album;
+import com.restfb.types.CategorizedFacebookType;
 import com.restfb.types.NamedFacebookType;
 import com.restfb.types.Photo;
 import com.restfb.types.User;
@@ -44,46 +45,49 @@ public class Serializer
 		if (user == null)
 			return new HashMap<SerializerKey, Object>();
 		HashMap<SerializerKey, Object> infos = new HashMap<SerializerKey, Object>();
-		infos.put(UserInfoKeys.ABOUT, user.getAbout());
-		infos.put(UserInfoKeys.DATE_OF_BIRTH, user.getBirthdayAsDate());
-		infos.put(UserInfoKeys.FIRST_NAME, user.getFirstName());
-		infos.put(UserInfoKeys.LAST_NAME, user.getLastName());
-		infos.put(UserInfoKeys.GENDER, user.getGender());
-		infos.put(UserInfoKeys.METADATA, user.getMetadata());
-		infos.put(UserInfoKeys.PROFILE_PICTURE, user.getPicture());
-		infos.put(UserInfoKeys.WEBSITE, user.getWebsite());
-		infos.put(UserInfoKeys.ORIGINAL_LINK, user.getLink());
-		infos.put(UserInfoKeys.LOCALE, user.getLocale());
-		infos.put(UserInfoKeys.LANGUAGES, user.getLanguages());
-		infos.put(UserInfoKeys.HOME_TOWN, user.getHometownName());
-		infos.put(UserInfoKeys.ID, user.getId());
-		infos.put(UserInfoKeys.BIO, user.getBio());
-		infos.put(UserInfoKeys.CURRENCY, user.getCurrency());
-		infos.put(UserInfoKeys.EDUCATION, user.getEducation());
-		infos.put(UserInfoKeys.EMAIL, user.getEmail());
-		infos.put(UserInfoKeys.FAVOURITE_ATHLETS, user.getFavoriteAthletes());
-		infos.put(UserInfoKeys.FAVOURITE_TEAMS, user.getFavoriteTeams());
-		infos.put(UserInfoKeys.INTERESTED_IN, user.getInterestedIn());
-		infos.put(UserInfoKeys.LAST_UPDATED, user.getUpdatedTime());
-		infos.put(UserInfoKeys.MEETING_FOR, user.getMeetingFor());
-		infos.put(UserInfoKeys.POLITICAL, user.getPolitical());
-		infos.put(UserInfoKeys.QUOTES, user.getQuotes());
-		infos.put(UserInfoKeys.RELATIONSHIP_STATUS, user.getRelationshipStatus());
-		infos.put(UserInfoKeys.RELIGION, user.getReligion());
-		infos.put(UserInfoKeys.SIGNIFICANT_OTHER, user.getSignificantOther());
-		infos.put(UserInfoKeys.SPORTS, user.getSports());
-		infos.put(UserInfoKeys.THIRD_PARTY_ID, user.getThirdPartyId());
-		infos.put(UserInfoKeys.TIMEZONE, user.getTimezone());
-		infos.put(UserInfoKeys.TOKEN_FOR_BUISSNESS, user.getTokenForBusiness());
-		infos.put(UserInfoKeys.VERIFIED, user.getVerified());
-		infos.put(UserInfoKeys.WORK, user.getWork());
+		infos.put(UserInfoKey.ABOUT, user.getAbout());
+		infos.put(UserInfoKey.DATE_OF_BIRTH, user.getBirthdayAsDate());
+		infos.put(UserInfoKey.FIRST_NAME, user.getFirstName());
+		infos.put(UserInfoKey.LAST_NAME, user.getLastName());
+		infos.put(UserInfoKey.GENDER, user.getGender());
+		infos.put(UserInfoKey.METADATA, user.getMetadata());
+		infos.put(UserInfoKey.PROFILE_PICTURE, user.getPicture());
+		infos.put(UserInfoKey.WEBSITE, user.getWebsite());
+		infos.put(UserInfoKey.ORIGINAL_LINK, user.getLink());
+		infos.put(UserInfoKey.LOCALE, user.getLocale());
+		infos.put(UserInfoKey.LANGUAGES, user.getLanguages());
+		infos.put(UserInfoKey.HOME_TOWN, user.getHometownName());
+		infos.put(UserInfoKey.ID, user.getId());
+		infos.put(UserInfoKey.BIO, user.getBio());
+		infos.put(UserInfoKey.CURRENCY, user.getCurrency());
+		infos.put(UserInfoKey.EDUCATION, user.getEducation());
+		infos.put(UserInfoKey.EMAIL, user.getEmail());
+		infos.put(UserInfoKey.FAVOURITE_ATHLETS, user.getFavoriteAthletes());
+		infos.put(UserInfoKey.FAVOURITE_TEAMS, user.getFavoriteTeams());
+		infos.put(UserInfoKey.INTERESTED_IN, user.getInterestedIn());
+		infos.put(UserInfoKey.LAST_UPDATED, user.getUpdatedTime());
+		infos.put(UserInfoKey.MEETING_FOR, user.getMeetingFor());
+		infos.put(UserInfoKey.POLITICAL, user.getPolitical());
+		infos.put(UserInfoKey.QUOTES, user.getQuotes());
+		infos.put(UserInfoKey.RELATIONSHIP_STATUS, user.getRelationshipStatus());
+		infos.put(UserInfoKey.RELIGION, user.getReligion());
+		infos.put(UserInfoKey.SIGNIFICANT_OTHER, user.getSignificantOther());
+		infos.put(UserInfoKey.SPORTS, user.getSports());
+		infos.put(UserInfoKey.THIRD_PARTY_ID, user.getThirdPartyId());
+		infos.put(UserInfoKey.TIMEZONE, user.getTimezone());
+		infos.put(UserInfoKey.TOKEN_FOR_BUISSNESS, user.getTokenForBusiness());
+		infos.put(UserInfoKey.VERIFIED, user.getVerified());
+		infos.put(UserInfoKey.WORK, user.getWork());
+		infos.put(UserInfoKey.NAME, user.getName());
+		infos.put(UserInfoKey.MIDDLE_NAME, user.getMiddleName());
 		if (thisIsMe && fcb != null)
 		{
 			Connection<Album> albums = fcb.fetchConnection("me/albums", Album.class);
-			for (Album album : albums.getData())
-			{
-				albumInfo(album, fcb);
-			}
+			if (!albums.getData().isEmpty())
+				for (Album album : albums.getData())
+				{
+					albumInfo(album, fcb);
+				}
 		}
 		Properties props = new Properties();
 		HashMap<String, String> newinfos = dataValidator(infos);
@@ -104,15 +108,16 @@ public class Serializer
 		HashMap<SerializerKey, Object> infos = new HashMap<>();
 		if (album == null)
 			return infos;
-		infos.put(AlbumInfoKeys.COUNT, album.getCount());
-		infos.put(AlbumInfoKeys.COVER_PHOTO_ID, album.getCoverPhoto());
-		infos.put(AlbumInfoKeys.CREATED, album.getCreatedTime());
-		infos.put(AlbumInfoKeys.DESCRIPTION, album.getDescription());
-		infos.put(AlbumInfoKeys.LAST_UPDATE, album.getUpdatedTime());
-		infos.put(AlbumInfoKeys.ORIGINAL_LINK, album.getLink());
-		infos.put(AlbumInfoKeys.PRIVACY, album.getPrivacy());
-		infos.put(AlbumInfoKeys.NAME, album.getName());
-		infos.put(AlbumInfoKeys.COMES_FROM, album.getFrom());
+		infos.put(AlbumInfoKey.COUNT, album.getCount());
+		infos.put(AlbumInfoKey.COVER_PHOTO_ID, album.getCoverPhoto());
+		infos.put(AlbumInfoKey.CREATED, album.getCreatedTime());
+		infos.put(AlbumInfoKey.DESCRIPTION, album.getDescription());
+		infos.put(AlbumInfoKey.LAST_UPDATE, album.getUpdatedTime());
+		infos.put(AlbumInfoKey.ORIGINAL_LINK, album.getLink());
+		infos.put(AlbumInfoKey.PRIVACY, album.getPrivacy());
+		infos.put(AlbumInfoKey.NAME, album.getName());
+		infos.put(AlbumInfoKey.COMES_FROM, album.getFrom());
+		infos.put(AlbumInfoKey.LOCATION, album.getLocation());
 		File dir = new File(path + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace("" + ReplaceID.ALBUM_ID, album.getId()));
 
 		if (!skipAlbums.contains(album.getName()))
@@ -142,7 +147,7 @@ public class Serializer
 					break;
 			}
 			ConsoleDrawer.drawProgress(20, 20, false);
-			infos.put(AlbumInfoKeys.LOCAL_COUNT, iterator);
+			infos.put(AlbumInfoKey.LOCAL_COUNT, iterator);
 			System.out.println();
 			Properties pros = new Properties();
 			HashMap<String, String> newinfos = dataValidator(infos);
@@ -165,16 +170,18 @@ public class Serializer
 		HashMap<SerializerKey, Object> infos = new HashMap<>();
 		if (photo == null)
 			return infos;
-		infos.put(PhotoInfoKeys.FILE, photo.getId() + ".jpg");
-		infos.put(PhotoInfoKeys.BACK_DATE, (photo.getBackdatedTime() == null) ? null : photo.getBackdatedTime());
-		infos.put(PhotoInfoKeys.COMMENT_DIR, photo.getId() + "_COMMENTS");
-		infos.put(PhotoInfoKeys.LAST_UPDATE, photo.getUpdatedTime());
-		infos.put(PhotoInfoKeys.ORIGINAL_LINK, photo.getLink());
-		infos.put(PhotoInfoKeys.LIKES_FROM_PEOPLE, photo.getLikes());
-		infos.put(PhotoInfoKeys.LIKES, photo.getLikes().size());
-		infos.put(PhotoInfoKeys.PLACE, photo.getPlace());
-		infos.put(PhotoInfoKeys.PUBLISH_DATE, photo.getCreatedTime());
-		infos.put(PhotoInfoKeys.ID, photo.getId());
+		infos.put(PhotoInfoKey.FILE, photo.getId() + ".jpg");
+		infos.put(PhotoInfoKey.BACK_DATE, (photo.getBackdatedTime() == null) ? null : photo.getBackdatedTime());
+		infos.put(PhotoInfoKey.COMMENT_DIR, photo.getId() + "_COMMENTS");
+		infos.put(PhotoInfoKey.LAST_UPDATE, photo.getUpdatedTime());
+		infos.put(PhotoInfoKey.ORIGINAL_LINK, photo.getLink());
+		infos.put(PhotoInfoKey.LIKES_FROM_PEOPLE, photo.getLikes());
+		infos.put(PhotoInfoKey.LIKES, photo.getLikes().size());
+		infos.put(PhotoInfoKey.PLACE, photo.getPlace());
+		infos.put(PhotoInfoKey.PUBLISH_DATE, photo.getCreatedTime());
+		infos.put(PhotoInfoKey.ID, photo.getId());
+		infos.put(PhotoInfoKey.FROM, photo.getFrom());
+		infos.put(PhotoInfoKey.TAGS, photo.getTags());
 		HashMap<String, String> newinfos = dataValidator(infos);
 		Properties props = new Properties();
 		props.putAll(newinfos);
@@ -205,7 +212,7 @@ public class Serializer
 			sb.delete(sb.length() - 1, sb.length());
 			url = sb.toString();
 		}
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); FileOutputStream fw = new FileOutputStream("" + directory + SDO.SLASH + infos.get(PhotoInfoKeys.FILE)); BufferedInputStream br = new BufferedInputStream(new URL(url).openStream());)
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); FileOutputStream fw = new FileOutputStream("" + directory + SDO.SLASH + infos.get(PhotoInfoKey.FILE)); BufferedInputStream br = new BufferedInputStream(new URL(url).openStream());)
 		{
 			byte[] puffer = new byte[1024];
 			int i = 0;
@@ -276,6 +283,12 @@ public class Serializer
 						stringValue = ((NamedFacebookType) value).getName();
 					break;
 				}
+				case CFT:
+				{
+					if (value instanceof CategorizedFacebookType)
+						stringValue = ((CategorizedFacebookType) value).getName();
+					break;
+				}
 				default:
 				{
 					stringValue = value.toString();
@@ -301,6 +314,8 @@ public class Serializer
 					sb.append(packList((List<?>) o));
 				else if (o instanceof NamedFacebookType)
 					sb.append(((NamedFacebookType) o).getName());
+				else if (o instanceof CategorizedFacebookType)
+					sb.append(((CategorizedFacebookType) o).getName());
 				else
 					sb.append(o.toString());
 				sb.append(";");

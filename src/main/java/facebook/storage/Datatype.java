@@ -7,5 +7,6 @@ public enum Datatype
 	NUMBER,
 	LINK,
 	OTHER,
-	NFT
+	NFT,
+	CFT
 }

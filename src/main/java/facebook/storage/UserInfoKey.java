@@ -1,6 +1,6 @@
 package facebook.storage;
 
-public enum UserInfoKeys implements SerializerKey
+public enum UserInfoKey implements SerializerKey
 {
 	ABOUT("Allgemein", Datatype.OTHER),
 	GENDER("Geschlecht", Datatype.OTHER),
@@ -39,12 +39,14 @@ public enum UserInfoKeys implements SerializerKey
 	VERIFIED("Bestätigt", Datatype.OTHER),
 	WORK("Arbeit", Datatype.LIST),
 	FAVOURITE_ATHLETS("Lieblings Sportler", Datatype.LIST),
-	FAVOURITE_TEAMS("Lieblingsteams", Datatype.LIST);
+	FAVOURITE_TEAMS("Lieblingsteams", Datatype.LIST),
+	NAME("Name", Datatype.OTHER),
+	MIDDLE_NAME("Mittelname", Datatype.OTHER);
 
 	private String label;
 	private Datatype type;
 
-	private UserInfoKeys(String label, Datatype type)
+	private UserInfoKey(String label, Datatype type)
 	{
 		this.label = label;
 		this.type = type;

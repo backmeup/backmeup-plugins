@@ -1,6 +1,6 @@
 package facebook.storage;
 
-public enum AlbumInfoKeys implements SerializerKey
+public enum AlbumInfoKey implements SerializerKey
 {
 	COUNT("Anzahl der Fotos", Datatype.NUMBER),
 	COVER_PHOTO_ID("ID des Covers", Datatype.OTHER),
@@ -12,12 +12,13 @@ public enum AlbumInfoKeys implements SerializerKey
 	DIRECTORY("Verzeichnis", Datatype.OTHER),
 	NAME("Name", Datatype.OTHER),
 	LOCAL_COUNT("Anzahl der lokalen Fotos", Datatype.NUMBER),
-	COMES_FROM("Herkunft", Datatype.OTHER);
+	COMES_FROM("Erstellt von", Datatype.CFT),
+	LOCATION("Ort", Datatype.OTHER);
 
 	private String label;
 	private Datatype type;
 
-	private AlbumInfoKeys(String label, Datatype type)
+	private AlbumInfoKey(String label, Datatype type)
 	{
 		this.label = label;
 		this.type = type;

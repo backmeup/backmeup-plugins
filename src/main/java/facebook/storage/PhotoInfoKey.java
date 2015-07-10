@@ -1,6 +1,6 @@
 package facebook.storage;
 
-public enum PhotoInfoKeys implements SerializerKey
+public enum PhotoInfoKey implements SerializerKey
 {
 	BACK_DATE("Erstellt", Datatype.DATE),
 	COMMENT_DIR("Kommentar Ordner", Datatype.OTHER),
@@ -11,12 +11,14 @@ public enum PhotoInfoKeys implements SerializerKey
 	PLACE("Ort", Datatype.OTHER),
 	LAST_UPDATE("Zuletzt bearbeitet", Datatype.DATE),
 	FILE("Datei", Datatype.OTHER),
-	ID("ID", Datatype.OTHER);
+	ID("ID", Datatype.OTHER),
+	FROM("gepostet von",Datatype.CFT),
+	TAGS("Tags",Datatype.LIST);
 
 	private String label;
 	private Datatype type;
 
-	private PhotoInfoKeys(String label, Datatype type)
+	private PhotoInfoKey(String label, Datatype type)
 	{
 		this.label = label;
 		this.type = type;

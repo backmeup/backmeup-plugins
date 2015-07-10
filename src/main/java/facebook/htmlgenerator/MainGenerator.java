@@ -32,15 +32,15 @@ import com.hp.gagawa.java.elements.Title;
 import com.hp.gagawa.java.elements.Tr;
 import com.hp.gagawa.java.elements.Ul;
 
-import facebook.storage.AlbumInfoKeys;
+import facebook.storage.AlbumInfoKey;
 import facebook.storage.Datatype;
 import facebook.storage.EndingFilter;
 import facebook.storage.FilePaths;
-import facebook.storage.PhotoInfoKeys;
+import facebook.storage.PhotoInfoKey;
 import facebook.storage.ReplaceID;
 import facebook.storage.SDO;
 import facebook.storage.SerializerKey;
-import facebook.storage.UserInfoKeys;
+import facebook.storage.UserInfoKey;
 import facebook.utils.FileUtils;
 
 public class MainGenerator
@@ -78,10 +78,10 @@ public class MainGenerator
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		initDocumentHeader(index, userProps.getProperty(UserInfoKeys.FIRST_NAME.toString()), indexTarget, null, false);
+		initDocumentHeader(index, userProps.getProperty(UserInfoKey.FIRST_NAME.toString()), indexTarget, null, false);
 		Div sideInfos = new Div();
 		sideInfos.setCSSClass("sidebar");
-		sideInfos.appendChild(wrapInfos(UserInfoKeys.values(), userProps, true));
+		sideInfos.appendChild(wrapInfos(UserInfoKey.values(), userProps, true));
 		index.body.appendChild(sideInfos);
 		genAlbums(index);
 		try (FileWriter fw = new FileWriter(indexTarget))
@@ -114,15 +114,15 @@ public class MainGenerator
 				albumsProps.loadFromXML(fis);
 				Div innerItem = new Div();
 				Li item = new Li();
-				String relativeImg = FileUtils.getWayTo(out_dir, albumfolder) + SDO.SLASH + albumsProps.getProperty(AlbumInfoKeys.COVER_PHOTO_ID.toString()) + ".jpg";
+				String relativeImg = FileUtils.getWayTo(out_dir, albumfolder) + SDO.SLASH + albumsProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString()) + ".jpg";
 				A albumLink = new A();
 				Img cover = new Img("baum", relativeImg);
 				innerItem.setCSSClass("album_picture");
 				innerItem.appendChild(cover);
 				albumLink.appendChild(innerItem);
 				albumLink.setHref(FileUtils.getWayTo(out_dir, new File("" + out_dir + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY + SDO.SLASH + albumfolder.getName() + ".html")));
-				String albumName = albumsProps.getProperty(AlbumInfoKeys.NAME.toString());
-				String desc = albumsProps.getProperty(AlbumInfoKeys.DESCRIPTION.toString());
+				String albumName = albumsProps.getProperty(AlbumInfoKey.NAME.toString());
+				String desc = albumsProps.getProperty(AlbumInfoKey.DESCRIPTION.toString());
 				P textBelow = new P();
 				if (albumName != null)
 					textBelow.appendText(albumName);
@@ -161,8 +161,8 @@ public class MainGenerator
 		{
 			albumXml.loadFromXML(fis);
 			File originalAlbumFolder = new File("" + work_dir + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace(ReplaceID.ALBUM_ID.toString(), albumID));
-			File cover = new File("" + originalAlbumFolder + SDO.SLASH + albumXml.getProperty(AlbumInfoKeys.COVER_PHOTO_ID.toString()) + ".jpg");
-			albumFile = initDocumentHeader(albumFile, albumXml.getProperty(AlbumInfoKeys.NAME.toString(), "Album"), target, cover, true);
+			File cover = new File("" + originalAlbumFolder + SDO.SLASH + albumXml.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString()) + ".jpg");
+			albumFile = initDocumentHeader(albumFile, albumXml.getProperty(AlbumInfoKey.NAME.toString(), "Album"), target, cover, true);
 			Div photoContainer = new Div();
 			photoContainer.setCSSClass("picture_container");
 			Ul photoList = new Ul();
@@ -175,11 +175,11 @@ public class MainGenerator
 						photoProps.loadFromXML(fisPhotoXml);
 						Li photoItem = new Li();
 						A photoLink = new A();
-						photoLink.setHref(FileUtils.getWayTo(albumsFolder, new File("" + photoHtmlContainer + SDO.SLASH + photoProps.getProperty(PhotoInfoKeys.ID.toString()))) + ".html");
+						photoLink.setHref(FileUtils.getWayTo(albumsFolder, new File("" + photoHtmlContainer + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.ID.toString()))) + ".html");
 						Div innerItem = new Div().setCSSClass("album_picture");
-						String relativePhoto = FileUtils.getWayTo(albumsFolder, new File("" + originalAlbumFolder + SDO.SLASH + photoProps.getProperty(PhotoInfoKeys.FILE.toString())));
+						String relativePhoto = FileUtils.getWayTo(albumsFolder, new File("" + originalAlbumFolder + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.FILE.toString())));
 						innerItem.appendChild(new Img("Photo", relativePhoto));
-						innerItem.appendChild(new P().appendText("Likes: " + photoProps.getProperty(PhotoInfoKeys.LIKES.toString())));
+						innerItem.appendChild(new P().appendText("Likes: " + photoProps.getProperty(PhotoInfoKey.LIKES.toString())));
 						photoLink.appendChild(innerItem);
 						photoItem.appendChild(photoLink);
 						photoList.appendChild(photoItem);
@@ -193,7 +193,7 @@ public class MainGenerator
 
 			Div sideInfos = new Div();
 			sideInfos.setCSSClass("sidebar");
-			sideInfos.appendChild(wrapInfos(AlbumInfoKeys.values(), albumXml, true));
+			sideInfos.appendChild(wrapInfos(AlbumInfoKey.values(), albumXml, true));
 
 			photoContainer.appendChild(photoList);
 			albumFile.body.appendChild(sideInfos);
@@ -283,16 +283,16 @@ public class MainGenerator
 
 	public void genPhotoFile(Properties photoProps, File dir, File albumDir)
 	{
-		File target = new File("" + dir + SDO.SLASH + photoProps.getProperty(PhotoInfoKeys.ID.toString()) + ".html");
-		File icon = new File("" + albumDir + SDO.SLASH + photoProps.getProperty(PhotoInfoKeys.FILE.toString()));
+		File target = new File("" + dir + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.ID.toString()) + ".html");
+		File icon = new File("" + albumDir + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.FILE.toString()));
 		Document photoDoc = new Document(DocumentType.HTMLTransitional);
-		photoDoc = initDocumentHeader(photoDoc, photoProps.getProperty(PhotoInfoKeys.ID.toString(), "Foto"), target, icon, true);
+		photoDoc = initDocumentHeader(photoDoc, photoProps.getProperty(PhotoInfoKey.ID.toString(), "Foto"), target, icon, true);
 		String relativeImg = FileUtils.getWayTo(dir, icon);
 		Img picture = new Img("Photo", relativeImg);
 		picture.setCSSClass("picture");
 		Div sideInfos = new Div();
 		sideInfos.setCSSClass("sidebar");
-		sideInfos.appendChild(wrapInfos(PhotoInfoKeys.values(), photoProps, true));
+		sideInfos.appendChild(wrapInfos(PhotoInfoKey.values(), photoProps, true));
 		photoDoc.body.appendChild(sideInfos);
 		photoDoc.body.appendChild(picture);
 		try (FileWriter fw = new FileWriter(target))
@@ -329,7 +329,6 @@ public class MainGenerator
 
 	private Document initDocumentHeader(Document doc, String title, File targetFile, File icon, boolean menuBar, File... cssFiles)
 	{
-		System.out.println(targetFile);
 		Meta headMeta = new Meta("content-type");
 		headMeta.setAttribute("charset", "utf8");
 		headMeta.setAttribute("content", "text/html");
