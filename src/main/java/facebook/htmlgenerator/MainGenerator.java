@@ -20,6 +20,7 @@ import com.hp.gagawa.java.Document;
 import com.hp.gagawa.java.DocumentType;
 import com.hp.gagawa.java.Node;
 import com.hp.gagawa.java.elements.A;
+import com.hp.gagawa.java.elements.Br;
 import com.hp.gagawa.java.elements.Div;
 import com.hp.gagawa.java.elements.Img;
 import com.hp.gagawa.java.elements.Li;
@@ -33,6 +34,7 @@ import com.hp.gagawa.java.elements.Tr;
 import com.hp.gagawa.java.elements.Ul;
 
 import facebook.storage.AlbumInfoKey;
+import facebook.storage.CommentKey;
 import facebook.storage.Datatype;
 import facebook.storage.EndingFilter;
 import facebook.storage.FilePaths;
@@ -183,8 +185,12 @@ public class MainGenerator
 						photoLink.appendChild(innerItem);
 						photoItem.appendChild(photoLink);
 						photoList.appendChild(photoItem);
-
-						genPhotoFile(photoProps, photoHtmlContainer, originalAlbumFolder);
+						ArrayList<Node> commentNodes = new ArrayList<>();
+						File comments = new File("" + photoXml.getParentFile() + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
+						if (comments.exists())
+							for (File f : comments.listFiles())
+								commentNodes.add(genComment(f));
+						genPhotoFile(photoProps, photoHtmlContainer, originalAlbumFolder, commentNodes.toArray(new Node[commentNodes.size()]));
 					} catch (IOException e)
 					{
 						e.printStackTrace();
@@ -205,6 +211,26 @@ public class MainGenerator
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public Node genComment(File dir)
+	{
+		Div container = new Div();
+		container.setCSSClass("comment");
+		container.appendChild(new Br());
+		Properties props = new Properties();
+		try (FileInputStream fis = new FileInputStream(new File("" + dir + SDO.SLASH + "commentinfo.xml")))
+		{
+			props.loadFromXML(fis);
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		container.appendChild(wrapInfos(CommentKey.values(), props, true));
+		for (File f : dir.listFiles())
+			if (f.isDirectory())
+				container.appendChild(genComment(f));
+		return container;
 	}
 
 	private Table wrapInfos(SerializerKey[] aik, Properties albumsProps, boolean skipinvalid)
@@ -281,7 +307,7 @@ public class MainGenerator
 		return menubar;
 	}
 
-	public void genPhotoFile(Properties photoProps, File dir, File albumDir)
+	public void genPhotoFile(Properties photoProps, File dir, File albumDir, Node... add)
 	{
 		File target = new File("" + dir + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.ID.toString()) + ".html");
 		File icon = new File("" + albumDir + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.FILE.toString()));
@@ -295,6 +321,10 @@ public class MainGenerator
 		sideInfos.appendChild(wrapInfos(PhotoInfoKey.values(), photoProps, true));
 		photoDoc.body.appendChild(sideInfos);
 		photoDoc.body.appendChild(picture);
+		if (add != null)
+			for (Node n : add)
+				if (n != null)
+					photoDoc.body.appendChild(n);
 		try (FileWriter fw = new FileWriter(target))
 		{
 			fw.write(photoDoc.write());

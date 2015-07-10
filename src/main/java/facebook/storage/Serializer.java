@@ -21,6 +21,7 @@ import com.restfb.Connection;
 import com.restfb.FacebookClient;
 import com.restfb.types.Album;
 import com.restfb.types.CategorizedFacebookType;
+import com.restfb.types.Comment;
 import com.restfb.types.NamedFacebookType;
 import com.restfb.types.Photo;
 import com.restfb.types.User;
@@ -194,6 +195,10 @@ public class Serializer
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		for (Comment comment : photo.getComments())
+		{
+			commentInfo(comment, new File("" + directory + SDO.SLASH + infos.get(PhotoInfoKey.COMMENT_DIR) + SDO.SLASH + comment.getId()));
+		}
 		String url = photo.getSource();
 		String[] parts = url.split("/");
 		// remove URL parts which decrease the resolution
@@ -228,6 +233,37 @@ public class Serializer
 			e.printStackTrace();
 		}
 		return infos;
+	}
+
+	public static void commentInfo(Comment comment, File dir)
+	{
+		File commentInfo = new File("" + dir + SDO.SLASH + "commentinfo.xml");
+		HashMap<SerializerKey, Object> infos = new HashMap<>();
+		infos.put(CommentKey.ATTACHMENT, comment.getAttachment());
+		infos.put(CommentKey.CAN_REMOVE, comment.getCanRemove());
+		infos.put(CommentKey.CREATED, comment.getCreatedTime());
+		infos.put(CommentKey.FROM, comment.getFrom());
+		infos.put(CommentKey.HIDDEN, comment.getIsHidden());
+		infos.put(CommentKey.ID, comment.getId());
+		infos.put(CommentKey.LIKE_COUNT, comment.getLikeCount());
+		infos.put(CommentKey.MESSAGE, comment.getMessage());
+		infos.put(CommentKey.REPLIES_COUNT, comment.getCommentCount());
+		infos.put(CommentKey.METADATA, comment.getMetadata());
+		HashMap<String, String> newInfos = dataValidator(infos);
+		Properties props = new Properties();
+		props.putAll(newInfos);
+		if (!dir.exists())
+			dir.mkdirs();
+		try (FileOutputStream fos = new FileOutputStream(commentInfo))
+		{
+			props.storeToXML(fos, "Represents a comment");
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		if (comment.getComments() != null)
+			for (Comment c : comment.getComments().getData())
+				commentInfo(c, new File("" + dir + SDO.SLASH + c.getId()));
 	}
 
 	public static Properties getReadableUserInfos(HashMap<SerializerKey, Object> userInfos)
