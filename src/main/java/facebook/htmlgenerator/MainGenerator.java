@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Properties;
 
 import com.hp.gagawa.java.Document;
@@ -32,12 +33,13 @@ import com.hp.gagawa.java.elements.Tr;
 import com.hp.gagawa.java.elements.Ul;
 
 import facebook.storage.AlbumInfoKeys;
-import facebook.storage.Data;
+import facebook.storage.Datatype;
 import facebook.storage.EndingFilter;
 import facebook.storage.FilePaths;
 import facebook.storage.PhotoInfoKeys;
 import facebook.storage.ReplaceID;
 import facebook.storage.SDO;
+import facebook.storage.SerializerKey;
 import facebook.storage.UserInfoKeys;
 import facebook.utils.FileUtils;
 
@@ -62,9 +64,9 @@ public class MainGenerator
 	{
 
 		Document index = new Document(DocumentType.HTMLTransitional);
-		
+
 		index.body.appendChild(menuGenerator());
-		
+
 		Properties userProps = new Properties();
 		File target = new File("" + working_dir + SDO.SLASH + FilePaths.USER_FILE);
 		File indexTarget = new File("" + out_dir + SDO.SLASH + "index.html");
@@ -205,17 +207,17 @@ public class MainGenerator
 		}
 	}
 
-	private Table wrapInfos(Data[] aik, Properties albumsProps, boolean skipinvalid)
+	private Table wrapInfos(SerializerKey[] aik, Properties albumsProps, boolean skipinvalid)
 	{
 		Table table = new Table();
-		for (Data key : aik)
+		for (SerializerKey key : aik)
 		{
 			String value = albumsProps.getProperty(key.toString());
 			if ((value != null && !value.equals("")) || !skipinvalid)
 			{
 				if (value == null)
 					value = "keine Infos vorhanden";
-				if (key.isDate())
+				if (key.getType().equals(Datatype.DATE))
 				{
 					GregorianCalendar time = new GregorianCalendar();
 					Date d = new Date(Long.parseLong(value));
@@ -226,13 +228,15 @@ public class MainGenerator
 					sdf = new SimpleDateFormat("HH:mm:ss");
 					value += sdf.format(time.getTime()) + " Uhr";
 				}
-				if (key.isLink())
+				if (key.getType().equals(Datatype.LINK))
 				{
 					A link = new A();
 					link.appendText(key.getLabel());
 					link.setHref(value);
 					value = link.write();
 				}
+				if (key.getType().equals(Datatype.LIST))
+					value = unpackList(Arrays.asList(value.split(";")));
 				Tr row = new Tr();
 				row.appendChild(new Td().appendText(key.getLabel()));
 				row.appendChild(new Td().appendText(value));
@@ -240,6 +244,27 @@ public class MainGenerator
 			}
 		}
 		return table;
+	}
+
+	public static String unpackList(List<?> list)
+	{
+		if (list == null)
+			return "keine Informationen vorhanden";
+		StringBuilder sb = new StringBuilder();
+		for (Object o : list)
+		{
+			if (o != null)
+			{
+				if (o instanceof List<?>)
+					sb.append(unpackList((List<?>) o));
+				else
+					sb.append(o.toString());
+				sb.append(", ");
+			}
+		}
+		if (sb.length() > 0)
+			sb.delete(sb.length() - 2, sb.length());
+		return sb.toString();
 	}
 
 	public Node menuGenerator()

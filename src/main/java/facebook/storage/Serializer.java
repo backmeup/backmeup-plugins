@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,13 +39,13 @@ public class Serializer
 	private long maxPics;
 	private ArrayList<String> skipAlbums;
 
-	public HashMap<Object, Object> userInfo(User user, FacebookClient fcb, boolean thisIsMe, boolean makeDirs)
+	public HashMap<SerializerKey, Object> userInfo(User user, FacebookClient fcb, boolean thisIsMe, boolean makeDirs)
 	{
 		if (user == null)
-			return new HashMap<Object, Object>();
-		HashMap<Object, Object> infos = new HashMap<Object, Object>();
+			return new HashMap<SerializerKey, Object>();
+		HashMap<SerializerKey, Object> infos = new HashMap<SerializerKey, Object>();
 		infos.put(UserInfoKeys.ABOUT, user.getAbout());
-		infos.put(UserInfoKeys.DATE_OF_BIRTH, user.getBirthdayAsDate().getTime());
+		infos.put(UserInfoKeys.DATE_OF_BIRTH, user.getBirthdayAsDate());
 		infos.put(UserInfoKeys.FIRST_NAME, user.getFirstName());
 		infos.put(UserInfoKeys.LAST_NAME, user.getLastName());
 		infos.put(UserInfoKeys.GENDER, user.getGender());
@@ -85,7 +86,7 @@ public class Serializer
 			}
 		}
 		Properties props = new Properties();
-		HashMap<String, String> newinfos = dataValidatot(infos);
+		HashMap<String, String> newinfos = dataValidator(infos);
 		props.putAll(newinfos);
 		try
 		{
@@ -98,16 +99,16 @@ public class Serializer
 		return infos;
 	}
 
-	public HashMap<Object, Object> albumInfo(Album album, FacebookClient fcb)
+	public HashMap<SerializerKey, Object> albumInfo(Album album, FacebookClient fcb)
 	{
-		HashMap<Object, Object> infos = new HashMap<>();
+		HashMap<SerializerKey, Object> infos = new HashMap<>();
 		if (album == null)
 			return infos;
 		infos.put(AlbumInfoKeys.COUNT, album.getCount());
 		infos.put(AlbumInfoKeys.COVER_PHOTO_ID, album.getCoverPhoto());
-		infos.put(AlbumInfoKeys.CREATED, album.getCreatedTime().getTime());
+		infos.put(AlbumInfoKeys.CREATED, album.getCreatedTime());
 		infos.put(AlbumInfoKeys.DESCRIPTION, album.getDescription());
-		infos.put(AlbumInfoKeys.LAST_UPDATE, album.getUpdatedTime().getTime());
+		infos.put(AlbumInfoKeys.LAST_UPDATE, album.getUpdatedTime());
 		infos.put(AlbumInfoKeys.ORIGINAL_LINK, album.getLink());
 		infos.put(AlbumInfoKeys.PRIVACY, album.getPrivacy());
 		infos.put(AlbumInfoKeys.NAME, album.getName());
@@ -144,7 +145,7 @@ public class Serializer
 			infos.put(AlbumInfoKeys.LOCAL_COUNT, iterator);
 			System.out.println();
 			Properties pros = new Properties();
-			HashMap<String, String> newinfos = dataValidatot(infos);
+			HashMap<String, String> newinfos = dataValidator(infos);
 			pros.putAll(newinfos);
 			try
 			{
@@ -159,22 +160,22 @@ public class Serializer
 		return infos;
 	}
 
-	public static HashMap<Object, Object> photoInfo(Photo photo, File directory)
+	public static HashMap<SerializerKey, Object> photoInfo(Photo photo, File directory)
 	{
-		HashMap<Object, Object> infos = new HashMap<>();
+		HashMap<SerializerKey, Object> infos = new HashMap<>();
 		if (photo == null)
 			return infos;
 		infos.put(PhotoInfoKeys.FILE, photo.getId() + ".jpg");
-		infos.put(PhotoInfoKeys.BACK_DATE, (photo.getBackdatedTime() == null) ? null : photo.getBackdatedTime().getTime());
+		infos.put(PhotoInfoKeys.BACK_DATE, (photo.getBackdatedTime() == null) ? null : photo.getBackdatedTime());
 		infos.put(PhotoInfoKeys.COMMENT_DIR, photo.getId() + "_COMMENTS");
-		infos.put(PhotoInfoKeys.LAST_UPDATE, photo.getUpdatedTime().getTime());
+		infos.put(PhotoInfoKeys.LAST_UPDATE, photo.getUpdatedTime());
 		infos.put(PhotoInfoKeys.ORIGINAL_LINK, photo.getLink());
-		infos.put(PhotoInfoKeys.LIKES_FROM_PEOPLE, genLikes(photo.getLikes()));
+		infos.put(PhotoInfoKeys.LIKES_FROM_PEOPLE, photo.getLikes());
 		infos.put(PhotoInfoKeys.LIKES, photo.getLikes().size());
 		infos.put(PhotoInfoKeys.PLACE, photo.getPlace());
-		infos.put(PhotoInfoKeys.PUBLISH_DATE, photo.getCreatedTime().getTime());
+		infos.put(PhotoInfoKeys.PUBLISH_DATE, photo.getCreatedTime());
 		infos.put(PhotoInfoKeys.ID, photo.getId());
-		HashMap<String, String> newinfos = dataValidatot(infos);
+		HashMap<String, String> newinfos = dataValidator(infos);
 		Properties props = new Properties();
 		props.putAll(newinfos);
 		try (FileOutputStream fos = new FileOutputStream(new File("" + directory + SDO.SLASH + FilePaths.PHOTO_INFO.toString().replace("" + ReplaceID.PHOTO_ID, photo.getId()))))
@@ -222,7 +223,7 @@ public class Serializer
 		return infos;
 	}
 
-	public static Properties getReadableUserInfos(HashMap<Object, Object> userInfos)
+	public static Properties getReadableUserInfos(HashMap<SerializerKey, Object> userInfos)
 	{
 		Properties infos = new Properties();
 		if (userInfos == null)
@@ -236,19 +237,78 @@ public class Serializer
 		return infos;
 	}
 
-	public static HashMap<String, String> dataValidatot(HashMap<Object, Object> map)
+	public static HashMap<String, String> dataValidator(HashMap<SerializerKey, Object> map)
 	{
 		HashMap<String, String> newMap = new HashMap<>();
 		if (map == null)
 			return newMap;
-		Iterator<Object> it = map.keySet().iterator();
+		Iterator<SerializerKey> it = map.keySet().iterator();
 		while (it.hasNext())
 		{
-			Object key = it.next();
-			if (map.get(key) != null)
-				newMap.put(key.toString(), map.get(key).toString());
+			SerializerKey key = it.next();
+			if (key != null && map.get(key) != null && key.getType() != null)
+			{
+				Object value = map.get(key);
+				String stringKey = key.toString();
+				String stringValue = null;
+				switch (key.getType())
+				{
+				case OTHER:
+				{
+					stringValue = value.toString();
+					break;
+				}
+				case DATE:
+				{
+					if (value instanceof Date)
+						stringValue = "" + ((Date) value).getTime();
+					break;
+				}
+				case LIST:
+				{
+					if (value instanceof List<?>)
+						stringValue = packList((List<?>) value);
+					break;
+				}
+				case NFT:
+				{
+					if (value instanceof NamedFacebookType)
+						stringValue = ((NamedFacebookType) value).getName();
+					break;
+				}
+				default:
+				{
+					stringValue = value.toString();
+				}
+				}
+				if (stringValue != null)
+					newMap.put(stringKey, stringValue);
+			}
 		}
 		return newMap;
+	}
+
+	public static String packList(List<?> list)
+	{
+		if (list == null)
+			return "";
+		StringBuilder sb = new StringBuilder();
+		for (Object o : list)
+		{
+			if (o != null)
+			{
+				if (o instanceof List<?>)
+					sb.append(packList((List<?>) o));
+				else if (o instanceof NamedFacebookType)
+					sb.append(((NamedFacebookType) o).getName());
+				else
+					sb.append(o.toString());
+				sb.append(";");
+			}
+		}
+		if (sb.length() > 0)
+			sb.delete(sb.length() - 1, sb.length());
+		return sb.toString();
 	}
 
 	public static String genLikes(List<NamedFacebookType> likes)

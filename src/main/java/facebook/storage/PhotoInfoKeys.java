@@ -1,26 +1,25 @@
 package facebook.storage;
 
-public enum PhotoInfoKeys implements Data
+public enum PhotoInfoKeys implements SerializerKey
 {
-	BACK_DATE("Erstellt", false, true),
-	COMMENT_DIR("Kommentar Ordner", false, false),
-	PUBLISH_DATE("Veröffentlicht", false, true),
-	LIKES("Likes", false, false),
-	LIKES_FROM_PEOPLE("Likes", false, false),
-	ORIGINAL_LINK("Originaler Link", true, false),
-	PLACE("Ort", false, false),
-	LAST_UPDATE("Zuletzt bearbeitet", false, true),
-	FILE("Datei", false, false),
-	ID("ID", false, false);
+	BACK_DATE("Erstellt", Datatype.DATE),
+	COMMENT_DIR("Kommentar Ordner", Datatype.OTHER),
+	PUBLISH_DATE("Veröffentlicht", Datatype.DATE),
+	LIKES("Likes", Datatype.NUMBER),
+	LIKES_FROM_PEOPLE("Likes", Datatype.LIST),
+	ORIGINAL_LINK("Originaler Link", Datatype.LINK),
+	PLACE("Ort", Datatype.OTHER),
+	LAST_UPDATE("Zuletzt bearbeitet", Datatype.DATE),
+	FILE("Datei", Datatype.OTHER),
+	ID("ID", Datatype.OTHER);
 
 	private String label;
-	private boolean link, date;
+	private Datatype type;
 
-	private PhotoInfoKeys(String label, boolean link, boolean date)
+	private PhotoInfoKeys(String label, Datatype type)
 	{
 		this.label = label;
-		this.date = date;
-		this.link = link;
+		this.type = type;
 	}
 
 	public String getLabel()
@@ -28,14 +27,8 @@ public enum PhotoInfoKeys implements Data
 		return label;
 	}
 
-	public boolean isLink()
+	public Datatype getType()
 	{
-		return link;
+		return type;
 	}
-
-	public boolean isDate()
-	{
-		return date;
-	}
-
 }

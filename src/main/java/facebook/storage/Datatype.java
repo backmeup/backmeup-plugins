@@ -6,5 +6,6 @@ public enum Datatype
 	LIST,
 	NUMBER,
 	LINK,
-	OTHER
+	OTHER,
+	NFT
 }

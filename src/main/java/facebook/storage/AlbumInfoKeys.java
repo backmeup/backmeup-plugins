@@ -1,27 +1,26 @@
 package facebook.storage;
 
-public enum AlbumInfoKeys implements Data
+public enum AlbumInfoKeys implements SerializerKey
 {
-	COUNT("Anzahl der Fotos", false, false),
-	COVER_PHOTO_ID("ID des Covers", false, false),
-	CREATED("Erstellungsdatum", false, true),
-	DESCRIPTION("Beschreibung", false, false),
-	ORIGINAL_LINK("Originaler Link", true, false),
-	PRIVACY("öffentliche Zugänglichkeit", false, false),
-	LAST_UPDATE("Zuletzt bearbeitet", false, true),
-	DIRECTORY("Verzeichnis", false, false),
-	NAME("Name", false, false),
-	LOCAL_COUNT("Anzahl der lokalen Fotos", false,false),
-	COMES_FROM("Herkunft",false,false);
+	COUNT("Anzahl der Fotos", Datatype.NUMBER),
+	COVER_PHOTO_ID("ID des Covers", Datatype.OTHER),
+	CREATED("Erstellungsdatum", Datatype.DATE),
+	DESCRIPTION("Beschreibung", Datatype.OTHER),
+	ORIGINAL_LINK("Originaler Link", Datatype.LINK),
+	PRIVACY("öffentliche Zugänglichkeit", Datatype.OTHER),
+	LAST_UPDATE("Zuletzt bearbeitet", Datatype.DATE),
+	DIRECTORY("Verzeichnis", Datatype.OTHER),
+	NAME("Name", Datatype.OTHER),
+	LOCAL_COUNT("Anzahl der lokalen Fotos", Datatype.NUMBER),
+	COMES_FROM("Herkunft", Datatype.OTHER);
 
 	private String label;
-	private boolean link, date;
+	private Datatype type;
 
-	private AlbumInfoKeys(String label, boolean link, boolean date)
+	private AlbumInfoKeys(String label, Datatype type)
 	{
 		this.label = label;
-		this.link = link;
-		this.date = date;
+		this.type = type;
 	}
 
 	public String getLabel()
@@ -29,14 +28,8 @@ public enum AlbumInfoKeys implements Data
 		return label;
 	}
 
-	public boolean isLink()
+	public Datatype getType()
 	{
-		return link;
+		return type;
 	}
-
-	public boolean isDate()
-	{
-		return date;
-	}
-
 }

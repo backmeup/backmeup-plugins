@@ -82,7 +82,7 @@ public class DownloadTester
 	@Test
 	public void testDataValidatot()
 	{
-		if (Serializer.dataValidatot(null) == null)
+		if (Serializer.dataValidator(null) == null)
 			fail("Not allowed to be null");
 	}
 
