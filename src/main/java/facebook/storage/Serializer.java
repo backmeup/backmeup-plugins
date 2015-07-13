@@ -30,6 +30,7 @@ import com.restfb.types.Page;
 import com.restfb.types.Photo;
 import com.restfb.types.Photo.Tag;
 import com.restfb.types.Place;
+import com.restfb.types.Post;
 import com.restfb.types.User;
 
 import facebook.storage.keys.AlbumInfoKey;
@@ -37,6 +38,7 @@ import facebook.storage.keys.CommentKey;
 import facebook.storage.keys.GroupInfoKey;
 import facebook.storage.keys.PageInfoKey;
 import facebook.storage.keys.PhotoInfoKey;
+import facebook.storage.keys.PostInfoKey;
 import facebook.storage.keys.SerializerKey;
 import facebook.storage.keys.UserInfoKey;
 import facebook.utils.ConsoleDrawer;
@@ -103,6 +105,10 @@ public class Serializer
 					albumInfo(album, fcb);
 				}
 		}
+		File postsDir = new File(path + SDO.SLASH + "posts");
+		Connection<Post> posts = fcb.fetchConnection("me/posts", Post.class);
+		for (Post post : posts.getData())
+			postInfo(post, postsDir);
 		File pagesDir = new File(path + SDO.SLASH + "pages");
 		Connection<Page> pages = fcb.fetchConnection("me/pages", Page.class);
 		for (Page page : pages.getData())
@@ -119,6 +125,53 @@ public class Serializer
 		} catch (IOException e)
 		{
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return infos;
+	}
+
+	public HashMap<SerializerKey, Object> postInfo(Post post, File dir)
+	{
+		HashMap<SerializerKey, Object> infos = new HashMap<>();
+		if (post == null || dir == null)
+			return infos;
+		infos.put(PostInfoKey.ACTION, post.getActions());
+		infos.put(PostInfoKey.ADMIN, post.getAdminCreator());
+		infos.put(PostInfoKey.APPLICATION, post.getApplication());
+		infos.put(PostInfoKey.ATTRIBUTION, post.getAttribution());
+		infos.put(PostInfoKey.CAPTION, post.getCaption());
+		infos.put(PostInfoKey.COMMENTS, post.getComments());
+		infos.put(PostInfoKey.COMMENTS_COUNT, post.getCommentsCount());
+		infos.put(PostInfoKey.CREATED_TIME, post.getCreatedTime());
+		infos.put(PostInfoKey.DESCRIPTION, post.getDescription());
+		infos.put(PostInfoKey.FROM, post.getFrom());
+		infos.put(PostInfoKey.ICON, post.getIcon());
+		infos.put(PostInfoKey.ID, post.getId());
+		infos.put(PostInfoKey.LAST_UPDATE, post.getUpdatedTime());
+		infos.put(PostInfoKey.LIKES, post.getLikes());
+		infos.put(PostInfoKey.LIKES_COUNT, post.getLikesCount());
+		infos.put(PostInfoKey.LINK, post.getLink());
+		infos.put(PostInfoKey.MESSAGE, post.getMessage());
+		infos.put(PostInfoKey.MESSAGE_TAGS, post.getMessageTags());
+		infos.put(PostInfoKey.OBJECT_ID, post.getObjectId());
+		infos.put(PostInfoKey.PICTURE, post.getPicture());
+		infos.put(PostInfoKey.PLACE, post.getPlace());
+		infos.put(PostInfoKey.PRIVACY, post.getPrivacy());
+		infos.put(PostInfoKey.PROPERTIES, post.getProperties());
+		infos.put(PostInfoKey.SHARES, post.getShares());
+		infos.put(PostInfoKey.SHARES_COUNT, post.getSharesCount());
+		infos.put(PostInfoKey.SOURCE, post.getSource());
+		infos.put(PostInfoKey.STATUS_TYPE, post.getStatusType());
+		File target = new File("" + dir + SDO.SLASH + post.getId() + SDO.SLASH + "postinfo.xml");
+		if (!target.getParentFile().exists())
+			target.getParentFile().mkdirs();
+		Properties props = new Properties();
+		props.putAll(dataValidator(infos));
+		try (FileOutputStream fos = new FileOutputStream(target))
+		{
+			props.storeToXML(fos, "Represents a post");
+		} catch (IOException e)
+		{
 			e.printStackTrace();
 		}
 		return infos;
