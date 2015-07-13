@@ -67,9 +67,6 @@ public class MainGenerator
 	{
 
 		Document index = new Document(DocumentType.HTMLTransitional);
-
-		// index.body.appendChild(menuGenerator());
-
 		Properties userProps = new Properties();
 		File target = new File("" + working_dir + SDO.SLASH + FilePaths.USER_FILE);
 		File indexTarget = new File("" + out_dir + SDO.SLASH + "index.html");
@@ -324,25 +321,6 @@ public class MainGenerator
 		if (sb.length() > 0)
 			sb.delete(sb.length() - 2, sb.length());
 		return sb.toString();
-	}
-
-	public Node menuGenerator()
-	{
-		Div menubar = new Div();
-		Ul items = new Ul();
-		Li albumListedLink = new Li();
-		A albumLink = new A();
-		albumLink.setHref(FileUtils.getWayTo(out_dir, new File("" + out_dir + SDO.SLASH + "albums.html")));
-		albumListedLink.appendChild(albumLink);
-		albumLink.appendText("Alben");
-		Li groupsListedLink = new Li();
-		A groupsLink = new A();
-		groupsLink.setHref(FileUtils.getWayTo(out_dir, new File("" + out_dir + SDO.SLASH + "groups.html")));
-		groupsListedLink.appendChild(groupsLink);
-		items.appendChild(groupsListedLink);
-		items.appendChild(albumListedLink);
-		menubar.appendChild(items);
-		return menubar;
 	}
 
 	public void genPhotoFile(Properties photoProps, File dir, File albumDir, Node... add)

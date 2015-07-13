@@ -26,6 +26,7 @@ import com.restfb.types.CategorizedFacebookType;
 import com.restfb.types.Comment;
 import com.restfb.types.Group;
 import com.restfb.types.NamedFacebookType;
+import com.restfb.types.Page;
 import com.restfb.types.Photo;
 import com.restfb.types.Photo.Tag;
 import com.restfb.types.Place;
@@ -277,6 +278,22 @@ public class Serializer
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public static HashMap<SerializerKey, Object> pageInfo(Page page, File dir)
+	{
+		File pageInfo = new File("" + dir + SDO.SLASH + "pageinfo.xml");
+		HashMap<SerializerKey, Object> infos = new HashMap<>();
+		Properties props = new Properties();
+		props.putAll(dataValidator(infos));
+		try (FileOutputStream fos = new FileOutputStream(pageInfo))
+		{
+			props.storeToXML(fos, "Represents a page");
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		return infos;
 	}
 
 	public static void commentInfo(Comment comment, File dir)
