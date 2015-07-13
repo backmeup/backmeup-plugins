@@ -14,7 +14,7 @@ public enum PostInfoKey implements SerializerKey
 	COMMENTS_COUNT("Anzahl der Kommentare", Datatype.NUMBER),
 	CREATED_TIME("Erstellungsdatum", Datatype.DATE),
 	DESCRIPTION("Beschreibung", Datatype.OTHER),
-	FROM("ERstellt von", Datatype.CFT),
+	FROM("Erstellt von", Datatype.CFT),
 	ICON("Icon", Datatype.OTHER),
 	LIKES("Likes", Datatype.OTHER),
 	LIKES_COUNT("Likes", Datatype.NUMBER),

@@ -24,7 +24,7 @@ public enum PageInfoKey implements SerializerKey
 	COMPANY_OVERVIEW("Unternehmensübersicht", Datatype.OTHER),
 	CONTACT_ADRESS("Kontaktadresse", Datatype.OTHER),
 	COVER("Cover", Datatype.OTHER),
-	CULINARY_TEAK("Culinary Team", Datatype.OTHER),
+	CULINARY_TEAM("Culinary Team", Datatype.OTHER),
 	CURRENT_LOCATION("Derzeitiger Standort", Datatype.OTHER),
 	DESCRIPTION("Beschreibung", Datatype.OTHER),
 	DESCRIPTION_HTML("Beschreibung HTML", Datatype.OTHER),
