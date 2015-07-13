@@ -1,4 +1,6 @@
-package facebook.storage;
+package facebook.storage.keys;
+
+import facebook.storage.Datatype;
 
 public enum UserInfoKey implements SerializerKey
 {

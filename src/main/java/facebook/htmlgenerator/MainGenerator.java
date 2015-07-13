@@ -33,17 +33,17 @@ import com.hp.gagawa.java.elements.Title;
 import com.hp.gagawa.java.elements.Tr;
 import com.hp.gagawa.java.elements.Ul;
 
-import facebook.storage.AlbumInfoKey;
-import facebook.storage.CommentKey;
 import facebook.storage.Datatype;
 import facebook.storage.EndingFilter;
 import facebook.storage.FilePaths;
-import facebook.storage.GroupInfoKey;
-import facebook.storage.PhotoInfoKey;
 import facebook.storage.ReplaceID;
 import facebook.storage.SDO;
-import facebook.storage.SerializerKey;
-import facebook.storage.UserInfoKey;
+import facebook.storage.keys.AlbumInfoKey;
+import facebook.storage.keys.CommentKey;
+import facebook.storage.keys.GroupInfoKey;
+import facebook.storage.keys.PhotoInfoKey;
+import facebook.storage.keys.SerializerKey;
+import facebook.storage.keys.UserInfoKey;
 import facebook.utils.FileUtils;
 
 public class MainGenerator

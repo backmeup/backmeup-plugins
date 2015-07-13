@@ -32,6 +32,12 @@ import com.restfb.types.Photo.Tag;
 import com.restfb.types.Place;
 import com.restfb.types.User;
 
+import facebook.storage.keys.AlbumInfoKey;
+import facebook.storage.keys.CommentKey;
+import facebook.storage.keys.GroupInfoKey;
+import facebook.storage.keys.PhotoInfoKey;
+import facebook.storage.keys.SerializerKey;
+import facebook.storage.keys.UserInfoKey;
 import facebook.utils.ConsoleDrawer;
 
 public class Serializer
