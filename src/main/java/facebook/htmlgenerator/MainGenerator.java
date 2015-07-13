@@ -256,8 +256,13 @@ public class MainGenerator
 			{
 				Properties props = new Properties();
 				props.loadFromXML(fis);
+				File groupHtml = new File("" + out.getParent() + SDO.SLASH + "groups" + SDO.SLASH + props.getProperty(GroupInfoKey.ID.toString())+".html");
+				genGroup(props, groupHtml);
 				Li item = new Li();
-				item.appendText(props.getProperty(GroupInfoKey.NAME.toString()));
+				A link = new A();
+				link.setHref(FileUtils.getWayTo(out.getParentFile(), groupHtml));
+				link.appendText(props.getProperty(GroupInfoKey.NAME.toString()));
+				item.appendChild(link);
 				groupListNode.appendChild(item);
 			} catch (IOException e)
 			{
@@ -268,6 +273,25 @@ public class MainGenerator
 		try (FileWriter fw = new FileWriter(out))
 		{
 			fw.write(groupList.write());
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public void genGroup(Properties groupProps, File groupHTML)
+	{
+		if (!groupHTML.getParentFile().exists())
+			groupHTML.getParentFile().mkdirs();
+		Document groupDoc = new Document(DocumentType.HTMLTransitional);
+		initDocumentHeader(groupDoc, groupProps.getProperty(GroupInfoKey.NAME.toString()), groupHTML, null, true);
+		Div sidebar = new Div();
+		sidebar.setCSSClass("sidebar");
+		sidebar.appendChild(wrapInfos(GroupInfoKey.values(), groupProps, true));
+		groupDoc.body.appendChild(sidebar);
+		try (FileWriter fw = new FileWriter(groupHTML))
+		{
+			fw.write(groupDoc.write());
 		} catch (IOException e)
 		{
 			e.printStackTrace();
