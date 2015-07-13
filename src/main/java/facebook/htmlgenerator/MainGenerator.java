@@ -42,6 +42,7 @@ import facebook.storage.keys.AlbumInfoKey;
 import facebook.storage.keys.CommentKey;
 import facebook.storage.keys.GroupInfoKey;
 import facebook.storage.keys.PhotoInfoKey;
+import facebook.storage.keys.PostInfoKey;
 import facebook.storage.keys.SerializerKey;
 import facebook.storage.keys.UserInfoKey;
 import facebook.utils.FileUtils;
@@ -73,6 +74,7 @@ public class MainGenerator
 		initDocumentHeader(index, "Ihr Acoount", indexTarget, null, true);
 		File groups = new File(indexTarget.getParent() + SDO.SLASH + "groups.html");
 		genGroups(groups, new File(working_dir + SDO.SLASH + "groups"));
+		genPosts(new File(working_dir + SDO.SLASH + "posts"), new File("" + out_dir + SDO.SLASH + "posts.html"));
 		try (FileInputStream fis = new FileInputStream(target);)
 		{
 			userProps.loadFromXML(fis);
@@ -149,6 +151,35 @@ public class MainGenerator
 		} catch (Exception e)
 		{
 			// TODO: handle exception
+		}
+	}
+
+	private void genPosts(File postsFolder, File out)
+	{
+		Document postsDoc = new Document(DocumentType.HTMLTransitional);
+		initDocumentHeader(postsDoc, "Posts", out, null, true);
+		for (File folder : postsFolder.listFiles())
+		{
+			File postsXml = new File("" + folder + SDO.SLASH + "postinfo.xml");
+			Properties props = new Properties();
+			try (FileInputStream fis = new FileInputStream(postsXml))
+			{
+				props.loadFromXML(fis);
+				Div singlePost = new Div();
+				singlePost.setCSSClass("comment");
+				singlePost.appendChild(wrapInfos(PostInfoKey.values(), props, true));
+				postsDoc.body.appendChild(singlePost);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		try (FileWriter fw = new FileWriter(out))
+		{
+			fw.write(postsDoc.write());
+		} catch (IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
 
@@ -359,6 +390,7 @@ public class MainGenerator
 		menuList = appendItem(menuList, htmlDir, new File("" + out_dir + SDO.SLASH + "index.html"), "Home");
 		menuList = appendItem(menuList, htmlDir, new File("" + out_dir + SDO.SLASH + "albums.html"), "Alben");
 		menuList = appendItem(menuList, htmlDir, new File("" + out_dir + SDO.SLASH + "groups.html"), "Gruppen");
+		menuList = appendItem(menuList, htmlDir, new File("" + out_dir + SDO.SLASH + "posts.html"), "Posts");
 		container.appendChild(menuList);
 		return container;
 	}
