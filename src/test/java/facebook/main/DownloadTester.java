@@ -56,7 +56,7 @@ public class DownloadTester
 	@Test
 	public void testUserInfo()
 	{
-		ser.userInfo(facebook.users().getMe(), fbc, true, true);
+		ser.userInfo(facebook.users().getMe(), fbc, facebook, true, true);
 	}
 
 	@Test

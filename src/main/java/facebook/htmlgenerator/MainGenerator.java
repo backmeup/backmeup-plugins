@@ -38,6 +38,7 @@ import facebook.storage.CommentKey;
 import facebook.storage.Datatype;
 import facebook.storage.EndingFilter;
 import facebook.storage.FilePaths;
+import facebook.storage.GroupInfoKey;
 import facebook.storage.PhotoInfoKey;
 import facebook.storage.ReplaceID;
 import facebook.storage.SDO;
@@ -67,11 +68,14 @@ public class MainGenerator
 
 		Document index = new Document(DocumentType.HTMLTransitional);
 
-		index.body.appendChild(menuGenerator());
+		// index.body.appendChild(menuGenerator());
 
 		Properties userProps = new Properties();
 		File target = new File("" + working_dir + SDO.SLASH + FilePaths.USER_FILE);
 		File indexTarget = new File("" + out_dir + SDO.SLASH + "index.html");
+		initDocumentHeader(index, "Ihr Acoount", indexTarget, null, true);
+		File groups = new File(indexTarget.getParent() + SDO.SLASH + "groups.html");
+		genGroups(groups, new File(working_dir + SDO.SLASH + "groups"));
 		try (FileInputStream fis = new FileInputStream(target);)
 		{
 			userProps.loadFromXML(fis);
@@ -213,6 +217,35 @@ public class MainGenerator
 		}
 	}
 
+	public void genGroups(File out, File in)
+	{
+		Document groupList = new Document(DocumentType.HTMLTransitional);
+		initDocumentHeader(groupList, "Gruppen", out, null, true);
+		Ul groupListNode = new Ul();
+		for (File file : in.listFiles(new EndingFilter("xml")))
+		{
+			try (FileInputStream fis = new FileInputStream(file))
+			{
+				Properties props = new Properties();
+				props.loadFromXML(fis);
+				Li item = new Li();
+				item.appendText(props.getProperty(GroupInfoKey.NAME.toString()));
+				groupListNode.appendChild(item);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		groupList.body.appendChild(groupListNode);
+		try (FileWriter fw = new FileWriter(out))
+		{
+			fw.write(groupList.write());
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 	public Node genComment(File dir)
 	{
 		Div container = new Div();
@@ -302,6 +335,11 @@ public class MainGenerator
 		albumLink.setHref(FileUtils.getWayTo(out_dir, new File("" + out_dir + SDO.SLASH + "albums.html")));
 		albumListedLink.appendChild(albumLink);
 		albumLink.appendText("Alben");
+		Li groupsListedLink = new Li();
+		A groupsLink = new A();
+		groupsLink.setHref(FileUtils.getWayTo(out_dir, new File("" + out_dir + SDO.SLASH + "groups.html")));
+		groupsListedLink.appendChild(groupsLink);
+		items.appendChild(groupsListedLink);
 		items.appendChild(albumListedLink);
 		menubar.appendChild(items);
 		return menubar;
@@ -342,6 +380,7 @@ public class MainGenerator
 		Ul menuList = new Ul();
 		menuList = appendItem(menuList, htmlDir, new File("" + out_dir + SDO.SLASH + "index.html"), "Home");
 		menuList = appendItem(menuList, htmlDir, new File("" + out_dir + SDO.SLASH + "albums.html"), "Alben");
+		menuList = appendItem(menuList, htmlDir, new File("" + out_dir + SDO.SLASH + "groups.html"), "Gruppen");
 		container.appendChild(menuList);
 		return container;
 	}

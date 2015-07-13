@@ -20,9 +20,11 @@ import java.util.Properties;
 import com.hp.gagawa.java.elements.A;
 import com.restfb.Connection;
 import com.restfb.FacebookClient;
+import com.restfb.experimental.api.Facebook;
 import com.restfb.types.Album;
 import com.restfb.types.CategorizedFacebookType;
 import com.restfb.types.Comment;
+import com.restfb.types.Group;
 import com.restfb.types.NamedFacebookType;
 import com.restfb.types.Photo;
 import com.restfb.types.Photo.Tag;
@@ -44,7 +46,7 @@ public class Serializer
 	private long maxPics;
 	private ArrayList<String> skipAlbums;
 
-	public HashMap<SerializerKey, Object> userInfo(User user, FacebookClient fcb, boolean thisIsMe, boolean makeDirs)
+	public HashMap<SerializerKey, Object> userInfo(User user, FacebookClient fcb, Facebook facebook, boolean thisIsMe, boolean makeDirs)
 	{
 		if (user == null)
 			return new HashMap<SerializerKey, Object>();
@@ -93,6 +95,9 @@ public class Serializer
 					albumInfo(album, fcb);
 				}
 		}
+		Connection<Group> groups = fcb.fetchConnection("me/groups", Group.class);
+		for (Group group : groups.getData())
+			groupInfo(group, fcb);
 		Properties props = new Properties();
 		HashMap<String, String> newinfos = dataValidator(infos);
 		props.putAll(newinfos);
@@ -102,6 +107,37 @@ public class Serializer
 		} catch (IOException e)
 		{
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return infos;
+	}
+
+	public HashMap<SerializerKey, Object> groupInfo(Group group, FacebookClient fbc)
+	{
+		HashMap<SerializerKey, Object> infos = new HashMap<>();
+		if (group == null)
+			return infos;
+		infos.put(GroupInfoKey.DESCRIPTION, group.getDescription());
+		infos.put(GroupInfoKey.ICON, group.getIcon());
+		infos.put(GroupInfoKey.ID, group.getId());
+		infos.put(GroupInfoKey.LAST_UPDATE, group.getUpdatedTime());
+		infos.put(GroupInfoKey.LINK, group.getLink());
+		infos.put(GroupInfoKey.METATDATA, group.getMetadata());
+		infos.put(GroupInfoKey.NAME, group.getName());
+		infos.put(GroupInfoKey.OWNER, group.getOwner());
+		infos.put(GroupInfoKey.PRIVACY, group.getPrivacy());
+		infos.put(GroupInfoKey.VENUE, group.getVenue());
+		File dir = new File(path + SDO.SLASH + "groups");
+		if (!dir.exists())
+			dir.mkdirs();
+		File file = new File("" + dir + SDO.SLASH + group.getId() + ".xml");
+		Properties props = new Properties();
+		props.putAll(dataValidator(infos));
+		try (FileOutputStream fos = new FileOutputStream(file))
+		{
+			props.storeToXML(fos, "Represents a group");
+		} catch (IOException e)
+		{
 			e.printStackTrace();
 		}
 		return infos;
@@ -202,6 +238,12 @@ public class Serializer
 		{
 			commentInfo(comment, new File("" + directory + SDO.SLASH + infos.get(PhotoInfoKey.COMMENT_DIR) + SDO.SLASH + comment.getId()));
 		}
+		downloadPhoto(photo, new File("" + directory + SDO.SLASH + infos.get(PhotoInfoKey.FILE)));
+		return infos;
+	}
+
+	public static void downloadPhoto(Photo photo, File out)
+	{
 		String url = photo.getSource();
 		String[] parts = url.split("/");
 		// remove URL parts which decrease the resolution
@@ -220,7 +262,7 @@ public class Serializer
 			sb.delete(sb.length() - 1, sb.length());
 			url = sb.toString();
 		}
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); FileOutputStream fw = new FileOutputStream("" + directory + SDO.SLASH + infos.get(PhotoInfoKey.FILE)); BufferedInputStream br = new BufferedInputStream(new URL(url).openStream());)
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); FileOutputStream fw = new FileOutputStream(out); BufferedInputStream br = new BufferedInputStream(new URL(url).openStream());)
 		{
 			byte[] puffer = new byte[1024];
 			int i = 0;
@@ -235,7 +277,6 @@ public class Serializer
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return infos;
 	}
 
 	public static void commentInfo(Comment comment, File dir)
