@@ -6,6 +6,7 @@ public enum PhotoInfoKey implements SerializerKey
 {
 	BACK_DATE("Erstellt", Datatype.DATE),
 	COMMENT_DIR("Kommentar Ordner", Datatype.OTHER),
+	COMMENT_INFO_FILENAME("Kommentar xml Position in Kommentarordner", Datatype.OTHER),
 	PUBLISH_DATE("Veröffentlicht", Datatype.DATE),
 	LIKES("Likes", Datatype.NUMBER),
 	LIKES_FROM_PEOPLE("Likes", Datatype.LIST),
@@ -14,8 +15,8 @@ public enum PhotoInfoKey implements SerializerKey
 	LAST_UPDATE("Zuletzt bearbeitet", Datatype.DATE),
 	FILE("Datei", Datatype.OTHER),
 	ID("ID", Datatype.OTHER),
-	FROM("gepostet von",Datatype.CFT),
-	TAGS("Tags",Datatype.LIST);
+	FROM("gepostet von", Datatype.CFT),
+	TAGS("Tags", Datatype.LIST);
 
 	private String label;
 	private Datatype type;

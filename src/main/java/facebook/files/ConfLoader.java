@@ -37,4 +37,9 @@ public class ConfLoader
 			e.printStackTrace();
 		}
 	}
+
+	public static boolean confExists()
+	{
+		return new File("properties.xml").exists();
+	}
 }

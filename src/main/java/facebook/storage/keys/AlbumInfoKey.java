@@ -9,6 +9,7 @@ public enum AlbumInfoKey implements SerializerKey
 	CREATED("Erstellungsdatum", Datatype.DATE),
 	DESCRIPTION("Beschreibung", Datatype.OTHER),
 	ORIGINAL_LINK("Originaler Link", Datatype.LINK),
+	PHOTO_DIR("Foto Verzeichnis", Datatype.OTHER),
 	PRIVACY("öffentliche Zugänglichkeit", Datatype.OTHER),
 	LAST_UPDATE("Zuletzt bearbeitet", Datatype.DATE),
 	DIRECTORY("Verzeichnis", Datatype.OTHER),
