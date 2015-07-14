@@ -34,6 +34,8 @@ import com.restfb.types.Place;
 import com.restfb.types.Post;
 import com.restfb.types.User;
 
+import facebook.files.CustomStringBuilder;
+import facebook.files.PropertyFile;
 import facebook.storage.keys.AlbumInfoKey;
 import facebook.storage.keys.CommentKey;
 import facebook.storage.keys.GroupInfoKey;
@@ -49,14 +51,31 @@ public class Serializer
 {
 	public static void generateAll(FacebookClient fbc, Facebook facebook, File dir, ArrayList<String> skipAlbums, long maxAlbumpics)
 	{
+		File list = new File("" + dir + SDO.SLASH + ".direcory.xml");
+		CustomStringBuilder builder = new CustomStringBuilder("|");
+		Properties listProps = new Properties();
 		userInfo(facebook.users().getMe(), fbc, facebook, true, true, new File("" + dir + SDO.SLASH + "user.xml"));
 		Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class);
 		for (Album album : albums.getData())
+		{
 			if (!skipAlbums.contains(album.getName()))
-				albumInfo(album, fbc, new File("" + dir + SDO.SLASH + "albums" + SDO.SLASH + album.getId() + SDO.SLASH + "albuminfo.xml"), maxAlbumpics);
+			{
+				File albumXml = new File("" + dir + SDO.SLASH + "albums" + SDO.SLASH + album.getId() + SDO.SLASH + "albuminfo.xml");
+				builder.append(FileUtils.getWayTo(dir, albumXml));
+				albumInfo(album, fbc, albumXml, maxAlbumpics);
+			}
+		}
+		listProps.put(PropertyFile.ALBUMS.toString(), builder.toString());
+		builder.empty();
 		Connection<Post> posts = fbc.fetchConnection("me/posts", Post.class);
 		for (Post post : posts.getData())
-			postInfo(post, new File("" + dir + SDO.SLASH + "posts" + SDO.SLASH + post.getId() + SDO.SLASH + "postinfo.xml"));
+		{
+			File postXml = new File("" + dir + SDO.SLASH + "posts" + SDO.SLASH + post.getId() + SDO.SLASH + "postinfo.xml");
+			builder.append(FileUtils.getWayTo(dir, postXml));
+			postInfo(post, postXml);
+		}
+		listProps.put(PropertyFile.POSTS.toString(), builder.toString());
+		builder.empty();
 		try
 		{
 			Connection<Page> pages = fbc.fetchConnection("me/pages", Page.class);
@@ -68,7 +87,19 @@ public class Serializer
 		}
 		Connection<Group> groups = fbc.fetchConnection("me/groups", Group.class);
 		for (Group group : groups.getData())
-			groupInfo(group, fbc, new File("" + dir + SDO.SLASH + "groups" + SDO.SLASH + group.getId() + SDO.SLASH + "groupinfo.xml"));
+		{
+			File groupXml = new File("" + dir + SDO.SLASH + "groups" + SDO.SLASH + group.getId() + SDO.SLASH + "groupinfo.xml");
+			builder.append(FileUtils.getWayTo(dir, groupXml));
+			groupInfo(group, fbc, groupXml);
+		}
+		listProps.put(PropertyFile.GROUPS.toString(), builder.toString());
+		try (FileOutputStream fos = new FileOutputStream(list))
+		{
+			listProps.storeToXML(fos, "list all xmls");
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public static HashMap<SerializerKey, Object> userInfo(User user, FacebookClient fcb, Facebook facebook, boolean thisIsMe, boolean makeDirs, File userXml)
@@ -113,21 +144,6 @@ public class Serializer
 		infos.put(UserInfoKey.WORK, user.getWork());
 		infos.put(UserInfoKey.NAME, user.getName());
 		infos.put(UserInfoKey.MIDDLE_NAME, user.getMiddleName());
-		/*
-		 * if (thisIsMe && fcb != null) { Connection<Album> albums =
-		 * fcb.fetchConnection("me/albums", Album.class); if
-		 * (!albums.getData().isEmpty()) for (Album album : albums.getData()) {
-		 * albumInfo(album, fcb); } }
-		 * 
-		 * File postsDir = new File(path + SDO.SLASH + "posts");
-		 * Connection<Post> posts = fcb.fetchConnection("me/posts", Post.class);
-		 * for (Post post : posts.getData()) postInfo(post, postsDir); File
-		 * pagesDir = new File(path + SDO.SLASH + "pages"); Connection<Page>
-		 * pages = fcb.fetchConnection("me/pages", Page.class); for (Page page :
-		 * pages.getData()) pageInfo(page, pagesDir); Connection<Group> groups =
-		 * fcb.fetchConnection("me/groups", Group.class); for (Group group :
-		 * groups.getData()) groupInfo(group, fcb);
-		 */
 		Properties props = new Properties();
 		HashMap<String, String> newinfos = dataValidator(infos);
 		props.putAll(newinfos);
@@ -227,6 +243,7 @@ public class Serializer
 		infos.put(AlbumInfoKey.CREATED, album.getCreatedTime());
 		infos.put(AlbumInfoKey.DESCRIPTION, album.getDescription());
 		infos.put(AlbumInfoKey.PHOTO_DIR, "./photos");
+		infos.put(AlbumInfoKey.PHOTO_INFO, "./photoinfo.xml");
 		infos.put(AlbumInfoKey.LAST_UPDATE, album.getUpdatedTime());
 		infos.put(AlbumInfoKey.ORIGINAL_LINK, album.getLink());
 		infos.put(AlbumInfoKey.PRIVACY, album.getPrivacy());
@@ -252,7 +269,7 @@ public class Serializer
 				ConsoleDrawer.drawProgress(20, (int) ((iterator / (((maxPics < 0) ? album.getCount() : maxPics) * 1.0)) * 20), iterator == 0);
 				if (!dir.exists())
 					dir.mkdirs();
-				photoInfo(photo, new File("" + FileUtils.resolveRelativePath(albumXml.getParentFile(), infos.get(AlbumInfoKey.PHOTO_DIR).toString()) + SDO.SLASH + photo.getId() + SDO.SLASH + "photoinfo.xml"));
+				photoInfo(photo, FileUtils.resolveRelativePath(new File("" + FileUtils.resolveRelativePath(albumXml.getParentFile(), infos.get(AlbumInfoKey.PHOTO_DIR).toString()) + SDO.SLASH + photo.getId()), infos.get(AlbumInfoKey.PHOTO_INFO).toString()));
 				iterator++;
 			}
 			if (breakLoop)
