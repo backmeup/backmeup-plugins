@@ -17,7 +17,8 @@ public enum AlbumInfoKey implements SerializerKey
 	NAME("Name", Datatype.OTHER),
 	LOCAL_COUNT("Anzahl der lokalen Fotos", Datatype.NUMBER),
 	COMES_FROM("Erstellt von", Datatype.CFT),
-	LOCATION("Ort", Datatype.OTHER);
+	LOCATION("Ort", Datatype.OTHER),
+	ID("ID", Datatype.OTHER);
 
 	private String label;
 	private Datatype type;

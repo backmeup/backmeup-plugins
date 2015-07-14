@@ -250,6 +250,7 @@ public class Serializer
 		infos.put(AlbumInfoKey.NAME, album.getName());
 		infos.put(AlbumInfoKey.COMES_FROM, album.getFrom());
 		infos.put(AlbumInfoKey.LOCATION, album.getLocation());
+		infos.put(AlbumInfoKey.ID, album.getId());
 		File dir = albumXml.getParentFile();
 		Connection<Photo> photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class);
 		System.out.print("Fetching Photos from " + album.getName() + ". This may take a while...\t\t");

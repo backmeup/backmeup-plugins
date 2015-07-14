@@ -99,33 +99,46 @@ public class MainGenerator
 		}
 	}
 
-	private void genAlbums(Document index)
+	private void genAlbums(File albumsHtml, ArrayList<File> albumsPropsFiles)
 	{
-		File albumFolder = new File("" + out_dir + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY);
+		File albumFolder = albumsHtml.getParentFile();
 		if (!albumFolder.exists())
 			albumFolder.mkdirs();
 		Document albums = new Document(DocumentType.HTMLTransitional);
-		File target = new File("" + out_dir + SDO.SLASH + "albums.html");
-		albums = initDocumentHeader(albums, "Alben", target, null, true);
+		albums = initDocumentHeader(albums, "Alben", albumsHtml, null, true);
 		Div albumContainer = new Div();
 		albumContainer.setCSSClass("picture_container");
 		Ul albumlist = new Ul();
-		for (File albumfolder : new File("" + work_dir + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY).listFiles())
+		for (File albumProps : albumsPropsFiles)
 		{
 			Properties albumsProps = new Properties();
-			File albumInfoFile = new File("" + work_dir + SDO.SLASH + FilePaths.ALBUM_INFO.toString().replace("" + ReplaceID.ALBUM_ID, albumfolder.getName()));
-			try (FileInputStream fis = new FileInputStream(albumInfoFile))
+			try (FileInputStream fis = new FileInputStream(albumProps))
 			{
 				albumsProps.loadFromXML(fis);
 				Div innerItem = new Div();
 				Li item = new Li();
-				String relativeImg = FileUtils.getWayTo(out_dir, albumfolder) + SDO.SLASH + albumsProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString()) + ".jpg";
+				// String relativeImg = FileUtils.getWayTo(out_dir, albumProps)
+				// + SDO.SLASH +
+				// albumsProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString())
+				// + ".jpg";
+				String relativeImg = "";
+				File coverXml = FileUtils.resolveRelativePath(FileUtils.resolveRelativePath(albumProps, albumsProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString()) + SDO.SLASH + albumsProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString())), albumsProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
+				try (FileInputStream fis2 = new FileInputStream(coverXml))
+				{
+					Properties coverProps = new Properties();
+					coverProps.loadFromXML(fis2);
+					relativeImg = FileUtils.getWayTo(albumsHtml, FileUtils.resolveRelativePath(coverXml, coverProps.getProperty(PhotoInfoKey.FILE.toString())));
+				} catch (IOException e)
+				{
+					e.printStackTrace();
+				}
 				A albumLink = new A();
-				Img cover = new Img("baum", relativeImg);
+				Img cover = new Img(albumsProps.getProperty(AlbumInfoKey.NAME.toString()), relativeImg);
 				innerItem.setCSSClass("album_picture");
 				innerItem.appendChild(cover);
 				albumLink.appendChild(innerItem);
-				albumLink.setHref(FileUtils.getWayTo(out_dir, new File("" + out_dir + SDO.SLASH + FilePaths.ALBUMS_DIRECTORY + SDO.SLASH + albumfolder.getName() + ".html")));
+				File singleAlbumHtml = new File("" + albumsHtml.getParentFile() + SDO.SLASH + albumsProps.getProperty(AlbumInfoKey.ID.toString()) + ".html");
+				albumLink.setHref(FileUtils.getWayTo(albumsHtml, singleAlbumHtml));
 				String albumName = albumsProps.getProperty(AlbumInfoKey.NAME.toString());
 				String desc = albumsProps.getProperty(AlbumInfoKey.DESCRIPTION.toString());
 				P textBelow = new P();
@@ -136,7 +149,7 @@ public class MainGenerator
 				innerItem.appendChild(textBelow);
 				item.appendChild(albumLink);
 				albumlist.appendChild(item);
-				genAlbum(albumFolder, albumfolder.getName());
+				genAlbum(albumsProps, albumProps, albumsHtml);
 			} catch (IOException e)
 			{
 				// TODO Auto-generated catch block
@@ -145,7 +158,7 @@ public class MainGenerator
 		}
 		albumContainer.appendChild(albumlist);
 		albums.body.appendChild(albumContainer);
-		try (FileWriter fw = new FileWriter(target))
+		try (FileWriter fw = new FileWriter(albumsHtml))
 		{
 			fw.write(albums.write());
 		} catch (Exception e)
@@ -183,61 +196,70 @@ public class MainGenerator
 		}
 	}
 
-	private void genAlbum(File albumsFolder, String albumID)
+	private void genAlbum(/* File albumsFolder, String albumID */Properties albumProps, File albumXml, File albumHtml)
 	{
 		Document albumFile = new Document(DocumentType.HTMLTransitional);
-		File photoHtmlContainer = new File("" + albumsFolder + SDO.SLASH + albumID);
+		File photoHtmlContainer = albumHtml.getParentFile();
 		if (!photoHtmlContainer.exists())
 			photoHtmlContainer.mkdirs();
-		Properties albumXml = new Properties();
-		File target = new File("" + albumsFolder + SDO.SLASH + albumID + ".html");
-		try (FileInputStream fis = new FileInputStream("" + work_dir + SDO.SLASH + FilePaths.ALBUM_INFO.toString().replace(ReplaceID.ALBUM_ID.toString(), albumID)); FileWriter fw = new FileWriter(target))
+		try (FileWriter fw = new FileWriter(albumHtml))
 		{
-			albumXml.loadFromXML(fis);
-			File originalAlbumFolder = new File("" + work_dir + SDO.SLASH + FilePaths.ALBUM_DIRECTORY.toString().replace(ReplaceID.ALBUM_ID.toString(), albumID));
-			File cover = new File("" + originalAlbumFolder + SDO.SLASH + albumXml.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString()) + ".jpg");
-			albumFile = initDocumentHeader(albumFile, albumXml.getProperty(AlbumInfoKey.NAME.toString(), "Album"), target, cover, true);
+			// File originalAlbumFolder = ;
+			// File cover = new File("" + originalAlbumFolder + SDO.SLASH +
+			// albumProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString()) +
+			// ".jpg");
+			File coverXml = FileUtils.resolveRelativePath(FileUtils.resolveRelativePath(albumXml, albumProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString()) + SDO.SLASH + albumProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString())), albumProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
+			File cover = new File("");
+			try (FileInputStream fis = new FileInputStream(coverXml))
+			{
+				Properties coverProps = new Properties();
+				coverProps.loadFromXML(fis);
+				cover = FileUtils.resolveRelativePath(coverXml, coverProps.getProperty(PhotoInfoKey.FILE.toString()));
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			albumFile = initDocumentHeader(albumFile, albumProps.getProperty(AlbumInfoKey.NAME.toString(), "Album"), albumHtml, cover, true);
 			Div photoContainer = new Div();
 			photoContainer.setCSSClass("picture_container");
 			Ul photoList = new Ul();
-			for (File photoXml : originalAlbumFolder.listFiles(new EndingFilter("xml")))
+			for (File photoFolder : FileUtils.resolveRelativePath(albumXml, albumProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString())).listFiles())
 			{
-				if (!photoXml.getName().equalsIgnoreCase("albuminfo.xml"))
-					try (FileInputStream fisPhotoXml = new FileInputStream(photoXml))
-					{
-						Properties photoProps = new Properties();
-						photoProps.loadFromXML(fisPhotoXml);
-						Li photoItem = new Li();
-						A photoLink = new A();
-						photoLink.setHref(FileUtils.getWayTo(albumsFolder, new File("" + photoHtmlContainer + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.ID.toString()))) + ".html");
-						Div innerItem = new Div().setCSSClass("album_picture");
-						String relativePhoto = FileUtils.getWayTo(albumsFolder, new File("" + originalAlbumFolder + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.FILE.toString())));
-						innerItem.appendChild(new Img("Photo", relativePhoto));
-						innerItem.appendChild(new P().appendText("Likes: " + photoProps.getProperty(PhotoInfoKey.LIKES.toString())));
-						photoLink.appendChild(innerItem);
-						photoItem.appendChild(photoLink);
-						photoList.appendChild(photoItem);
-						ArrayList<Node> commentNodes = new ArrayList<>();
-						File comments = new File("" + photoXml.getParentFile() + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
-						if (comments.exists())
-							for (File f : comments.listFiles())
-								commentNodes.add(genComment(f));
-						genPhotoFile(photoProps, photoHtmlContainer, originalAlbumFolder, commentNodes.toArray(new Node[commentNodes.size()]));
-					} catch (IOException e)
-					{
-						e.printStackTrace();
-					}
+				File photoXml = FileUtils.resolveRelativePath(photoFolder, albumProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
+				try (FileInputStream fisPhotoXml = new FileInputStream(photoXml))
+				{
+					Properties photoProps = new Properties();
+					photoProps.loadFromXML(fisPhotoXml);
+					Li photoItem = new Li();
+					A photoLink = new A();
+					File photoHtml = new File("" + albumHtml.getParentFile() + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.ID.toString()) + ".html");
+					photoLink.setHref(FileUtils.getWayTo(albumHtml, photoHtml));
+					Div innerItem = new Div().setCSSClass("album_picture");
+					String relativePhoto = FileUtils.getWayTo(albumHtml, FileUtils.resolveRelativePath(photoXml, photoProps.getProperty(PhotoInfoKey.FILE.toString())));
+					innerItem.appendChild(new Img("Photo", relativePhoto));
+					innerItem.appendChild(new P().appendText("Likes: " + photoProps.getProperty(PhotoInfoKey.LIKES.toString())));
+					photoLink.appendChild(innerItem);
+					photoItem.appendChild(photoLink);
+					photoList.appendChild(photoItem);
+					ArrayList<Node> commentNodes = new ArrayList<>();
+					File comments = new File("" + photoXml.getParentFile() + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
+					if (comments.exists())
+						for (File f : comments.listFiles())
+							commentNodes.add(genComment(f));
+					genPhotoFile(photoProps, photoHtml, photoXml, commentNodes.toArray(new Node[commentNodes.size()]));
+				} catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				Div sideInfos = new Div();
+				sideInfos.setCSSClass("sidebar");
+				sideInfos.appendChild(wrapInfos(AlbumInfoKey.values(), albumProps, true));
+
+				photoContainer.appendChild(photoList);
+				albumFile.body.appendChild(sideInfos);
+				albumFile.body.appendChild(photoContainer);
+				fw.write(albumFile.write());
 			}
-
-			Div sideInfos = new Div();
-			sideInfos.setCSSClass("sidebar");
-			sideInfos.appendChild(wrapInfos(AlbumInfoKey.values(), albumXml, true));
-
-			photoContainer.appendChild(photoList);
-			albumFile.body.appendChild(sideInfos);
-			albumFile.body.appendChild(photoContainer);
-			fw.write(albumFile.write());
-
 		} catch (IOException e)
 		{
 			// TODO Auto-generated catch block
@@ -256,7 +278,7 @@ public class MainGenerator
 			{
 				Properties props = new Properties();
 				props.loadFromXML(fis);
-				File groupHtml = new File("" + out.getParent() + SDO.SLASH + "groups" + SDO.SLASH + props.getProperty(GroupInfoKey.ID.toString())+".html");
+				File groupHtml = new File("" + out.getParent() + SDO.SLASH + "groups" + SDO.SLASH + props.getProperty(GroupInfoKey.ID.toString()) + ".html");
 				genGroup(props, groupHtml);
 				Li item = new Li();
 				A link = new A();
@@ -378,13 +400,12 @@ public class MainGenerator
 		return sb.toString();
 	}
 
-	public void genPhotoFile(Properties photoProps, File dir, File albumDir, Node... add)
+	public void genPhotoFile(Properties photoProps, File photoHtml, File photoXml, Node... add)
 	{
-		File target = new File("" + dir + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.ID.toString()) + ".html");
-		File icon = new File("" + albumDir + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.FILE.toString()));
+		File icon = FileUtils.resolveRelativePath(photoXml, photoProps.getProperty(PhotoInfoKey.FILE.toString()));
 		Document photoDoc = new Document(DocumentType.HTMLTransitional);
-		photoDoc = initDocumentHeader(photoDoc, photoProps.getProperty(PhotoInfoKey.ID.toString(), "Foto"), target, icon, true);
-		String relativeImg = FileUtils.getWayTo(dir, icon);
+		photoDoc = initDocumentHeader(photoDoc, photoProps.getProperty(PhotoInfoKey.ID.toString(), "Foto"), photoHtml, icon, true);
+		String relativeImg = FileUtils.getWayTo(photoHtml, icon);
 		Img picture = new Img("Photo", relativeImg);
 		picture.setCSSClass("picture");
 		Div sideInfos = new Div();
@@ -396,7 +417,7 @@ public class MainGenerator
 			for (Node n : add)
 				if (n != null)
 					photoDoc.body.appendChild(n);
-		try (FileWriter fw = new FileWriter(target))
+		try (FileWriter fw = new FileWriter(photoHtml))
 		{
 			fw.write(photoDoc.write());
 		} catch (IOException e)
