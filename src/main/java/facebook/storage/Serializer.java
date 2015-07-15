@@ -19,8 +19,10 @@ import java.util.Properties;
 
 import com.hp.gagawa.java.elements.A;
 import com.restfb.Connection;
+import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
-import com.restfb.exception.FacebookOAuthException;
+import com.restfb.Parameter;
+import com.restfb.Version;
 import com.restfb.experimental.api.Facebook;
 import com.restfb.types.Album;
 import com.restfb.types.CategorizedFacebookType;
@@ -55,7 +57,9 @@ public class Serializer
 		CustomStringBuilder builder = new CustomStringBuilder("|");
 		Properties listProps = new Properties();
 		File userFile = new File("" + dir + SDO.SLASH + "user.xml");
-		userInfo(facebook.users().getMe(), fbc, facebook, true, true, userFile);
+		Parameter userParam = Parameter.with("fields", "about,address,age_range,bio,birthday,context,currency,devices,education,email,first_name,gender,hometown,inspirational_people,install_type,installed,interested_in,is_verified,languages,last_name,link,location,meeting_for,middle_name,name,name_format,payment_pricepoints,test_group,political,relationship_status,religion,security_settings,significant_other,sports,quotes,third_party_id,timezone,updated_time,verified,video_upload_limits,viewer_can_send_gift,website,work,cover");
+		User user = fbc.fetchObject("me", User.class, userParam);
+		userInfo(user, fbc, facebook, true, true, userFile);
 		Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class);
 		for (Album album : albums.getData())
 		{
@@ -77,16 +81,15 @@ public class Serializer
 		}
 		listProps.put(PropertyFile.POSTS.toString(), builder.toString());
 		builder.empty();
-		try
+		for (String pageToken : facebook.pages().fetchAllAccessTokens().values())
 		{
-			Connection<Page> pages = fbc.fetchConnection("me/pages", Page.class);
-			for (Page page : pages.getData())
-				pageInfo(page, new File("" + dir + SDO.SLASH + "pages" + SDO.SLASH + page.getId() + SDO.SLASH + "pageinfo.xml"));
-		} catch (FacebookOAuthException e)
-		{
-			System.out.println("this page does not exist");
+			FacebookClient fc = new DefaultFacebookClient(pageToken, Version.VERSION_2_3);
+			Parameter parameter = Parameter.with("fields", "id,about,access_token,affiliation,app_id,artists_we_like,attire,awards,band_interests,band_members,best_page,bio,birthday,booking_agent,built,business,can_post,category,category_list,company_overview,cover,culinary_team,current_location,description,description_html,directed_by,emails,features,food_styles,founded,general_info,general_manager,genre,global_brand_page_name,has_added_app,hometown,hours,influences,is_community_page,is_permanently_closed,is_published,is_unclaimed,is_verified,link,location,mission,mpg,name,network,new_like_count,offer_eligible,parent_page,parking,payment_options,personal_info,personal_interests,pharma_safety_info,phone,plot_outline,press_contact,price_range,produced_by,products,promotion_eligible,promotion_ineligible_reason,public_transit,record_label,release_date,restaurant_services,restaurant_specialties,schedule,screenplay_by,season,starring,store_number,studio,unread_message_count,unread_notif_count,unseen_message_count,username,website,were_here_count,written_by,checkins,likes,members");
+			Page page = fc.fetchObject("me", Page.class, parameter);
+			pageInfo(page, new File("" + dir + SDO.SLASH + "pages" + SDO.SLASH + page.getId() + SDO.SLASH + "pageinfo.xml"));
 		}
-		Connection<Group> groups = fbc.fetchConnection("me/groups", Group.class);
+		Parameter groupParams = Parameter.with("fields", "id,cover,description,email,icon,link,member_request_count,name,owner,parent,privacy,updated_time");
+		Connection<Group> groups = fbc.fetchConnection("me/groups", Group.class, groupParams);
 		for (Group group : groups.getData())
 		{
 			File groupXml = new File("" + dir + SDO.SLASH + "groups" + SDO.SLASH + group.getId() + SDO.SLASH + "groupinfo.xml");
@@ -433,6 +436,7 @@ public class Serializer
 		infos.put(PageInfoKey.MEMBERS, page.getMembers());
 		infos.put(PageInfoKey.MISSION, page.getMission());
 		infos.put(PageInfoKey.MPG, page.getMpg());
+		infos.put(PageInfoKey.NAME, page.getName());
 		infos.put(PageInfoKey.NETWORK, page.getNetwork());
 		infos.put(PageInfoKey.NEW_LIKE_COUNT, page.getNewLikeCount());
 		infos.put(PageInfoKey.PAYMENT_OPTIONS, page.getPaymentOptions());
@@ -466,6 +470,8 @@ public class Serializer
 		infos.put(PageInfoKey.WEBSITE, page.getWebsite());
 		infos.put(PageInfoKey.WERE_HRER, page.getWereHereCount());
 		infos.put(PageInfoKey.WRITTEN_BY, page.getWrittenBy());
+		if (!pageXml.getParentFile().exists())
+			pageXml.getParentFile().mkdirs();
 		Properties props = new Properties();
 		props.putAll(dataValidator(infos));
 		try (FileOutputStream fos = new FileOutputStream(pageXml))

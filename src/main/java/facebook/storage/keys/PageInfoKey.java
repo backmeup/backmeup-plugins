@@ -55,6 +55,7 @@ public enum PageInfoKey implements SerializerKey
 	MEMBERS("Mitglieder", Datatype.OTHER),
 	MISSION("Aufgabe", Datatype.OTHER),
 	MPG("MPG", Datatype.OTHER),
+	NAME("Name", Datatype.OTHER),
 	NETWORK("Fersehnetzwerk", Datatype.OTHER),
 	NEW_LIKE_COUNT("Aktualisierte Likes", Datatype.OTHER),
 	PAYMENT_OPTIONS("Zahlungsmöglichkeiten", Datatype.OTHER),
