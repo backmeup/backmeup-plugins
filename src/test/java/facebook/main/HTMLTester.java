@@ -18,28 +18,29 @@ import facebook.htmlgenerator.MainGenerator;
 public class HTMLTester
 {
 	private MainGenerator mainGen;
-	private boolean genConfig = false;
 	private int circles = 0;
+	private String path;
+	private File target;
 
 	@Before
 	public void forceJunit()
 	{
 		if (circles == 0)
 		{
-			if (genConfig)
+			if (!ConfLoader.confExists())
 				ConfLoader.genProperties();
 			Properties props = ConfLoader.getProperties();
-			String path = props.getProperty(PropertyOption.DIRECTORY.toString());
-			mainGen = new MainGenerator(path);
+			path = props.getProperty(PropertyOption.DIRECTORY.toString());
+			mainGen = new MainGenerator();
 			File mainCss = new File("main.css");
 			File menuCss = new File("menu.css");
 			try
 			{
-				File target = new File(path);
+				target = new File(props.getProperty(PropertyOption.HTML_DIR.toString()));
 				if (!target.exists())
 					target.mkdirs();
-				Files.copy(mainCss.toPath(), new FileOutputStream(new File("" + target + "/out/main.css")));
-				Files.copy(menuCss.toPath(), new FileOutputStream(new File("" + target + "/out/menu.css")));
+				Files.copy(mainCss.toPath(), new FileOutputStream(new File("" + target + "/main.css")));
+				Files.copy(menuCss.toPath(), new FileOutputStream(new File("" + target + "/menu.css")));
 			} catch (IOException e)
 			{
 				e.printStackTrace();
@@ -57,7 +58,7 @@ public class HTMLTester
 	@Test
 	public void testGenOverview()
 	{
-		mainGen.genOverview();
+		mainGen.genOverview(target, new File(path));
 	}
 
 }

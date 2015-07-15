@@ -49,12 +49,13 @@ import facebook.utils.FileUtils;
 
 public class Serializer
 {
-	public static void generateAll(FacebookClient fbc, Facebook facebook, File dir, ArrayList<String> skipAlbums, long maxAlbumpics)
+	public static void generateAll(FacebookClient fbc, Facebook facebook, File coreFile, ArrayList<String> skipAlbums, long maxAlbumpics)
 	{
-		File list = new File("" + dir + SDO.SLASH + ".direcory.xml");
+		File dir = coreFile.getParentFile();
 		CustomStringBuilder builder = new CustomStringBuilder("|");
 		Properties listProps = new Properties();
-		userInfo(facebook.users().getMe(), fbc, facebook, true, true, new File("" + dir + SDO.SLASH + "user.xml"));
+		File userFile = new File("" + dir + SDO.SLASH + "user.xml");
+		userInfo(facebook.users().getMe(), fbc, facebook, true, true, userFile);
 		Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class);
 		for (Album album : albums.getData())
 		{
@@ -93,7 +94,8 @@ public class Serializer
 			groupInfo(group, fbc, groupXml);
 		}
 		listProps.put(PropertyFile.GROUPS.toString(), builder.toString());
-		try (FileOutputStream fos = new FileOutputStream(list))
+		listProps.put(PropertyFile.USER.toString(), FileUtils.getWayTo(coreFile, userFile));
+		try (FileOutputStream fos = new FileOutputStream(coreFile))
 		{
 			listProps.storeToXML(fos, "list all xmls");
 		} catch (IOException e)
@@ -257,6 +259,9 @@ public class Serializer
 		long iterator = 0;
 		Iterator<List<Photo>> it = photosConn.iterator();
 		boolean breakLoop = false;
+		if (!albumXml.getParentFile().exists())
+			albumXml.getParentFile().mkdirs();
+		File albumPhotos = FileUtils.resolveRelativePath(albumXml.getParentFile(), infos.get(AlbumInfoKey.PHOTO_DIR).toString());
 		while (it.hasNext())
 		{
 			List<Photo> photos = it.next();
@@ -270,7 +275,11 @@ public class Serializer
 				ConsoleDrawer.drawProgress(20, (int) ((iterator / (((maxPics < 0) ? album.getCount() : maxPics) * 1.0)) * 20), iterator == 0);
 				if (!dir.exists())
 					dir.mkdirs();
-				photoInfo(photo, FileUtils.resolveRelativePath(new File("" + FileUtils.resolveRelativePath(albumXml.getParentFile(), infos.get(AlbumInfoKey.PHOTO_DIR).toString()) + SDO.SLASH + photo.getId()), infos.get(AlbumInfoKey.PHOTO_INFO).toString()));
+				File photoDir = new File("" + albumPhotos + SDO.SLASH + photo.getId());
+				if (!photoDir.exists())
+					photoDir.mkdirs();
+				File photoXml = FileUtils.resolveRelativePath(photoDir, infos.get(AlbumInfoKey.PHOTO_INFO).toString());
+				photoInfo(photo, photoXml);
 				iterator++;
 			}
 			if (breakLoop)
@@ -314,12 +323,9 @@ public class Serializer
 		HashMap<String, String> newinfos = dataValidator(infos);
 		Properties props = new Properties();
 		props.putAll(newinfos);
-		if (!photoXml.getParentFile().exists())
-			photoXml.getParentFile().mkdirs();
 		try (FileOutputStream fos = new FileOutputStream(photoXml))
 		{
 			props.storeToXML(fos, "Infos about photo " + photo.getId());
-			fos.flush();
 		} catch (IOException e)
 		{
 			// TODO Auto-generated catch block

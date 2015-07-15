@@ -35,9 +35,6 @@ import com.hp.gagawa.java.elements.Ul;
 
 import facebook.files.PropertyFile;
 import facebook.storage.Datatype;
-import facebook.storage.EndingFilter;
-import facebook.storage.FilePaths;
-import facebook.storage.ReplaceID;
 import facebook.storage.SDO;
 import facebook.storage.keys.AlbumInfoKey;
 import facebook.storage.keys.CommentKey;
@@ -73,16 +70,22 @@ public class MainGenerator
 			e.printStackTrace();
 		}
 		Properties userProps = new Properties();
-		File target = FileUtils.resolveRelativePath(dirProps, dirs.getProperty(FilePaths.USER_FILE.toString()));
+		File target = FileUtils.resolveRelativePath(dirProps.getParentFile(), dirs.getProperty(PropertyFile.USER.toString()));
 		File indexTarget = new File("" + root + SDO.SLASH + "index.html");
 		initDocumentHeader(index, "Ihr Account", indexTarget, null, root, true);
-		File groups = new File("" + root + SDO.SLASH + "groups.html");
-		genGroups(groups, FileUtils.resolveRelativePath(dirProps, dirs.getProperty(PropertyFile.GROUPS.toString())), root);
+		File groups = new File("" + root + SDO.SLASH + "groups" + SDO.SLASH + "groups.html");
+		ArrayList<File> groupXmls = new ArrayList<>();
+		for (String s : dirs.getProperty(PropertyFile.GROUPS.toString()).split("\\|"))
+		{
+			File singleFile = FileUtils.resolveRelativePath(dirProps.getParentFile(), s);
+			groupXmls.add(singleFile);
+		}
+		groupOverview(groups, root, groupXmls);
 		ArrayList<File> postFiles = new ArrayList<>();
-		for (String s : dirs.getProperty(PropertyFile.POSTS.toString()).split("|"))
-			postFiles.add(FileUtils.resolveRelativePath(dirProps, s));
-		genPosts(postFiles, new File("" + root + SDO.SLASH + "posts"), root);
-		try (FileInputStream fis = new FileInputStream(target);)
+		for (String s : dirs.getProperty(PropertyFile.POSTS.toString()).split("\\|"))
+			postFiles.add(FileUtils.resolveRelativePath(dirProps.getParentFile(), s));
+		genPosts(postFiles, new File("" + root + SDO.SLASH + "posts.html"), root);
+		try (FileInputStream fis = new FileInputStream(target))
 		{
 			userProps.loadFromXML(fis);
 		} catch (IOException e)
@@ -96,8 +99,9 @@ public class MainGenerator
 		sideInfos.appendChild(wrapInfos(UserInfoKey.values(), userProps, true));
 		index.body.appendChild(sideInfos);
 		ArrayList<File> albumFiles = new ArrayList<>();
-		
-		genAlbums(new File(""+root+SDO.SLASH+"albums"+SDO.SLASH+"albums.html"), albumsPropsFiles, root);
+		for (String s : dirs.getProperty(PropertyFile.ALBUMS.toString()).split("\\|"))
+			albumFiles.add(FileUtils.resolveRelativePath(dirProps, s));
+		genAlbums(new File("" + root + SDO.SLASH + "albums" + SDO.SLASH + "albums.html"), albumFiles, root);
 		try (FileWriter fw = new FileWriter(indexTarget))
 		{
 			fw.write(index.write());
@@ -136,7 +140,8 @@ public class MainGenerator
 				{
 					Properties coverProps = new Properties();
 					coverProps.loadFromXML(fis2);
-					relativeImg = FileUtils.getWayTo(albumsHtml, FileUtils.resolveRelativePath(coverXml, coverProps.getProperty(PhotoInfoKey.FILE.toString())));
+					File photo = FileUtils.resolveRelativePath(coverXml, coverProps.getProperty(PhotoInfoKey.FILE.toString()));
+					relativeImg = FileUtils.getWayTo(albumsHtml, photo);
 				} catch (IOException e)
 				{
 					e.printStackTrace();
@@ -146,7 +151,7 @@ public class MainGenerator
 				innerItem.setCSSClass("album_picture");
 				innerItem.appendChild(cover);
 				albumLink.appendChild(innerItem);
-				File singleAlbumHtml = new File("" + albumsHtml.getParentFile() + SDO.SLASH + albumsProps.getProperty(AlbumInfoKey.ID.toString()) + ".html");
+				File singleAlbumHtml = new File("" + albumsHtml.getParentFile() + SDO.SLASH + albumsProps.getProperty(AlbumInfoKey.ID.toString()) + SDO.SLASH + "album.html");
 				albumLink.setHref(FileUtils.getWayTo(albumsHtml, singleAlbumHtml));
 				String albumName = albumsProps.getProperty(AlbumInfoKey.NAME.toString());
 				String desc = albumsProps.getProperty(AlbumInfoKey.DESCRIPTION.toString());
@@ -158,7 +163,7 @@ public class MainGenerator
 				innerItem.appendChild(textBelow);
 				item.appendChild(albumLink);
 				albumlist.appendChild(item);
-				genAlbum(albumsProps, albumProps, albumsHtml, root);
+				genAlbum(albumsProps, albumProps, singleAlbumHtml, root);
 			} catch (IOException e)
 			{
 				// TODO Auto-generated catch block
@@ -204,7 +209,7 @@ public class MainGenerator
 		}
 	}
 
-	private void genAlbum(/* File albumsFolder, String albumID */Properties albumProps, File albumXml, File albumHtml, File root)
+	private void genAlbum(Properties albumProps, File albumXml, File albumHtml, File root)
 	{
 		Document albumFile = new Document(DocumentType.HTMLTransitional);
 		File photoHtmlContainer = albumHtml.getParentFile();
@@ -212,10 +217,6 @@ public class MainGenerator
 			photoHtmlContainer.mkdirs();
 		try (FileWriter fw = new FileWriter(albumHtml))
 		{
-			// File originalAlbumFolder = ;
-			// File cover = new File("" + originalAlbumFolder + SDO.SLASH +
-			// albumProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString()) +
-			// ".jpg");
 			File coverXml = FileUtils.resolveRelativePath(FileUtils.resolveRelativePath(albumXml, albumProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString()) + SDO.SLASH + albumProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString())), albumProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
 			File cover = new File("");
 			try (FileInputStream fis = new FileInputStream(coverXml))
@@ -259,15 +260,15 @@ public class MainGenerator
 				{
 					e.printStackTrace();
 				}
-				Div sideInfos = new Div();
-				sideInfos.setCSSClass("sidebar");
-				sideInfos.appendChild(wrapInfos(AlbumInfoKey.values(), albumProps, true));
-
-				photoContainer.appendChild(photoList);
-				albumFile.body.appendChild(sideInfos);
-				albumFile.body.appendChild(photoContainer);
-				fw.write(albumFile.write());
 			}
+			Div sideInfos = new Div();
+			sideInfos.setCSSClass("sidebar");
+			sideInfos.appendChild(wrapInfos(AlbumInfoKey.values(), albumProps, true));
+
+			photoContainer.appendChild(photoList);
+			albumFile.body.appendChild(sideInfos);
+			albumFile.body.appendChild(photoContainer);
+			fw.write(albumFile.write());
 		} catch (IOException e)
 		{
 			// TODO Auto-generated catch block
@@ -275,34 +276,37 @@ public class MainGenerator
 		}
 	}
 
-	public void genGroups(File out, File in, File root)
+	public void groupOverview(File groupHtml, File root, ArrayList<File> groupXmls)
 	{
-		Document groupList = new Document(DocumentType.HTMLTransitional);
-		initDocumentHeader(groupList, "Gruppen", out, null, root, true);
-		Ul groupListNode = new Ul();
-		for (File file : in.listFiles(new EndingFilter("xml")))
+		if (!groupHtml.getParentFile().exists())
+			groupHtml.getParentFile().mkdirs();
+		Document groupsDoc = new Document(DocumentType.HTMLTransitional);
+		initDocumentHeader(groupsDoc, "Gruppen", groupHtml, null, root, true);
+		Ul groupList = new Ul();
+		for (File groupXml : groupXmls)
 		{
-			try (FileInputStream fis = new FileInputStream(file))
+			Properties groupProps = new Properties();
+			try (FileInputStream fis = new FileInputStream(groupXml))
 			{
-				Properties props = new Properties();
-				props.loadFromXML(fis);
-				File groupHtml = new File("" + out.getParent() + SDO.SLASH + "groups" + SDO.SLASH + props.getProperty(GroupInfoKey.ID.toString()) + ".html");
-				genGroup(props, groupHtml, root);
-				Li item = new Li();
-				A link = new A();
-				link.setHref(FileUtils.getWayTo(out.getParentFile(), groupHtml));
-				link.appendText(props.getProperty(GroupInfoKey.NAME.toString()));
-				item.appendChild(link);
-				groupListNode.appendChild(item);
+				groupProps.loadFromXML(fis);
+				Li groupItem = new Li();
+				A groupLink = new A();
+				File singleGroupHtml = new File("" + groupHtml.getParentFile() + SDO.SLASH + groupProps.getProperty(GroupInfoKey.ID.toString()));
+				genGroup(groupProps, singleGroupHtml, root);
+				groupLink.setHref(FileUtils.getWayTo(groupHtml, singleGroupHtml));
+				groupLink.appendText(groupProps.getProperty(GroupInfoKey.NAME.toString()));
+				groupItem.appendChild(groupLink);
+				groupList.appendChild(groupItem);
+
 			} catch (IOException e)
 			{
 				e.printStackTrace();
 			}
 		}
-		groupList.body.appendChild(groupListNode);
-		try (FileWriter fw = new FileWriter(out))
+		groupsDoc.body.appendChild(groupList);
+		try (FileWriter fw = new FileWriter(groupHtml))
 		{
-			fw.write(groupList.write());
+			fw.write(groupsDoc.write());
 		} catch (IOException e)
 		{
 			e.printStackTrace();
@@ -441,8 +445,8 @@ public class MainGenerator
 		container.setCSSClass("navContainer");
 		Ul menuList = new Ul();
 		menuList = appendItem(menuList, htmlDir, new File("" + root + SDO.SLASH + "index.html"), "Home");
-		menuList = appendItem(menuList, htmlDir, new File("" + root + SDO.SLASH + "albums.html"), "Alben");
-		menuList = appendItem(menuList, htmlDir, new File("" + root + SDO.SLASH + "groups.html"), "Gruppen");
+		menuList = appendItem(menuList, htmlDir, new File("" + root + SDO.SLASH + "albums/albums.html"), "Alben");
+		menuList = appendItem(menuList, htmlDir, new File("" + root + SDO.SLASH + "groups/groups.html"), "Gruppen");
 		menuList = appendItem(menuList, htmlDir, new File("" + root + SDO.SLASH + "posts.html"), "Posts");
 		container.appendChild(menuList);
 		return container;

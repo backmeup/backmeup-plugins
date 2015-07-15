@@ -16,22 +16,30 @@ public class FileUtils
 			from = from.getParentFile();
 		String[] fromParts = from.toString().split(SDO.SLASH.toString());
 		String[] toParts = to.toString().split(SDO.SLASH.toString());
+		boolean uncorrect = false;
 		for (String dirs : fromParts)
 		{
-			if (iterator >= toParts.length || !dirs.equals(toParts[iterator]))
+			if (uncorrect || iterator >= toParts.length || !dirs.equals(toParts[iterator]))
+			{
 				sb.append(".." + SDO.SLASH);
+				uncorrect = true;
+			}
 			iterator++;
 		}
 		iterator = 0;
+		uncorrect = false;
 		for (String dirs : toParts)
 		{
-			if (iterator >= fromParts.length || !dirs.equals(fromParts[iterator]))
+			if (uncorrect || iterator >= fromParts.length || !dirs.equals(fromParts[iterator]))
+			{
 				sb.append(toParts[iterator] + SDO.SLASH);
+				uncorrect = true;
+			}
 			iterator++;
 		}
 		if (sb.length() > 0)
 			sb.deleteCharAt(sb.length() - 1);
-		if (sb.length() > 0 && !sb.substring(0, 2).equals("./"))
+		if (sb.length() > 0 && !sb.substring(0, 2).equals("./") && !sb.subSequence(0, 3).equals("../"))
 			sb.insert(0, "./");
 		return sb.toString();
 	}
