@@ -282,7 +282,7 @@ public class Serializer
 				if (!photoDir.exists())
 					photoDir.mkdirs();
 				File photoXml = FileUtils.resolveRelativePath(photoDir, infos.get(AlbumInfoKey.PHOTO_INFO).toString());
-				photoInfo(photo, photoXml);
+				photoInfo(photo, photoXml, fcb);
 				iterator++;
 			}
 			if (breakLoop)
@@ -305,7 +305,7 @@ public class Serializer
 		return infos;
 	}
 
-	public static HashMap<SerializerKey, Object> photoInfo(Photo photo, File photoXml)
+	public static HashMap<SerializerKey, Object> photoInfo(Photo photo, File photoXml, FacebookClient fbc)
 	{
 		HashMap<SerializerKey, Object> infos = new HashMap<>();
 		if (photo == null)
@@ -335,8 +335,11 @@ public class Serializer
 			e.printStackTrace();
 		}
 		File commentsDir = FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.COMMENT_DIR).toString());
-		for (Comment comment : photo.getComments())
+		Parameter commParam = Parameter.with("fields", "id,attachment,can_comment,can_remove,can_hide,can_like,comment_count,created_time,from,like_count,message,message_tags,object,parent,user_likes");
+		for (Comment cmt : photo.getComments())
 		{
+
+			Comment comment = fbc.fetchObject(cmt.getId(), Comment.class, commParam);
 			File commentDir = new File("" + commentsDir + SDO.SLASH + comment.getId());
 			commentDir.mkdirs();
 			File commentXml = FileUtils.resolveRelativePath(commentDir, infos.get(PhotoInfoKey.COMMENT_INFO_FILENAME).toString());
