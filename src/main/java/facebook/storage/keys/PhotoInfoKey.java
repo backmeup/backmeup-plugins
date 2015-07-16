@@ -10,6 +10,7 @@ public enum PhotoInfoKey implements SerializerKey
 	PUBLISH_DATE("Veröffentlicht", Datatype.DATE),
 	LIKES("Likes", Datatype.NUMBER),
 	LIKES_FROM_PEOPLE("Likes", Datatype.LIST),
+	LOCATION("Ort", Datatype.OTHER),
 	ORIGINAL_LINK("Originaler Link", Datatype.LINK),
 	PLACE("Ort", Datatype.OTHER),
 	LAST_UPDATE("Zuletzt bearbeitet", Datatype.DATE),
@@ -17,12 +18,12 @@ public enum PhotoInfoKey implements SerializerKey
 	ID("ID", Datatype.OTHER),
 	FROM("gepostet von", Datatype.CFT),
 	TAGS("Tags", Datatype.LIST),
-	HEIGHT("Höhe",Datatype.NUMBER),
-	ICON("Icon",Datatype.OTHER),
-	IMAGES("Größen",Datatype.LIST),
-	NAME("Name",Datatype.OTHER),
-	PICTURE("Verkleinertes Bild",Datatype.OTHER),
-	WIDTH("Breite",Datatype.NUMBER);
+	HEIGHT("Höhe", Datatype.NUMBER),
+	ICON("Icon", Datatype.OTHER),
+	IMAGES("Größen", Datatype.LIST),
+	NAME("Name", Datatype.OTHER),
+	PICTURE("Verkleinertes Bild", Datatype.OTHER),
+	WIDTH("Breite", Datatype.NUMBER);
 
 	private String label;
 	private Datatype type;

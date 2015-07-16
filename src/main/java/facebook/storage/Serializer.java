@@ -27,12 +27,12 @@ import com.restfb.types.Album;
 import com.restfb.types.CategorizedFacebookType;
 import com.restfb.types.Comment;
 import com.restfb.types.Group;
+import com.restfb.types.Location;
 import com.restfb.types.NamedFacebookType;
 import com.restfb.types.Page;
 import com.restfb.types.Photo;
 import com.restfb.types.Photo.Image;
 import com.restfb.types.Photo.Tag;
-import com.restfb.types.Place;
 import com.restfb.types.Post;
 import com.restfb.types.User;
 
@@ -59,6 +59,8 @@ public class Serializer
 		File userFile = new File("" + dir + SDO.SLASH + "user.xml");
 		User user = fbc.fetchObject("me", User.class, MasterParameter.getParameterByClass(User.class));
 		userInfo(user, fbc, facebook, true, true, userFile);
+		// the Graph API only returns friends who are using this app, so it is
+		// useless to fetch them
 		Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class, MasterParameter.getParameterByClass(Album.class));
 		ArrayList<Album> albumList = new ArrayList<>(albums.getData());
 		Connection<Photo> photos = fbc.fetchConnection("me/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
@@ -331,6 +333,7 @@ public class Serializer
 		infos.put(PhotoInfoKey.ORIGINAL_LINK, photo.getLink());
 		infos.put(PhotoInfoKey.LIKES_FROM_PEOPLE, photo.getLikes());
 		infos.put(PhotoInfoKey.LIKES, photo.getLikes().size());
+		infos.put(PhotoInfoKey.LOCATION, (photo.getPlace() != null) ? photo.getPlace().getLocation() : null);
 		infos.put(PhotoInfoKey.PLACE, photo.getPlace());
 		infos.put(PhotoInfoKey.PUBLISH_DATE, photo.getCreatedTime());
 		infos.put(PhotoInfoKey.ID, photo.getId());
@@ -450,6 +453,7 @@ public class Serializer
 		infos.put(PageInfoKey.IS_VERIFIED, page.getIsVerified());
 		infos.put(PageInfoKey.LIKES, page.getLikes());
 		infos.put(PageInfoKey.LINK, page.getLink());
+		infos.put(PageInfoKey.LOCATION, page.getLocation());
 		infos.put(PageInfoKey.MEMBERS, page.getMembers());
 		infos.put(PageInfoKey.MISSION, page.getMission());
 		infos.put(PageInfoKey.MPG, page.getMpg());
@@ -630,12 +634,12 @@ public class Serializer
 				for (Object o : list)
 					sb.append(packList(o));
 				check = false;
-			} else if (object instanceof Place && check)
+			} else if (object instanceof Location && check)
 			{
-				Place p = (Place) object;
+				Location loc = (Location) object;
 				A a = new A();
-				a.setHref("https://www.google.at/maps/@" + p.getLocation().getLatitude() + "," + p.getLocation().getLongitude() + ",17z");
-				a.appendText(p.getName() + ", " + p.getLocation().getCity() + ", " + p.getLocation().getCountry());
+				a.setHref("https://www.google.at/maps/@" + loc.getLatitude() + "," + loc.getLongitude() + ",17z");
+				a.appendText(loc.getStreet() + ", " + loc.getCity() + ", " + loc.getState() + ", " + loc.getCountry());
 				sb.append(a.write());
 				check = false;
 			} else if (object instanceof NamedFacebookType && check)

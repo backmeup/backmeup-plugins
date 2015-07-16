@@ -22,6 +22,7 @@ import com.hp.gagawa.java.Node;
 import com.hp.gagawa.java.elements.A;
 import com.hp.gagawa.java.elements.Br;
 import com.hp.gagawa.java.elements.Div;
+import com.hp.gagawa.java.elements.H1;
 import com.hp.gagawa.java.elements.Img;
 import com.hp.gagawa.java.elements.Li;
 import com.hp.gagawa.java.elements.Link;
@@ -371,6 +372,12 @@ public class MainGenerator
 		sidebar.setCSSClass("sidebar");
 		sidebar.appendChild(wrapInfos(PageInfoKey.values(), pageProps, true));
 		pageDoc.body.appendChild(sidebar);
+		Div realContent = new Div();
+		realContent.setCSSClass("page");
+		H1 head = new H1();
+		head.appendText(pageProps.getProperty(PageInfoKey.NAME.toString()));
+		realContent.appendChild(head);
+		pageDoc.body.appendChild(realContent);
 		try (FileWriter fw = new FileWriter(pageHtml))
 		{
 			fw.write(pageDoc.write());
