@@ -31,6 +31,7 @@ import com.restfb.types.Group;
 import com.restfb.types.NamedFacebookType;
 import com.restfb.types.Page;
 import com.restfb.types.Photo;
+import com.restfb.types.Photo.Image;
 import com.restfb.types.Photo.Tag;
 import com.restfb.types.Place;
 import com.restfb.types.Post;
@@ -258,7 +259,8 @@ public class Serializer
 		infos.put(AlbumInfoKey.LOCATION, album.getLocation());
 		infos.put(AlbumInfoKey.ID, album.getId());
 		File dir = albumXml.getParentFile();
-		Connection<Photo> photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class);
+		Parameter photoParam = Parameter.with("fields", "id,album,created_time,from,height,icon,images,link,name,name_tags,page_story_id,updated_time,width,place,backdated_time,backdated_time_grnularity,picture");
+		Connection<Photo> photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, photoParam);
 		System.out.print("Fetching Photos from " + album.getName() + ". This may take a while...\t\t");
 		long iterator = 0;
 		Iterator<List<Photo>> it = photosConn.iterator();
@@ -324,6 +326,12 @@ public class Serializer
 		infos.put(PhotoInfoKey.ID, photo.getId());
 		infos.put(PhotoInfoKey.FROM, photo.getFrom());
 		infos.put(PhotoInfoKey.TAGS, photo.getTags());
+		infos.put(PhotoInfoKey.ICON, photo.getIcon());
+		infos.put(PhotoInfoKey.HEIGHT, photo.getHeight());
+		infos.put(PhotoInfoKey.IMAGES, photo.getImages());
+		infos.put(PhotoInfoKey.NAME, photo.getName());
+		infos.put(PhotoInfoKey.PICTURE, photo.getPicture());
+		infos.put(PhotoInfoKey.WIDTH, photo.getWidth());
 		HashMap<String, String> newinfos = dataValidator(infos);
 		Properties props = new Properties();
 		props.putAll(newinfos);
@@ -352,23 +360,15 @@ public class Serializer
 
 	public static void downloadPhoto(Photo photo, File out)
 	{
-		String url = photo.getSource();
-		String[] parts = url.split("/");
-		// remove URL parts which decrease the resolution
-		if (parts.length > 7)
+		String url = "";
+		Integer lastWidth = 0;
+		for (Image img : photo.getImages())
 		{
-			parts[5] = null;
-			parts[6] = null;
-
-			StringBuilder sb = new StringBuilder();
-			for (String s : parts)
-				if (s != null)
-				{
-					sb.append(s);
-					sb.append("/");
-				}
-			sb.delete(sb.length() - 1, sb.length());
-			url = sb.toString();
+			if (img.getWidth() > lastWidth)
+			{
+				lastWidth = img.getWidth();
+				url = img.getSource();
+			}
 		}
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); FileOutputStream fw = new FileOutputStream(out); BufferedInputStream br = new BufferedInputStream(new URL(url).openStream());)
 		{

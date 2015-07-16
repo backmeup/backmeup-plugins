@@ -16,7 +16,13 @@ public enum PhotoInfoKey implements SerializerKey
 	FILE("Datei", Datatype.OTHER),
 	ID("ID", Datatype.OTHER),
 	FROM("gepostet von", Datatype.CFT),
-	TAGS("Tags", Datatype.LIST);
+	TAGS("Tags", Datatype.LIST),
+	HEIGHT("Höhe",Datatype.NUMBER),
+	ICON("Icon",Datatype.OTHER),
+	IMAGES("Größen",Datatype.LIST),
+	NAME("Name",Datatype.OTHER),
+	PICTURE("Verkleinertes Bild",Datatype.OTHER),
+	WIDTH("Breite",Datatype.NUMBER);
 
 	private String label;
 	private Datatype type;
