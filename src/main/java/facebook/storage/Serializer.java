@@ -86,7 +86,7 @@ public class Serializer
 		{
 			File postXml = new File("" + dir + SDO.SLASH + "posts" + SDO.SLASH + post.getId() + SDO.SLASH + "postinfo.xml");
 			builder.append(FileUtils.getWayTo(dir, postXml));
-			postInfo(post, postXml);
+			postInfo(post, postXml, fbc);
 		}
 		listProps.put(PropertyFile.POSTS.toString(), builder.toString());
 		builder.empty();
@@ -174,7 +174,7 @@ public class Serializer
 		return infos;
 	}
 
-	public static HashMap<SerializerKey, Object> postInfo(Post post, File postXml)
+	public static HashMap<SerializerKey, Object> postInfo(Post post, File postXml, FacebookClient fbc)
 	{
 		HashMap<SerializerKey, Object> infos = new HashMap<>();
 		if (post == null || postXml == null)
@@ -198,7 +198,14 @@ public class Serializer
 		infos.put(PostInfoKey.MESSAGE, post.getMessage());
 		infos.put(PostInfoKey.MESSAGE_TAGS, post.getMessageTags());
 		infos.put(PostInfoKey.OBJECT_ID, post.getObjectId());
-		infos.put(PostInfoKey.PICTURE, post.getPicture());
+		File photoXml = null;
+		if (post.getObjectId() != null)
+		{
+			Photo photo = fbc.fetchObject(post.getObjectId(), Photo.class, MasterParameter.getParameterByClass(Photo.class));
+			photoXml = new File("" + postXml.getParentFile() + SDO.SLASH + "object" + SDO.SLASH + "photoinfo.xml");
+			photoInfo(photo, photoXml, fbc);
+		}
+		infos.put(PostInfoKey.PICTURE, FileUtils.getWayTo(postXml, photoXml));
 		infos.put(PostInfoKey.PLACE, post.getPlace());
 		infos.put(PostInfoKey.PRIVACY, post.getPrivacy());
 		infos.put(PostInfoKey.PROPERTIES, post.getProperties());

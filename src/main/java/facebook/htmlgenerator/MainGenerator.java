@@ -186,6 +186,18 @@ public class MainGenerator
 			{
 				props.loadFromXML(fis);
 				Div singlePost = new Div();
+				File photoXml = FileUtils.resolveRelativePath(postXml, props.getProperty(PostInfoKey.PICTURE.toString()));
+				try (FileInputStream fis2 = new FileInputStream(photoXml))
+				{
+					Properties picProps = new Properties();
+					picProps.loadFromXML(fis2);
+					File picFile = FileUtils.resolveRelativePath(photoXml, picProps.getProperty(PhotoInfoKey.FILE.toString()));
+					Img pic = new Img("Photo", FileUtils.getWayTo(out, picFile));
+					singlePost.appendChild(pic);
+				} catch (IOException e)
+				{
+					e.printStackTrace();
+				}
 				singlePost.setCSSClass("comment");
 				singlePost.appendChild(wrapInfos(PostInfoKey.values(), props, true));
 				postsDoc.body.appendChild(singlePost);
@@ -258,7 +270,6 @@ public class MainGenerator
 			Div sideInfos = new Div();
 			sideInfos.setCSSClass("sidebar");
 			sideInfos.appendChild(wrapInfos(AlbumInfoKey.values(), albumProps, true));
-
 			photoContainer.appendChild(photoList);
 			albumFile.body.appendChild(sideInfos);
 			albumFile.body.appendChild(photoContainer);
