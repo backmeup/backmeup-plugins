@@ -39,6 +39,7 @@ import facebook.storage.SDO;
 import facebook.storage.keys.AlbumInfoKey;
 import facebook.storage.keys.CommentKey;
 import facebook.storage.keys.GroupInfoKey;
+import facebook.storage.keys.PageInfoKey;
 import facebook.storage.keys.PhotoInfoKey;
 import facebook.storage.keys.PostInfoKey;
 import facebook.storage.keys.SerializerKey;
@@ -47,16 +48,6 @@ import facebook.utils.FileUtils;
 
 public class MainGenerator
 {
-	/*
-	 * private String working_dir = "", output_folder; private File work_dir,
-	 * out_dir;
-	 * 
-	 * public MainGenerator(String workingdir) { this.working_dir = workingdir;
-	 * this.output_folder = working_dir + "/out"; work_dir = new
-	 * File(working_dir); if (!work_dir.exists()) work_dir.mkdirs(); out_dir =
-	 * new File(output_folder); if (!out_dir.exists()) out_dir.mkdirs(); }
-	 */
-
 	public void genOverview(File root, File dirProps)
 	{
 
@@ -85,6 +76,10 @@ public class MainGenerator
 		for (String s : dirs.getProperty(PropertyFile.POSTS.toString()).split("\\|"))
 			postFiles.add(FileUtils.resolveRelativePath(dirProps.getParentFile(), s));
 		genPosts(postFiles, new File("" + root + SDO.SLASH + "posts.html"), root);
+		ArrayList<File> pageFiles = new ArrayList<>();
+		for (String s : dirs.getProperty(PropertyFile.PAGES.toString()).split("\\|"))
+			pageFiles.add(FileUtils.resolveRelativePath(dirProps.getParentFile(), s));
+		genPages(new File("" + root + SDO.SLASH + "pages" + SDO.SLASH + "pages.html"), pageFiles, root);
 		try (FileInputStream fis = new FileInputStream(target))
 		{
 			userProps.loadFromXML(fis);
@@ -330,6 +325,61 @@ public class MainGenerator
 		}
 	}
 
+	public void genPages(File pagesHtml, ArrayList<File> pageXmls, File root)
+	{
+		if (!pagesHtml.getParentFile().exists())
+			pagesHtml.getParentFile().mkdirs();
+		Document pagesDoc = new Document(DocumentType.HTMLTransitional);
+		initDocumentHeader(pagesDoc, "Seiten", pagesHtml, null, root, true);
+		Ul pageList = new Ul();
+		for (File pageXml : pageXmls)
+		{
+			Li item = new Li();
+			A link = new A();
+			try (FileInputStream fis = new FileInputStream(pageXml))
+			{
+				Properties pageProps = new Properties();
+				pageProps.loadFromXML(fis);
+				File pageHtml = new File("" + pagesHtml.getParentFile() + SDO.SLASH + pageProps.getProperty(PageInfoKey.ID.toString()) + SDO.SLASH + "page.html");
+				link.setHref(FileUtils.getWayTo(pagesHtml, pageHtml));
+				link.appendText(pageProps.getProperty(PageInfoKey.NAME.toString()));
+				genPage(pageHtml, pageProps, root);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			item.appendChild(link);
+			pageList.appendChild(item);
+		}
+		pagesDoc.body.appendChild(pageList);
+		try (FileWriter fw = new FileWriter(pagesHtml))
+		{
+			fw.write(pagesDoc.write());
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public void genPage(File pageHtml, Properties pageProps, File root)
+	{
+		if (!pageHtml.getParentFile().exists())
+			pageHtml.getParentFile().mkdirs();
+		Document pageDoc = new Document(DocumentType.HTMLTransitional);
+		initDocumentHeader(pageDoc, pageProps.getProperty(PageInfoKey.NAME.toString()), pageHtml, null, root, true);
+		Div sidebar = new Div();
+		sidebar.setCSSClass("sidebar");
+		sidebar.appendChild(wrapInfos(PageInfoKey.values(), pageProps, true));
+		pageDoc.body.appendChild(sidebar);
+		try (FileWriter fw = new FileWriter(pageHtml))
+		{
+			fw.write(pageDoc.write());
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 	public Node genComment(File dir, File html)
 	{
 		Div container = new Div();
@@ -461,6 +511,7 @@ public class MainGenerator
 		menuList = appendItem(menuList, htmlDir, new File("" + root + SDO.SLASH + "albums/albums.html"), "Alben");
 		menuList = appendItem(menuList, htmlDir, new File("" + root + SDO.SLASH + "groups/groups.html"), "Gruppen");
 		menuList = appendItem(menuList, htmlDir, new File("" + root + SDO.SLASH + "posts.html"), "Posts");
+		menuList = appendItem(menuList, htmlDir, new File("" + root + SDO.SLASH + "pages/pages.html"), "Seiten");
 		container.appendChild(menuList);
 		return container;
 	}

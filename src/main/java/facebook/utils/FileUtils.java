@@ -39,7 +39,7 @@ public class FileUtils
 		}
 		if (sb.length() > 0)
 			sb.deleteCharAt(sb.length() - 1);
-		if (sb.length() > 0 && !sb.substring(0, 2).equals("./") && !sb.subSequence(0, 3).equals("../"))
+		if ((sb.length() >= 2 && !sb.substring(0, 2).equals("./")) || (sb.length() >= 3 && !sb.subSequence(0, 3).equals("../")))
 			sb.insert(0, "./");
 		return sb.toString();
 	}

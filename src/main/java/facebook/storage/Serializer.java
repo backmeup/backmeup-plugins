@@ -92,8 +92,12 @@ public class Serializer
 		{
 			FacebookClient fc = new DefaultFacebookClient(pageToken, Version.VERSION_2_3);
 			Page page = fc.fetchObject("me", Page.class, MasterParameter.getParameterByClass(Page.class));
-			pageInfo(page, new File("" + dir + SDO.SLASH + "pages" + SDO.SLASH + page.getId() + SDO.SLASH + "pageinfo.xml"));
+			File pageXml = new File("" + dir + SDO.SLASH + "pages" + SDO.SLASH + page.getId() + SDO.SLASH + "pageinfo.xml");
+			builder.append(FileUtils.getWayTo(dir, pageXml));
+			pageInfo(page, pageXml);
 		}
+		listProps.put(PropertyFile.PAGES.toString(), builder.toString());
+		builder.empty();
 		Connection<Group> groups = fbc.fetchConnection("me/groups", Group.class, MasterParameter.getParameterByClass(Group.class));
 		for (Group group : groups.getData())
 		{
