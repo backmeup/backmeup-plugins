@@ -130,12 +130,10 @@ public class MainGenerator
 				albumsProps.loadFromXML(fis);
 				Div innerItem = new Div();
 				Li item = new Li();
-				// String relativeImg = FileUtils.getWayTo(out_dir, albumProps)
-				// + SDO.SLASH +
-				// albumsProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString())
-				// + ".jpg";
 				String relativeImg = "";
-				File coverXml = FileUtils.resolveRelativePath(FileUtils.resolveRelativePath(albumProps, albumsProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString()) + SDO.SLASH + albumsProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString())), albumsProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
+				File photoFolder = FileUtils.resolveRelativePath(albumProps, albumsProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString()));
+				File coverDir = new File("" + photoFolder + SDO.SLASH + albumsProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString()));
+				File coverXml = FileUtils.resolveRelativePath(coverDir, albumsProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
 				try (FileInputStream fis2 = new FileInputStream(coverXml))
 				{
 					Properties coverProps = new Properties();

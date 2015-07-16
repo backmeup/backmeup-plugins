@@ -60,13 +60,21 @@ public class Serializer
 		User user = fbc.fetchObject("me", User.class, MasterParameter.getParameterByClass(User.class));
 		userInfo(user, fbc, facebook, true, true, userFile);
 		Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class, MasterParameter.getParameterByClass(Album.class));
-		for (Album album : albums.getData())
+		ArrayList<Album> albumList = new ArrayList<>(albums.getData());
+		Connection<Photo> photos = fbc.fetchConnection("me/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
+		Album lonelyAlbum = new Album();
+		lonelyAlbum.setName("Einzelbilder");
+		lonelyAlbum.setDescription("Fotos ohne Album");
+		lonelyAlbum.setCoverPhoto(photos.getData().get(0).getId());
+		lonelyAlbum.setId("lonely");
+		albumList.add(lonelyAlbum);
+		for (Album album : albumList)
 		{
 			if (!skipAlbums.contains(album.getName()))
 			{
 				File albumXml = new File("" + dir + SDO.SLASH + "albums" + SDO.SLASH + album.getId() + SDO.SLASH + "albuminfo.xml");
 				builder.append(FileUtils.getWayTo(dir, albumXml));
-				albumInfo(album, fbc, albumXml, maxAlbumpics);
+				albumInfo(album, fbc, albumXml, maxAlbumpics, album.getId().equalsIgnoreCase("lonely"), photos);
 			}
 		}
 		listProps.put(PropertyFile.ALBUMS.toString(), builder.toString());
@@ -235,7 +243,7 @@ public class Serializer
 		return infos;
 	}
 
-	public static HashMap<SerializerKey, Object> albumInfo(Album album, FacebookClient fcb, File albumXml, long maxPics)
+	public static HashMap<SerializerKey, Object> albumInfo(Album album, FacebookClient fcb, File albumXml, long maxPics, boolean fakeAlbum, Connection<Photo> fakePhotos)
 	{
 		HashMap<SerializerKey, Object> infos = new HashMap<>();
 		if (album == null)
@@ -254,7 +262,11 @@ public class Serializer
 		infos.put(AlbumInfoKey.LOCATION, album.getLocation());
 		infos.put(AlbumInfoKey.ID, album.getId());
 		File dir = albumXml.getParentFile();
-		Connection<Photo> photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
+		Connection<Photo> photosConn = null;
+		if (fakeAlbum && fakePhotos != null)
+			photosConn = fakePhotos;
+		else
+			photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
 		System.out.print("Fetching Photos from " + album.getName() + ". This may take a while...\t\t");
 		long iterator = 0;
 		Iterator<List<Photo>> it = photosConn.iterator();
@@ -329,6 +341,8 @@ public class Serializer
 		HashMap<String, String> newinfos = dataValidator(infos);
 		Properties props = new Properties();
 		props.putAll(newinfos);
+		if (!photoXml.getParentFile().exists())
+			photoXml.getParentFile().mkdirs();
 		try (FileOutputStream fos = new FileOutputStream(photoXml))
 		{
 			props.storeToXML(fos, "Infos about photo " + photo.getId());
@@ -610,7 +624,17 @@ public class Serializer
 			{
 				sb.append(((NamedFacebookType) object).getName());
 				check = false;
+			} else if (object instanceof Image && check)
+			{
+				Image img = (Image) object;
+				A a = new A();
+				a.setHref(img.getSource());
+				a.appendText(img.getWidth() + " x " + img.getHeight());
+				sb.append(a.write());
+				sb.append(", ");
+				check = false;
 			} else if (object instanceof CategorizedFacebookType && check)
+
 			{
 				sb.append(((CategorizedFacebookType) object).getName());
 				check = false;
