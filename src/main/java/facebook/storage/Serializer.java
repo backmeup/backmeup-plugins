@@ -60,7 +60,8 @@ public class Serializer
 		Parameter userParam = Parameter.with("fields", "about,address,age_range,bio,birthday,context,currency,devices,education,email,first_name,gender,hometown,inspirational_people,install_type,installed,interested_in,is_verified,languages,last_name,link,location,meeting_for,middle_name,name,name_format,payment_pricepoints,test_group,political,relationship_status,religion,security_settings,significant_other,sports,quotes,third_party_id,timezone,updated_time,verified,video_upload_limits,viewer_can_send_gift,website,work,cover");
 		User user = fbc.fetchObject("me", User.class, userParam);
 		userInfo(user, fbc, facebook, true, true, userFile);
-		Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class);
+		Parameter albumParam = Parameter.with("field", "id,can_upload,count,cover_photo,created_time,description,event,from,link,location,name,place,privacy,type,updated_time");
+		Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class, albumParam);
 		for (Album album : albums.getData())
 		{
 			if (!skipAlbums.contains(album.getName()))
