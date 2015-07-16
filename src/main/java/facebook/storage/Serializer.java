@@ -21,7 +21,6 @@ import com.hp.gagawa.java.elements.A;
 import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
-import com.restfb.Parameter;
 import com.restfb.Version;
 import com.restfb.experimental.api.Facebook;
 import com.restfb.types.Album;
@@ -58,11 +57,9 @@ public class Serializer
 		CustomStringBuilder builder = new CustomStringBuilder("|");
 		Properties listProps = new Properties();
 		File userFile = new File("" + dir + SDO.SLASH + "user.xml");
-		Parameter userParam = Parameter.with("fields", "about,address,age_range,bio,birthday,context,currency,devices,education,email,first_name,gender,hometown,inspirational_people,install_type,installed,interested_in,is_verified,languages,last_name,link,location,meeting_for,middle_name,name,name_format,payment_pricepoints,test_group,political,relationship_status,religion,security_settings,significant_other,sports,quotes,third_party_id,timezone,updated_time,verified,video_upload_limits,viewer_can_send_gift,website,work,cover");
-		User user = fbc.fetchObject("me", User.class, userParam);
+		User user = fbc.fetchObject("me", User.class, MasterParameter.getParameterByClass(User.class));
 		userInfo(user, fbc, facebook, true, true, userFile);
-		Parameter albumParam = Parameter.with("field", "id,can_upload,count,cover_photo,created_time,description,event,from,link,location,name,place,privacy,type,updated_time");
-		Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class, albumParam);
+		Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class, MasterParameter.getParameterByClass(Album.class));
 		for (Album album : albums.getData())
 		{
 			if (!skipAlbums.contains(album.getName()))
@@ -74,7 +71,7 @@ public class Serializer
 		}
 		listProps.put(PropertyFile.ALBUMS.toString(), builder.toString());
 		builder.empty();
-		Connection<Post> posts = fbc.fetchConnection("me/posts", Post.class);
+		Connection<Post> posts = fbc.fetchConnection("me/posts", Post.class, MasterParameter.getParameterByClass(Post.class));
 		for (Post post : posts.getData())
 		{
 			File postXml = new File("" + dir + SDO.SLASH + "posts" + SDO.SLASH + post.getId() + SDO.SLASH + "postinfo.xml");
@@ -86,12 +83,10 @@ public class Serializer
 		for (String pageToken : facebook.pages().fetchAllAccessTokens().values())
 		{
 			FacebookClient fc = new DefaultFacebookClient(pageToken, Version.VERSION_2_3);
-			Parameter parameter = Parameter.with("fields", "id,about,access_token,affiliation,app_id,artists_we_like,attire,awards,band_interests,band_members,best_page,bio,birthday,booking_agent,built,business,can_post,category,category_list,company_overview,cover,culinary_team,current_location,description,description_html,directed_by,emails,features,food_styles,founded,general_info,general_manager,genre,global_brand_page_name,has_added_app,hometown,hours,influences,is_community_page,is_permanently_closed,is_published,is_unclaimed,is_verified,link,location,mission,mpg,name,network,new_like_count,offer_eligible,parent_page,parking,payment_options,personal_info,personal_interests,pharma_safety_info,phone,plot_outline,press_contact,price_range,produced_by,products,promotion_eligible,promotion_ineligible_reason,public_transit,record_label,release_date,restaurant_services,restaurant_specialties,schedule,screenplay_by,season,starring,store_number,studio,unread_message_count,unread_notif_count,unseen_message_count,username,website,were_here_count,written_by,checkins,likes,members");
-			Page page = fc.fetchObject("me", Page.class, parameter);
+			Page page = fc.fetchObject("me", Page.class, MasterParameter.getParameterByClass(Page.class));
 			pageInfo(page, new File("" + dir + SDO.SLASH + "pages" + SDO.SLASH + page.getId() + SDO.SLASH + "pageinfo.xml"));
 		}
-		Parameter groupParams = Parameter.with("fields", "id,cover,description,email,icon,link,member_request_count,name,owner,parent,privacy,updated_time");
-		Connection<Group> groups = fbc.fetchConnection("me/groups", Group.class, groupParams);
+		Connection<Group> groups = fbc.fetchConnection("me/groups", Group.class, MasterParameter.getParameterByClass(Group.class));
 		for (Group group : groups.getData())
 		{
 			File groupXml = new File("" + dir + SDO.SLASH + "groups" + SDO.SLASH + group.getId() + SDO.SLASH + "groupinfo.xml");
@@ -259,8 +254,7 @@ public class Serializer
 		infos.put(AlbumInfoKey.LOCATION, album.getLocation());
 		infos.put(AlbumInfoKey.ID, album.getId());
 		File dir = albumXml.getParentFile();
-		Parameter photoParam = Parameter.with("fields", "id,album,created_time,from,height,icon,images,link,name,name_tags,page_story_id,updated_time,width,place,backdated_time,backdated_time_grnularity,picture");
-		Connection<Photo> photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, photoParam);
+		Connection<Photo> photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
 		System.out.print("Fetching Photos from " + album.getName() + ". This may take a while...\t\t");
 		long iterator = 0;
 		Iterator<List<Photo>> it = photosConn.iterator();
@@ -344,11 +338,10 @@ public class Serializer
 			e.printStackTrace();
 		}
 		File commentsDir = FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.COMMENT_DIR).toString());
-		Parameter commParam = Parameter.with("fields", "id,attachment,can_comment,can_remove,can_hide,can_like,comment_count,created_time,from,like_count,message,message_tags,object,parent,user_likes");
 		for (Comment cmt : photo.getComments())
 		{
 
-			Comment comment = fbc.fetchObject(cmt.getId(), Comment.class, commParam);
+			Comment comment = fbc.fetchObject(cmt.getId(), Comment.class, MasterParameter.getParameterByClass(Comment.class));
 			File commentDir = new File("" + commentsDir + SDO.SLASH + comment.getId());
 			commentDir.mkdirs();
 			File commentXml = FileUtils.resolveRelativePath(commentDir, infos.get(PhotoInfoKey.COMMENT_INFO_FILENAME).toString());
@@ -362,11 +355,13 @@ public class Serializer
 	{
 		String url = "";
 		Integer lastWidth = 0;
+		Integer lastHeight = 0;
 		for (Image img : photo.getImages())
 		{
-			if (img.getWidth() > lastWidth)
+			if (img.getWidth() >= lastWidth && img.getHeight() >= lastHeight)
 			{
 				lastWidth = img.getWidth();
+				lastHeight = img.getHeight();
 				url = img.getSource();
 			}
 		}
