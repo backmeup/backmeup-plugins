@@ -252,7 +252,7 @@ public class MainGenerator
 					File comments = new File("" + photoXml.getParentFile() + SDO.SLASH + photoProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
 					if (comments.exists())
 						for (File f : comments.listFiles())
-							commentNodes.add(genComment(f));
+							commentNodes.add(genComment(f, photoHtml));
 					genPhotoFile(photoProps, photoHtml, photoXml, root, commentNodes.toArray(new Node[commentNodes.size()]));
 				} catch (IOException e)
 				{
@@ -330,7 +330,7 @@ public class MainGenerator
 		}
 	}
 
-	public Node genComment(File dir)
+	public Node genComment(File dir, File html)
 	{
 		Div container = new Div();
 		container.setCSSClass("comment");
@@ -343,10 +343,25 @@ public class MainGenerator
 		{
 			e.printStackTrace();
 		}
+		String confImg = props.getProperty(CommentKey.ATTACHMENT.toString());
+		if (confImg != null && !confImg.equalsIgnoreCase("null"))
+		{
+			File img = FileUtils.resolveRelativePath(dir, confImg);
+			Properties photoProp = new Properties();
+			try (FileInputStream fis = new FileInputStream(img))
+			{
+				photoProp.loadFromXML(fis);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			Img imgTag = new Img("photo", FileUtils.getWayTo(html, FileUtils.resolveRelativePath(img, photoProp.getProperty(PhotoInfoKey.FILE.toString()))));
+			container.appendChild(imgTag);
+		}
 		container.appendChild(wrapInfos(CommentKey.values(), props, true));
 		for (File f : dir.listFiles())
-			if (f.isDirectory())
-				container.appendChild(genComment(f));
+			if (f.isDirectory() && f.exists() && !f.getName().equalsIgnoreCase("attachment"))
+				container.appendChild(genComment(f, html));
 		return container;
 	}
 

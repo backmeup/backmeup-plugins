@@ -359,7 +359,7 @@ public class Serializer
 			File commentDir = new File("" + commentsDir + SDO.SLASH + comment.getId());
 			commentDir.mkdirs();
 			File commentXml = FileUtils.resolveRelativePath(commentDir, infos.get(PhotoInfoKey.COMMENT_INFO_FILENAME).toString());
-			commentInfo(comment, commentXml);
+			commentInfo(comment, commentXml, fbc);
 		}
 		downloadPhoto(photo, FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.FILE).toString()));
 		return infos;
@@ -497,12 +497,26 @@ public class Serializer
 		return infos;
 	}
 
-	public static void commentInfo(Comment comment, File commentXml)
+	public static void commentInfo(Comment comment, File commentXml, FacebookClient fbc)
 	{
 		if (!commentXml.getParentFile().exists())
 			commentXml.getParentFile().mkdirs();
 		HashMap<SerializerKey, Object> infos = new HashMap<>();
-		infos.put(CommentKey.ATTACHMENT, comment.getAttachment());
+		File photoJpg = null;
+		if (comment.getAttachment() != null)
+		{
+			Comment.Image cimg = comment.getAttachment().getMedia().getImage();
+			Photo photo = new Photo();
+			photo.setId("attachment");
+			Photo.Image img = new Image();
+			img.setSource(cimg.getSrc());
+			img.setHeight(cimg.getHeight());
+			img.setWidth(cimg.getWidth());
+			photo.addImage(img);
+			photoJpg = new File("" + commentXml.getParentFile() + SDO.SLASH + "attachment" + SDO.SLASH + "photoinfo.xml");
+			photoInfo(photo, photoJpg, fbc);
+		}
+		infos.put(CommentKey.ATTACHMENT, FileUtils.getWayTo(commentXml, photoJpg));
 		infos.put(CommentKey.CAN_REMOVE, comment.getCanRemove());
 		infos.put(CommentKey.CREATED, comment.getCreatedTime());
 		infos.put(CommentKey.FROM, comment.getFrom());
@@ -524,7 +538,7 @@ public class Serializer
 		}
 		if (comment.getComments() != null)
 			for (Comment c : comment.getComments().getData())
-				commentInfo(c, new File("" + commentXml + SDO.SLASH + c.getId()));
+				commentInfo(c, new File("" + commentXml + SDO.SLASH + c.getId()), fbc);
 	}
 
 	public static Properties getReadableUserInfos(HashMap<SerializerKey, Object> userInfos)

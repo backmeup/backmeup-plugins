@@ -8,5 +8,6 @@ public enum Datatype
 	LINK,
 	OTHER,
 	NFT,
-	CFT
+	CFT,
+	PHOTO
 }

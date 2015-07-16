@@ -4,7 +4,7 @@ import facebook.storage.Datatype;
 
 public enum CommentKey implements SerializerKey
 {
-	ATTACHMENT("Bild", Datatype.OTHER),
+	ATTACHMENT("Bild", Datatype.PHOTO),
 	CAN_REMOVE("Kann entfernt werden", Datatype.OTHER),
 	REPLIES_COUNT("Antwortenanzahl", Datatype.NUMBER),
 	CREATED("Erstellt", Datatype.DATE),
