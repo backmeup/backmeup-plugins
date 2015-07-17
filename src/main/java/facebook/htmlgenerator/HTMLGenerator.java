@@ -34,6 +34,7 @@ import com.hp.gagawa.java.elements.Title;
 import com.hp.gagawa.java.elements.Tr;
 import com.hp.gagawa.java.elements.Ul;
 
+import facebook.files.ConfLoader;
 import facebook.files.PropertyFile;
 import facebook.storage.Datatype;
 import facebook.storage.SDO;
@@ -436,6 +437,8 @@ public class HTMLGenerator
 	private Table wrapInfos(SerializerKey[] aik, Properties albumsProps, boolean skipinvalid)
 	{
 		Table table = new Table();
+		if (aik.length >= 1 && ConfLoader.reducedInfos())
+			aik = aik[0].getReduced();
 		for (SerializerKey key : aik)
 		{
 			String value = albumsProps.getProperty(key.toString());

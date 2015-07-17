@@ -38,4 +38,11 @@ public enum AlbumInfoKey implements SerializerKey
 	{
 		return type;
 	}
+
+	@Override
+	public AlbumInfoKey[] getReduced()
+	{
+		AlbumInfoKey[] ret = { NAME, DESCRIPTION, CREATED, LAST_UPDATE, COUNT, COMES_FROM, AlbumInfoKey.LOCATION, ORIGINAL_LINK, LOCAL_COUNT };
+		return ret;
+	}
 }

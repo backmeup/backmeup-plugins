@@ -34,7 +34,9 @@ import com.restfb.types.Photo;
 import com.restfb.types.Photo.Image;
 import com.restfb.types.Photo.Tag;
 import com.restfb.types.Post;
+import com.restfb.types.Post.Privacy;
 import com.restfb.types.User;
+import com.restfb.types.User.Currency;
 
 import facebook.files.CustomStringBuilder;
 import facebook.files.PropertyFile;
@@ -649,7 +651,11 @@ public class Serializer
 				a.appendText(loc.getStreet() + ", " + loc.getCity() + ", " + loc.getState() + ", " + loc.getCountry());
 				sb.append(a.write());
 				check = false;
-			} else if (object instanceof NamedFacebookType && check)
+			} else if (object instanceof Privacy)
+				sb.append(((Privacy) object).getDescription());
+			else if (object instanceof Currency)
+				sb.append(((Currency) object).getUserCurrency());
+			else if (object instanceof NamedFacebookType && check)
 			{
 				sb.append(((NamedFacebookType) object).getName());
 				check = false;

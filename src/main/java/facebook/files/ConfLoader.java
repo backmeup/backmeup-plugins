@@ -22,6 +22,11 @@ public class ConfLoader
 		return props;
 	}
 
+	public static boolean reducedInfos()
+	{
+		return Boolean.parseBoolean(getProperties().getProperty(PropertyOption.REDUCED_INFOS.toString()));
+	}
+
 	public static void genProperties()
 	{
 		Properties props = new Properties();
@@ -30,6 +35,7 @@ public class ConfLoader
 		props.put(PropertyOption.MAX_PHOTOS_PER_ALBUM.toString(), "-1");
 		props.put(PropertyOption.SKIP_ALBUMS.toString(), ";");
 		props.put(PropertyOption.HTML_DIR.toString(), System.getProperty("user.home") + "/html-out");
+		props.put(PropertyOption.REDUCED_INFOS.toString(), true);
 		try (FileOutputStream fos = new FileOutputStream(new File("properties.xml")))
 		{
 			props.storeToXML(fos, "Default properties");

@@ -1,5 +1,8 @@
 package facebook.storage.keys;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import facebook.storage.Datatype;
 
 public enum PostInfoKey implements SerializerKey
@@ -50,5 +53,15 @@ public enum PostInfoKey implements SerializerKey
 	public Datatype getType()
 	{
 		return type;
+	}
+
+	@Override
+	public PostInfoKey[] getReduced()
+	{
+		ArrayList<PostInfoKey> ret = new ArrayList<>(Arrays.asList(values()));
+		ret.remove(ID);
+		ret.remove(PICTURE);
+		ret.remove(ICON);
+		return ret.toArray(new PostInfoKey[ret.size()]);
 	}
 }

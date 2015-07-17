@@ -33,4 +33,11 @@ public enum CommentKey implements SerializerKey
 	{
 		return type;
 	}
+
+	@Override
+	public CommentKey[] getReduced()
+	{
+		CommentKey[] ret = { FROM, MESSAGE, CommentKey.LIKE_COUNT, CommentKey.REPLIES_COUNT, CREATED };
+		return ret;
+	}
 }

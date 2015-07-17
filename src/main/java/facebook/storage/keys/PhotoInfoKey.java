@@ -43,4 +43,11 @@ public enum PhotoInfoKey implements SerializerKey
 	{
 		return type;
 	}
+
+	@Override
+	public PhotoInfoKey[] getReduced()
+	{
+		PhotoInfoKey[] ret = { PhotoInfoKey.NAME, LIKES, LIKES_FROM_PEOPLE, PLACE, TAGS, PhotoInfoKey.LOCATION, PhotoInfoKey.PUBLISH_DATE, PhotoInfoKey.FROM, PhotoInfoKey.IMAGES, ORIGINAL_LINK };
+		return ret;
+	}
 }

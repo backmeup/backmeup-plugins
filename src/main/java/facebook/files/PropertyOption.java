@@ -6,5 +6,6 @@ public enum PropertyOption
 	DIRECTORY,
 	MAX_PHOTOS_PER_ALBUM,
 	SKIP_ALBUMS,
-	HTML_DIR
+	HTML_DIR,
+	REDUCED_INFOS
 }

@@ -1,5 +1,8 @@
 package facebook.storage.keys;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import facebook.storage.Datatype;
 
 public enum PageInfoKey implements SerializerKey
@@ -108,5 +111,13 @@ public enum PageInfoKey implements SerializerKey
 	public Datatype getType()
 	{
 		return type;
+	}
+
+	@Override
+	public PageInfoKey[] getReduced()
+	{
+		ArrayList<PageInfoKey> ret = new ArrayList<>(Arrays.asList(values()));
+		ret.remove(ID);
+		return ret.toArray(new PageInfoKey[ret.size()]);
 	}
 }

@@ -33,4 +33,11 @@ public enum GroupInfoKey implements SerializerKey
 	{
 		return type;
 	}
+
+	@Override
+	public GroupInfoKey[] getReduced()
+	{
+		GroupInfoKey[] ret = { GroupInfoKey.NAME, DESCRIPTION, OWNER, ICON, GroupInfoKey.PRIVACY, LAST_UPDATE, GroupInfoKey.LINK };
+		return ret;
+	}
 }
