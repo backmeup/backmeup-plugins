@@ -34,8 +34,8 @@ public class HTMLTester
 			target = new File(props.getProperty(PropertyOption.HTML_DIR.toString()));
 			if (!target.exists())
 				target.mkdirs();
-			FileUtils.exctractFromJar("/facebook/htmlgenerator/main.css", new File("" + target + SDO.SLASH + "main.css"), HTMLGenerator.class);
-			FileUtils.exctractFromJar("/facebook/htmlgenerator/menu.css", new File("" + target + SDO.SLASH + "menu.css"), HTMLGenerator.class);
+			FileUtils.exctractFromJar("/facebook/htmlgenerator/css/main.css", new File("" + target + SDO.SLASH + "main.css"), HTMLGenerator.class);
+			FileUtils.exctractFromJar("/facebook/htmlgenerator/css/menu.css", new File("" + target + SDO.SLASH + "menu.css"), HTMLGenerator.class);
 		}
 		JUnitCore.runClasses(DownloadTester.class);
 	}
