@@ -1,6 +1,9 @@
 package facebook.utils;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import facebook.storage.SDO;
 
@@ -58,5 +61,19 @@ public class FileUtils
 			else if (!s.equals("."))
 				sb.append(SDO.SLASH + s);
 		return new File(sb.toString());
+	}
+
+	public static void exctractFromJar(String resource, File target, Class<?> root)
+	{
+		try (InputStream is = root.getResourceAsStream(resource); FileOutputStream fos = new FileOutputStream(target))
+		{
+			int position = 0;
+			byte[] data = new byte[4096];
+			while ((position = is.read(data)) > 0)
+				fos.write(data, 0, position);
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 }

@@ -47,7 +47,7 @@ import facebook.storage.keys.SerializerKey;
 import facebook.storage.keys.UserInfoKey;
 import facebook.utils.FileUtils;
 
-public class MainGenerator
+public class HTMLGenerator
 {
 	public void genOverview(File root, File dirProps)
 	{
