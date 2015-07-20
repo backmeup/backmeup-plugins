@@ -27,9 +27,9 @@ public enum MasterParameter
 			Page.class),
 	PHOTO(Parameter.with("fields", "id,insights,tags,likes,comments,album,created_time,from,height,icon,images,link,name,name_tags,page_story_id,updated_time,width,place,backdated_time,picture"),
 			Photo.class),
-	POST(Parameter.with("fields", "id,admin_creator,application,call_to_action,caption,created_time,description,feed_targeting,from,icon,is_hidden,is_published,link,message,message_tags,name,object_id,picture,place,privacy,properties,shares,source,status_type,story,story_tags,targeting,to,type,updated_time,with_tags"),
+	POST(Parameter.with("fields", "id,admin_creator,application,call_to_action,caption,created_time,description,feed_targeting,from,icon,is_hidden,is_published,link,message,message_tags,name,object_id,picture,place,privacy,properties,shares,source,status_type,story,story_tags,targeting,to,type,updated_time,with_tags,comments"),
 			Post.class),
-	USER(Parameter.with("fields", "about,address,age_range,bio,birthday,context,currency,devices,education,email,first_name,gender,hometown,inspirational_people,install_type,installed,interested_in,is_verified,languages,last_name,link,location,meeting_for,middle_name,name,name_format,payment_pricepoints,test_group,political,relationship_status,religion,security_settings,significant_other,sports,quotes,third_party_id,timezone,updated_time,verified,video_upload_limits,viewer_can_send_gift,website,work,cover"),
+	USER(Parameter.with("fields", "id,about,address,age_range,bio,birthday,context,currency,devices,education,email,first_name,gender,hometown,inspirational_people,install_type,installed,interested_in,is_verified,languages,last_name,link,location,meeting_for,middle_name,name,name_format,payment_pricepoints,test_group,political,relationship_status,religion,security_settings,significant_other,sports,quotes,third_party_id,timezone,updated_time,verified,video_upload_limits,viewer_can_send_gift,website,work,cover"),
 			User.class),
 	EMPTY(Parameter.with("null", ""), Object.class);
 

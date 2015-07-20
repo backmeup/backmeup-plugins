@@ -4,7 +4,7 @@
 
   <groupId>themis</groupId>
   <artifactId>themis-fb</artifactId>
-  <version>15-29-17-SNAPSHOT</version>
+  <version>15-30-20-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>themis-fb</name>

@@ -30,12 +30,12 @@ public class ConfLoader
 	public static void genProperties()
 	{
 		Properties props = new Properties();
-		props.put(PropertyOption.ACCESS_TOKEN.toString(), "yourToken");
-		props.put(PropertyOption.DIRECTORY.toString(), System.getProperty("user.home") + "/bme-fb-output/.core.xml");
-		props.put(PropertyOption.MAX_PHOTOS_PER_ALBUM.toString(), "-1");
-		props.put(PropertyOption.SKIP_ALBUMS.toString(), ";");
-		props.put(PropertyOption.HTML_DIR.toString(), System.getProperty("user.home") + "/html-out");
-		props.put(PropertyOption.REDUCED_INFOS.toString(), true);
+		props.setProperty(PropertyOption.ACCESS_TOKEN.toString(), "yourToken");
+		props.setProperty(PropertyOption.DIRECTORY.toString(), "./data-out/.core.xml");
+		props.setProperty(PropertyOption.MAX_PHOTOS_PER_ALBUM.toString(), "-1");
+		props.setProperty(PropertyOption.SKIP_ALBUMS.toString(), ";");
+		props.setProperty(PropertyOption.HTML_DIR.toString(), "./html-out");
+		props.setProperty(PropertyOption.REDUCED_INFOS.toString(), Boolean.TRUE.toString());
 		try (FileOutputStream fos = new FileOutputStream(new File("properties.xml")))
 		{
 			props.storeToXML(fos, "Default properties");

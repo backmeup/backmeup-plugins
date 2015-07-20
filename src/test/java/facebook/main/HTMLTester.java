@@ -11,7 +11,6 @@ import org.junit.runner.JUnitCore;
 import facebook.files.ConfLoader;
 import facebook.files.PropertyOption;
 import facebook.htmlgenerator.HTMLGenerator;
-import facebook.storage.SDO;
 import facebook.utils.FileUtils;
 
 public class HTMLTester
@@ -34,10 +33,10 @@ public class HTMLTester
 			target = new File(props.getProperty(PropertyOption.HTML_DIR.toString()));
 			if (!target.exists())
 				target.mkdirs();
-			FileUtils.exctractFromJar("/facebook/htmlgenerator/css/main.css", new File("" + target + SDO.SLASH + "main.css"), HTMLGenerator.class);
-			FileUtils.exctractFromJar("/facebook/htmlgenerator/css/menu.css", new File("" + target + SDO.SLASH + "menu.css"), HTMLGenerator.class);
+			FileUtils.exctractFromJar("/facebook/htmlgenerator/css/main.css", new File("" + target + "/main.css"), HTMLGenerator.class);
+			FileUtils.exctractFromJar("/facebook/htmlgenerator/css/menu.css", new File("" + target + "/menu.css"), HTMLGenerator.class);
 		}
-		JUnitCore.runClasses(DownloadTester.class);
+		//JUnitCore.runClasses(DownloadTester.class);
 	}
 
 	@After
