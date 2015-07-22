@@ -10,6 +10,7 @@ public class FileUtils
 	public static String getWayTo(File from, File to)
 	{
 		String separator = File.separator;
+		//Only for Windows
 		if (separator.equals("\\"))
 			separator = "\\\\";
 		StringBuilder sb = new StringBuilder();

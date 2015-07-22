@@ -192,6 +192,8 @@ public class Serializer
 			photoXml = new File("" + postXml.getParentFile() + "/object/photoinfo.xml");
 			photoInfo(photo, photoXml, fbc);
 		}
+		// In my case, it does not send any comments, but i also get no comments
+		// from the Graph API Explorer
 		Connection<Comment> commentConnection = fbc.fetchConnection(post.getId() + "/comments", Comment.class, MasterParameter.getByClass(Comment.class).getParameter());
 		for (List<Comment> comments : commentConnection)
 		{
