@@ -4,6 +4,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.backmeup.facebook.files.ConfLoader;
+import org.backmeup.facebook.files.PropertyOption;
+import org.backmeup.facebook.storage.Serializer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,10 +14,6 @@ import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.Version;
 import com.restfb.experimental.api.Facebook;
-
-import facebook.files.ConfLoader;
-import facebook.files.PropertyOption;
-import facebook.storage.Serializer;
 
 public class DownloadTester
 {

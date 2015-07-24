@@ -3,15 +3,14 @@ package facebook.main;
 import java.io.File;
 import java.util.Properties;
 
+import org.backmeup.facebook.files.ConfLoader;
+import org.backmeup.facebook.files.PropertyOption;
+import org.backmeup.facebook.htmlgenerator.HTMLGenerator;
+import org.backmeup.facebook.utils.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
-
-import facebook.files.ConfLoader;
-import facebook.files.PropertyOption;
-import facebook.htmlgenerator.HTMLGenerator;
-import facebook.utils.FileUtils;
 
 public class HTMLTester
 {
