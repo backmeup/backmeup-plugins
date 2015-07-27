@@ -1,4 +1,4 @@
-package org.backmeup.facebook.plugin;
+package org.backmeup.facebook;
 
 import java.util.HashMap;
 import java.util.Map;

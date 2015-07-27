@@ -166,28 +166,30 @@ public class HTMLGenerator
 		Div photoContainer = new Div();
 		photoContainer.setCSSClass("picture_container");
 		Ul photoList = new Ul();
-		for (File photoFolder : FileUtils.resolveRelativePath(albumXml, albumProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString())).listFiles())
-		{
-			File photoXml = FileUtils.resolveRelativePath(photoFolder, albumProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
-			Properties photoProps = loadProperties(photoXml);
-			Li photoItem = new Li();
-			A photoLink = new A();
-			File photoHtml = new File("" + albumHtml.getParentFile() + "/" + photoProps.getProperty(PhotoInfoKey.ID.toString()) + ".html");
-			photoLink.setHref(FileUtils.getWayTo(albumHtml, photoHtml));
-			Div innerItem = new Div().setCSSClass("album_picture");
-			String relativePhoto = FileUtils.getWayTo(albumHtml, FileUtils.resolveRelativePath(photoXml, photoProps.getProperty(PhotoInfoKey.FILE.toString())));
-			innerItem.appendChild(new Img("Photo", relativePhoto));
-			innerItem.appendChild(new P().appendText("Likes: " + photoProps.getProperty(PhotoInfoKey.LIKES.toString())));
-			photoLink.appendChild(innerItem);
-			photoItem.appendChild(photoLink);
-			photoList.appendChild(photoItem);
-			ArrayList<Node> commentNodes = new ArrayList<>();
-			File comments = new File("" + photoXml.getParentFile() + "/" + photoProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
-			if (comments.exists())
-				for (File f : comments.listFiles())
-					commentNodes.add(genComment(f, photoHtml));
-			genPhotoFile(photoProps, photoHtml, photoXml, root, commentNodes.toArray(new Node[commentNodes.size()]));
-		}
+		File photosFolder = FileUtils.resolveRelativePath(albumXml, albumProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString()));
+		if (photosFolder != null && photosFolder.isDirectory() && photosFolder.listFiles().length > 0)
+			for (File photoFolder : photosFolder.listFiles())
+			{
+				File photoXml = FileUtils.resolveRelativePath(photoFolder, albumProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
+				Properties photoProps = loadProperties(photoXml);
+				Li photoItem = new Li();
+				A photoLink = new A();
+				File photoHtml = new File("" + albumHtml.getParentFile() + "/" + photoProps.getProperty(PhotoInfoKey.ID.toString()) + ".html");
+				photoLink.setHref(FileUtils.getWayTo(albumHtml, photoHtml));
+				Div innerItem = new Div().setCSSClass("album_picture");
+				String relativePhoto = FileUtils.getWayTo(albumHtml, FileUtils.resolveRelativePath(photoXml, photoProps.getProperty(PhotoInfoKey.FILE.toString())));
+				innerItem.appendChild(new Img("Photo", relativePhoto));
+				innerItem.appendChild(new P().appendText("Likes: " + photoProps.getProperty(PhotoInfoKey.LIKES.toString())));
+				photoLink.appendChild(innerItem);
+				photoItem.appendChild(photoLink);
+				photoList.appendChild(photoItem);
+				ArrayList<Node> commentNodes = new ArrayList<>();
+				File comments = new File("" + photoXml.getParentFile() + "/" + photoProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
+				if (comments.exists())
+					for (File f : comments.listFiles())
+						commentNodes.add(genComment(f, photoHtml));
+				genPhotoFile(photoProps, photoHtml, photoXml, root, commentNodes.toArray(new Node[commentNodes.size()]));
+			}
 		Div sideInfos = new Div();
 		sideInfos.setCSSClass("sidebar");
 		sideInfos.appendChild(wrapInfos(AlbumInfoKey.values(), albumProps, true));

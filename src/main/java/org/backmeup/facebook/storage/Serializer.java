@@ -35,6 +35,7 @@ import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.Version;
+import com.restfb.exception.FacebookOAuthException;
 import com.restfb.experimental.api.Facebook;
 import com.restfb.types.Album;
 import com.restfb.types.CategorizedFacebookType;
@@ -188,9 +189,15 @@ public class Serializer
 		File photoXml = null;
 		if (post.getObjectId() != null)
 		{
-			Photo photo = fbc.fetchObject(post.getObjectId(), Photo.class, MasterParameter.getParameterByClass(Photo.class));
-			photoXml = new File("" + postXml.getParentFile() + "/object/photoinfo.xml");
-			photoInfo(photo, photoXml, fbc);
+			try
+			{
+				Photo photo = fbc.fetchObject(post.getObjectId(), Photo.class, MasterParameter.getParameterByClass(Photo.class));
+				photoXml = new File("" + postXml.getParentFile() + "/object/photoinfo.xml");
+				photoInfo(photo, photoXml, fbc);
+			} catch (FacebookOAuthException e)
+			{
+				System.out.println("Facebook sent you some bullshit");
+			}
 		}
 		// In my case, it does not send any comments, but i also get no comments
 		// from the Graph API Explorer

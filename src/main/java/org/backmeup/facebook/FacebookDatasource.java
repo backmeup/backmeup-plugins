@@ -1,6 +1,8 @@
-package org.backmeup.facebook.main;
+package org.backmeup.facebook;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +14,7 @@ import org.backmeup.facebook.files.PropertyOption;
 import org.backmeup.facebook.htmlgenerator.HTMLGenerator;
 import org.backmeup.facebook.storage.Serializer;
 import org.backmeup.facebook.utils.FileUtils;
+import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.connectors.Datasource;
 import org.backmeup.plugin.api.connectors.DatasourceException;
 import org.backmeup.plugin.api.connectors.Progressable;
@@ -82,8 +85,8 @@ public class FacebookDatasource implements Datasource
 		ArrayList<String> skipAlbums;
 		File dir;
 		HTMLGenerator mainGen;
-		String path;
 		File target;
+
 		if (!ConfLoader.confExists() && properties != null)
 			ConfLoader.genProperties();
 		Properties props;
@@ -94,37 +97,46 @@ public class FacebookDatasource implements Datasource
 			props = new Properties();
 			props.putAll(properties);
 		}
-		path = props.getProperty(PropertyOption.DIRECTORY.toString());
 		if (!ConfLoader.confExists())
 			ConfLoader.genProperties();
-		if (options.contains("--download"))
+		/*
+		 * if (options.contains("--download")) {
+		 */
+		String CURRENT_ACCESSTOKEN = props.getProperty(PropertyOption.ACCESS_TOKEN.toString());
+		maxPics = (long) -1;
+		try
 		{
-			String CURRENT_ACCESSTOKEN = ConfLoader.getProperties().getProperty(PropertyOption.ACCESS_TOKEN.toString());
-			maxPics = (long) -1;
-			try
-			{
-				maxPics = Long.parseLong(ConfLoader.getProperties().getProperty(PropertyOption.MAX_PHOTOS_PER_ALBUM.toString()));
-			} catch (NumberFormatException e)
-			{
-
-			}
-			skipAlbums = new ArrayList<>();
-			skipAlbums.addAll(Arrays.asList(ConfLoader.getProperties().getProperty(PropertyOption.SKIP_ALBUMS.toString()).split(";")));
-			fbc = new DefaultFacebookClient(CURRENT_ACCESSTOKEN, Version.VERSION_2_3);
-			facebook = new Facebook(fbc);
-			dir = new File(ConfLoader.getProperties().getProperty(PropertyOption.DIRECTORY.toString()));
-			Serializer.generateAll(fbc, facebook, dir, skipAlbums, maxPics);
-		}
-		if (options.contains("--generate-html"))
+			maxPics = Long.parseLong(props.getProperty(PropertyOption.MAX_PHOTOS_PER_ALBUM.toString()));
+		} catch (NumberFormatException e)
 		{
-			mainGen = new HTMLGenerator();
-			target = new File(props.getProperty(PropertyOption.HTML_DIR.toString()));
-			if (!target.exists())
-				target.mkdirs();
-			FileUtils.exctractFromJar("/facebook/htmlgenerator/css/main.css", new File("" + target + "/main.css"), HTMLGenerator.class);
-			FileUtils.exctractFromJar("/facebook/htmlgenerator/css/menu.css", new File("" + target + "/menu.css"), HTMLGenerator.class);
-			mainGen.genOverview(target, new File(path));
+			e.printStackTrace();
 		}
+		skipAlbums = new ArrayList<>();
+		// skipAlbums.addAll(Arrays.asList(ConfLoader.getProperties().getProperty(PropertyOption.SKIP_ALBUMS.toString()).split(";")));
+		fbc = new DefaultFacebookClient(CURRENT_ACCESSTOKEN, Version.VERSION_2_3);
+		facebook = new Facebook(fbc);
+		String tDir = System.getProperty("java.io.tmpdir");
+		dir = new File(tDir + "/xmldata/.core.xml");
+		Serializer.generateAll(fbc, facebook, dir, skipAlbums, maxPics);
+		/*
+		 * } if (options.contains("--generate-html")) {
+		 */
+		mainGen = new HTMLGenerator();
+		target = new File(tDir + "/html");
+		try (FileInputStream fishtml = new FileInputStream(target); FileInputStream fisxml = new FileInputStream(dir.getParentFile()))
+		{
+			storage.addFile(fisxml, "/xmldata", new MetainfoContainer());
+			storage.addFile(fishtml, "/html", new MetainfoContainer());
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		if (!target.exists())
+			target.mkdirs();
+		FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/main.css", new File("" + target + "/main.css"), HTMLGenerator.class);
+		FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/menu.css", new File("" + target + "/menu.css"), HTMLGenerator.class);
+		mainGen.genOverview(target, dir);
+		// }
 	}
 
 }

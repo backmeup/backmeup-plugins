@@ -3,17 +3,17 @@
 	default-activation="lazy">
 	<service id="facebookDescriptorService" ref="facebookDescriptor" auto-export="interfaces">
 		<service-properties>
-			<entry key="name" value="org.backmeup.facebook.plugin"/>
+			<entry key="name" value="org.backmeup.facebook"/>
 		</service-properties>
 	</service>
 	<service id="facebookValidatorService" ref="facebookValidator" auto-export="interfaces">
 		<service-properties>
-			<entry key="name" value="org.backmeup.facebook.plugin"/>
+			<entry key="name" value="org.backmeup.facebook"/>
 		</service-properties>
 	</service>
 	<service id="facebookDatasourceService" ref="facebookDatasource" auto-export="interfaces">
 		<service-properties>
-			<entry key="name" value="org.backmeup.facebook.main"/>
+			<entry key="name" value="org.backmeup.facebook"/>
 		</service-properties>
 	</service>	
 </blueprint>

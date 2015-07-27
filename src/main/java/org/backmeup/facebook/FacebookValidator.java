@@ -1,9 +1,10 @@
-package org.backmeup.facebook.plugin;
+package org.backmeup.facebook;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.backmeup.facebook.files.PropertyOption;
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
 import org.backmeup.model.api.RequiredInputField.Type;
@@ -22,9 +23,9 @@ public class FacebookValidator implements Validationable
 	public List<RequiredInputField> getRequiredProperties()
 	{
 		ArrayList<RequiredInputField> ret = new ArrayList<>();
-		ret.add(new RequiredInputField("actoken", "Accesstoken", "Is required to acces to a facebookprofile", true, 0, Type.String, "Enter your Accestoken here"));
-		ret.add(new RequiredInputField("albumamount", "Albums maximum", "Is to limit the photos per album to download; -1 for unlimited", true, 0, Type.Number, "-1"));
-		ret.add(new RequiredInputField("red_infos", "Reduced infos", "Generate view with reduced infos; extended infos only recommend for debugging", true, 0, Type.Bool, Boolean.TRUE.toString()));
+		ret.add(new RequiredInputField(PropertyOption.ACCESS_TOKEN.toString(), "Accesstoken", "Is required to acces to a facebookprofile", true, 0, Type.String, "Enter your Accestoken here"));
+		ret.add(new RequiredInputField(PropertyOption.MAX_PHOTOS_PER_ALBUM.toString(), "Albums maximum", "Is to limit the photos per album to download; -1 for unlimited", true, 0, Type.Number, "-1"));
+		ret.add(new RequiredInputField(PropertyOption.REDUCED_INFOS.toString(), "Reduced infos", "Generate view with reduced infos; extended infos only recommend for debugging", true, 0, Type.Bool, Boolean.TRUE.toString()));
 		return ret;
 	}
 
