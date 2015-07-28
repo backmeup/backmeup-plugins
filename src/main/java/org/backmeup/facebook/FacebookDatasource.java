@@ -127,20 +127,21 @@ public class FacebookDatasource implements Datasource
 		 */
 		mainGen = new HTMLGenerator();
 		target = new File(tDir + "/html");
-		try (FileInputStream fishtml = new FileInputStream(target); FileInputStream fisxml = new FileInputStream(dir.getParentFile()))
-		{
-			storage.addFile(fisxml, "/xmldata", new MetainfoContainer());
-			storage.addFile(fishtml, "/html", new MetainfoContainer());
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
 		if (!target.exists())
 			target.mkdirs();
+		
 		FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/main.css", new File("" + target + "/main.css"), HTMLGenerator.class);
 		FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/menu.css", new File("" + target + "/menu.css"), HTMLGenerator.class);
 		mainGen.genOverview(target, dir);
 		// }
+		try (FileInputStream fishtml = new FileInputStream(target); FileInputStream fisxml = new FileInputStream(dir.getParentFile()))
+		{
+			storage.addFile(fisxml, "xmldata", new MetainfoContainer());
+			storage.addFile(fishtml, "html", new MetainfoContainer());
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 }
