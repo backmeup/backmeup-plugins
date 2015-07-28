@@ -160,7 +160,7 @@ public class FacebookDatasource implements Datasource
 		if (root.isDirectory())
 			for (File file : root.listFiles())
 				if (file.isDirectory())
-					files(root, list);
+					files(file, list);
 				else
 					list.add(file);
 	}
