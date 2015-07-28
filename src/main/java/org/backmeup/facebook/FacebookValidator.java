@@ -32,7 +32,6 @@ public class FacebookValidator implements Validationable
 	@Override
 	public ValidationNotes validateProperties(Map<String, String> properties)
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -51,7 +50,6 @@ public class FacebookValidator implements Validationable
 	@Override
 	public ValidationNotes validateOptions(List<String> options)
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
