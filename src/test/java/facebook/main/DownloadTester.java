@@ -53,7 +53,7 @@ public class DownloadTester
 	@Test
 	public void testAll()
 	{
-		Serializer.generateAll(fbc, facebook, dir, skipAlbums, maxPics);
+		Serializer.generateAll(fbc, facebook, dir, skipAlbums, maxPics, null);
 	}
 
 }

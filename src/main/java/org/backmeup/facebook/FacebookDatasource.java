@@ -28,7 +28,12 @@ import com.restfb.experimental.api.Facebook;
 
 public class FacebookDatasource implements Datasource
 {
-
+	/**
+	 * 
+	 * @deprecated use standalone version instead
+	 * @param args arguments
+	 */
+	@Deprecated
 	public static void main(String[] args)
 	{
 		FacebookClient fbc;
@@ -62,7 +67,7 @@ public class FacebookDatasource implements Datasource
 			fbc = new DefaultFacebookClient(CURRENT_ACCESSTOKEN, Version.VERSION_2_3);
 			facebook = new Facebook(fbc);
 			dir = new File(ConfLoader.getProperties().getProperty(PropertyOption.DIRECTORY.toString()));
-			Serializer.generateAll(fbc, facebook, dir, skipAlbums, maxPics);
+			Serializer.generateAll(fbc, facebook, dir, skipAlbums, maxPics, null);
 		}
 		if (arguments.contains("--generate-html"))
 		{
@@ -86,7 +91,6 @@ public class FacebookDatasource implements Datasource
 		File dir;
 		HTMLGenerator mainGen;
 		File target;
-
 		if (!ConfLoader.confExists() && properties != null)
 			ConfLoader.genProperties();
 		Properties props;
@@ -117,7 +121,7 @@ public class FacebookDatasource implements Datasource
 		facebook = new Facebook(fbc);
 		String tDir = System.getProperty("java.io.tmpdir");
 		dir = new File(tDir + "/xmldata/.core.xml");
-		Serializer.generateAll(fbc, facebook, dir, skipAlbums, maxPics);
+		Serializer.generateAll(fbc, facebook, dir, skipAlbums, maxPics, progressor);
 		/*
 		 * } if (options.contains("--generate-html")) {
 		 */

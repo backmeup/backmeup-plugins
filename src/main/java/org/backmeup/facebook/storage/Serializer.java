@@ -1,5 +1,5 @@
 /**
- * @author richard
+ * @author Stoeckl R.
  */
 
 package org.backmeup.facebook.storage;
@@ -29,6 +29,7 @@ import org.backmeup.facebook.storage.keys.SerializerKey;
 import org.backmeup.facebook.storage.keys.UserInfoKey;
 import org.backmeup.facebook.utils.ConsoleDrawer;
 import org.backmeup.facebook.utils.FileUtils;
+import org.backmeup.plugin.api.connectors.Progressable;
 
 import com.hp.gagawa.java.elements.A;
 import com.restfb.Connection;
@@ -54,7 +55,7 @@ import com.restfb.types.User.Currency;
 
 public class Serializer
 {
-	public static void generateAll(FacebookClient fbc, Facebook facebook, File coreFile, ArrayList<String> skipAlbums, long maxAlbumpics)
+	public static void generateAll(FacebookClient fbc, Facebook facebook, File coreFile, ArrayList<String> skipAlbums, long maxAlbumpics, Progressable progress)
 	{
 		File dir = coreFile.getParentFile();
 		CustomStringBuilder builder = new CustomStringBuilder("|");
@@ -80,7 +81,7 @@ public class Serializer
 			{
 				File albumXml = new File("" + dir + "/albums/" + album.getId() + "/albuminfo.xml");
 				builder.append(FileUtils.getWayTo(dir, albumXml));
-				albumInfo(album, fbc, albumXml, maxAlbumpics, album.getId().equalsIgnoreCase("lonely"), photos);
+				albumInfo(album, fbc, albumXml, maxAlbumpics, album.getId().equalsIgnoreCase("lonely"), photos, progress);
 			}
 		}
 		listProps.put(PropertyFile.ALBUMS.toString(), builder.toString());
@@ -240,7 +241,7 @@ public class Serializer
 		return infos;
 	}
 
-	public static HashMap<SerializerKey, Object> albumInfo(Album album, FacebookClient fcb, File albumXml, long maxPics, boolean fakeAlbum, Connection<Photo> fakePhotos)
+	public static HashMap<SerializerKey, Object> albumInfo(Album album, FacebookClient fcb, File albumXml, long maxPics, boolean fakeAlbum, Connection<Photo> fakePhotos, Progressable progress)
 	{
 		HashMap<SerializerKey, Object> infos = new HashMap<>();
 		if (album == null)
@@ -264,7 +265,8 @@ public class Serializer
 			photosConn = fakePhotos;
 		else
 			photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
-		System.out.print("Fetching Photos from " + album.getName() + ". This may take a while...\t\t");
+		if (progress != null)
+			progress.progress("Fetching " + (album.getCount()!=null && (maxPics > album.getCount()) ? album.getCount() : maxPics) + " photos from " + album.getName() + ". This may take a while...");
 		long iterator = 0;
 		Iterator<List<Photo>> it = photosConn.iterator();
 		boolean breakLoop = false;
@@ -281,6 +283,7 @@ public class Serializer
 					breakLoop = true;
 					break;
 				}
+				// like the name says, this works only correctly for the console
 				ConsoleDrawer.drawProgress(20, (int) ((iterator / (((maxPics < 0) ? album.getCount() : maxPics) * 1.0)) * 20), iterator == 0);
 				if (!dir.exists())
 					dir.mkdirs();
@@ -294,6 +297,7 @@ public class Serializer
 			if (breakLoop)
 				break;
 		}
+		// like the name says, this works only correctly for the console
 		ConsoleDrawer.drawProgress(20, 20, false);
 		infos.put(AlbumInfoKey.LOCAL_COUNT, iterator);
 		System.out.println();
