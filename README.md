@@ -33,6 +33,8 @@ You can generate an access token [here](https://developers.facebook.com/tools/ex
 You can also set a limit for the amount of photos that will be downloaded per album. All numbers below 0 will download all photos. You should mind, that this can generate a lot of traffic.
 ##### Albumblacklist
 You can specify the albums, which should not be downloaded, the regex is ;.
+##### Reduced Infos
+If true, not all information is shown in the HTML, but the data is in the XML. You recreate the HTML with this option to false and the information will be complete. Recommend to set to false only for debugging.
 ### Plugin
 Themis-fb can also work as Backmeup plugin. For this, run the following command in your backmeup-plugins folder:
 ```sh
