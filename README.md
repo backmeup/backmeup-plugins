@@ -51,4 +51,4 @@ And deploy it
 $ sudo ./deploy.sh
 ```
 ####Job parameters
-see [here](####config)
+see [here](#config)
