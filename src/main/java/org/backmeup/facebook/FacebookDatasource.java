@@ -122,7 +122,7 @@ public class FacebookDatasource implements Datasource
 		fbc = new DefaultFacebookClient(CURRENT_ACCESSTOKEN, Version.VERSION_2_3);
 		facebook = new Facebook(fbc);
 		String tDir = System.getProperty("java.io.tmpdir");
-		dir = new File(tDir + "/xmldata/.core.xml");
+		dir = new File(tDir + "/facebook_" + System.currentTimeMillis() + "/xmldata/.core.xml");
 		Serializer.generateAll(fbc, facebook, dir, skipAlbums, maxPics, progressor);
 		/*
 		 * } if (options.contains("--generate-html")) {
