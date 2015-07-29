@@ -56,6 +56,7 @@ $ sudo ./deploy.sh
 see [here](#config)
 #Not implemented
 These items will not be fetched from your profile, because they are not implemented yet, maybe that will change in the future.
-+ Videos	"me/videos"
-+ Friendlist	"me/friends"	(returns only the count of the friends and friends profile, which are also registered in this app)
-+ complete Group	"me/groups"	(is implemented but returns not many information)
++ Videos	**"me/videos"**
++ Friendlist	**"me/friends"**	(returns only the count of the friends and friends profile, which are also registered in this app)
++ complete Group	**"me/groups"**	(is implemented but returns not many information)
++ Feeds		**"me/feeds"**	(seems to be the same like **"me/posts"**)
