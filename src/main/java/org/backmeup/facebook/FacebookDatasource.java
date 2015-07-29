@@ -95,6 +95,8 @@ public class FacebookDatasource implements Datasource
 		if (!ConfLoader.confExists() && properties != null)
 			ConfLoader.genProperties();
 		Properties props;
+		if (!ConfLoader.confExists())
+			ConfLoader.genProperties();
 		if (properties == null)
 			props = ConfLoader.getProperties();
 		else
@@ -102,8 +104,7 @@ public class FacebookDatasource implements Datasource
 			props = new Properties();
 			props.putAll(properties);
 		}
-		if (!ConfLoader.confExists())
-			ConfLoader.genProperties();
+		
 		/*
 		 * if (options.contains("--download")) {
 		 */
@@ -117,7 +118,7 @@ public class FacebookDatasource implements Datasource
 			e.printStackTrace();
 		}
 		skipAlbums = new ArrayList<>();
-		// skipAlbums.addAll(Arrays.asList(ConfLoader.getProperties().getProperty(PropertyOption.SKIP_ALBUMS.toString()).split(";")));
+		skipAlbums.addAll(Arrays.asList(props.getProperty(PropertyOption.SKIP_ALBUMS.toString()).split(";")));
 		fbc = new DefaultFacebookClient(CURRENT_ACCESSTOKEN, Version.VERSION_2_3);
 		facebook = new Facebook(fbc);
 		String tDir = System.getProperty("java.io.tmpdir");
