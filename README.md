@@ -11,13 +11,13 @@ At the first time, run this:
 $ java -jar {themis-fb}.jar
 ```
 it will only generate the config. 
-#####Download
+##### Download
 When you want to download the data of your profile run:
 ```sh
 $ java -jar {themis-fb}.jar --download
 ```
 Do not forget to specify the download directory in your properties.xml
-#####Generate view
+##### Generate view
 When you want to generate a view of your already downloaded data run:
 ```sh
 $ java -jar {themis-fb}.jar --generate-html
@@ -25,15 +25,15 @@ $ java -jar {themis-fb}.jar --generate-html
 Do not forget to specify the HTML directory in your properties.xml. When you want to open the view, go to the HTML directory and open the index.html.
 
 You can combine all given parameter.
-####Config
+#### Config
 The configs name is properties.xml.
-#####Access Token
+##### Access Token
 You can generate an access token [here](https://developers.facebook.com/tools/explorer).
-#####Limit
+##### Limit
 You can also set a limit for the amount of photos that will be downloaded per album. All numbers below 0 will download all photos. You should mind, that this can generate a lot of traffic.
-#####Albumblacklist
+##### Albumblacklist
 You can specify the albums, which should not be downloaded, the regex is ;.
-###Plugin
+### Plugin
 Themis-fb can also work as Backmeup plugin. For this, run the following command in your backmeup-plugins folder:
 ```sh
 $ git clone https://github.com/RStoeckl/themis-fb.git -b bmu-plugin
@@ -50,3 +50,5 @@ And deploy it
 ```sh
 $ sudo ./deploy.sh
 ```
+####Job parameters
+see [here](####config)
