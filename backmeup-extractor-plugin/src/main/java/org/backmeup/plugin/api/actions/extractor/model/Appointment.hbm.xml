@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.backmeup.plugin.api.actions.extractor.model">
+    <class name="Appointment" table="APPOINTMENT">
+        <id name="id" column="APPOINTMENT_ID">
+            <generator class="native"/>
+        </id>
+        <property name="description" column="DESCRIPTION" />
+        <property name="dateStart" column="DATE_START" />
+        <property name="dateEnd" column="DATE_END" />
+    </class> 
+</hibernate-mapping>

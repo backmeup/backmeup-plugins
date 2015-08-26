@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" default-activation="lazy">
+	
+	<service id="extractorDescribableService" ref="extractorDescribable" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.extractor"/>
+		</service-properties>
+	</service>
+	
+	<service id="extractorActionService" ref="extractorAction" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.extractor"/>
+		</service-properties>
+	</service>
+	
+<!-- 	<service id="personIdentityDAOService" ref="personIdentityDAO" auto-export="interfaces"> -->
+<!-- 		<service-properties> -->
+<!-- 			<entry key="name" value="org.backmeup.extractor"/> -->
+<!-- 		</service-properties> -->
+<!-- 	</service> -->
+</blueprint>

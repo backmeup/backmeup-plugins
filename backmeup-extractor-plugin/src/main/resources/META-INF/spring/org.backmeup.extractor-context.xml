@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:schemaLocation="http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd"
+			xmlns:tx="http://www.springframework.org/schema/tx" default-activation="lazy">	
+	
+	<bean id="extractorAction" class="org.backmeup.plugin.api.actions.extractor.ExtractorAction">
+ 		<property name="personIdentityDAO" ref="personIdentityDAO"/>
+ 		<property name="appointmentDAO" ref="appointmentDAO"/>
+	</bean>
+	
+	<bean id="extractorDescribable" class="org.backmeup.plugin.api.actions.extractor.ExtractorDescribable"/>	
+	
+	<bean id="personIdentityDAO" class="org.backmeup.plugin.api.actions.extractor.dao.PersonIdentityDAOImpl" destroy-method="doDestroy">
+		<property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+    <bean id="personIdentity" class="org.backmeup.plugin.api.actions.extractor.model.PersonIdentity"/>
+    
+    <bean id="appointmentDAO" class="org.backmeup.plugin.api.actions.extractor.dao.AppointmentDAOImpl" destroy-method="doDestroy">
+		<property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+    <bean id="appointment" class="org.backmeup.plugin.api.actions.extractor.model.Appointment"/>
+    
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+<!--     <bean id="sessionFactory" class="org.springframework.orm.hibernate4.AnnotationSessionFactoryBean"> -->
+    
+	    <property name="dataSource" ref="dataSource" />
+	    
+		<property name="packagesToScan" value="org.backmeup.plugin.api.actions.extractor.model" />
+		<property name="annotatedClasses">
+            <list>
+                <value>org.backmeup.plugin.api.actions.extractor.model.PersonIdentity</value>
+            </list>
+        </property>
+	    <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.DerbyTenSevenDialect</prop>
+                <prop key="hibernate.current_session_context_class">thread</prop>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.hbm2ddl.auto">create</prop>
+            </props>
+        </property>
+	</bean>
+
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver"/>
+		<property name="url" value="jdbc:derby:mydb;create=true"/>
+		<property name="username" value="admin"/>
+		<property name="password" value="pass"/>
+	</bean>
+
+<!-- 	<tx:annotation-driven/>  -->
+<!-- 	<tx:annotation-driven transaction-manager="transactionManager" /> -->
+	
+<!-- 	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager"> -->
+<!-- 	    <property name="sessionFactory" ref="sessionFactory" /> -->
+<!-- 	</bean> -->
+<!-- 		<property name="annotatedClasses"> -->
+<!--             <list> -->
+<!--                 <value>org.backmeup.plugin.api.actions.extractor.model.PersonIdentity</value> -->
+<!--             </list> -->
+<!--         </property> -->
+
+<!-- 		<property name="mappingResources"> -->
+<!-- 			<list> -->
+<!-- 				<value>META-INF/PersonIdentity.hbm.xml</value> -->
+<!-- 			</list> -->
+<!-- 		</property>	 -->
+<!--   		<property name="mappingLocations" value="META-INF/PersonIdentity.hbm.xml" />  -->
+<!-- 		<property name="packagesToScan" value="org.backmeup.plugin.api.actions.extractor.model" /> -->
+
+</blueprint>

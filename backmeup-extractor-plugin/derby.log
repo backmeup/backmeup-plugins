@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Mon May 18 10:05:45 CEST 2015:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.1 - (1616546): instance a816c00e-014d-660e-a542-000006456398 
+on database directory C:\dev\ws-backmeup-service\backmeup-plugins\backmeup-extractor-plugin\target\junit\derby with class loader sun.misc.Launcher$AppClassLoader@7f423820 
+Loaded from file:/C:/Users/BarthaM/.m2/repository/org/apache/derby/derby/10.11.1.1/derby-10.11.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.7.0_67-b01
+user.dir=C:\dev\ws-backmeup-service\backmeup-plugins\backmeup-extractor-plugin
+os.name=Windows 7
+os.arch=amd64
+os.version=6.1
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
