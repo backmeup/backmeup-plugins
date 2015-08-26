@@ -30,6 +30,7 @@
 		<property name="annotatedClasses">
             <list>
                 <value>org.backmeup.plugin.api.actions.extractor.model.PersonIdentity</value>
+                <value>org.backmeup.plugin.api.actions.extractor.model.Appointment</value>
             </list>
         </property>
 	    <property name="hibernateProperties">
@@ -44,7 +45,7 @@
 
 	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver"/>
-		<property name="url" value="jdbc:derby:mydb;create=true"/>
+		<property name="url" value="jdbc:derby:entities;create=true"/>
 		<property name="username" value="admin"/>
 		<property name="password" value="pass"/>
 	</bean>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0">
+	<persistence-unit name="org.backmeup.plugin.api.actions.extractor" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<class>org.backmeup.plugin.api.actions.extractor.model.PersonIdentity</class>
+		<class>org.backmeup.plugin.api.actions.extractor.model.Appointment</class>
+		<properties>
+<!-- 			<property name="javax.persistence.jdbc.user" value="dbu_indexcore" /> -->
+<!-- 			<property name="javax.persistence.jdbc.password" value="dbu_indexcore" /> -->
+<!-- 			<property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" /> -->
+<!-- 			<property name="javax.persistence.jdbc.url" value="jdbc:postgresql://127.0.0.1/bmuindexcore" /> -->
+<!-- 			<property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" /> -->
+<!-- 			<property name="hibernate.hbm2ddl.auto" value="update" /> -->
+
+            <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.EmbeddedDriver" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:derby:target/index-derby;create=true" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.DerbyTenSevenDialect" />
+            <property name="hibernate.hbm2ddl.auto" value="create" />
+ 			<property name="hibernate.show_sql" value="true"/>
+		</properties>
+	</persistence-unit>
+</persistence>

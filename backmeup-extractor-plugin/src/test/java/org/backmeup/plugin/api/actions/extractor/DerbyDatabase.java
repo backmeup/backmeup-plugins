@@ -4,21 +4,43 @@ import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 
+import org.backmeup.plugin.api.actions.extractor.dao.AppointmentDAO;
+import org.backmeup.plugin.api.actions.extractor.dao.AppointmentDAOImpl;
 import org.backmeup.plugin.api.actions.extractor.dao.PersonIdentityDAO;
 import org.backmeup.plugin.api.actions.extractor.dao.PersonIdentityDAOImpl;
 import org.junit.rules.ExternalResource;
+import org.mockito.internal.util.reflection.Whitebox;
+
+import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 
 public class DerbyDatabase extends ExternalResource {
 
-    private EntityManagerFactory entityManagerFactory;
-    public EntityManager entityManager;
+    //public EntityManagerFactory entityManagerFactory;
+    //public EntityManager entityManager;
 
-    public PersonIdentityDAO PersonIdentityDAO;
-
+    public PersonIdentityDAO personIdentityDAO;
+    
+    public AppointmentDAO appointmentDAO;
+    
+    private static final String PERSISTENCE_UNIT = "org.backmeup.plugin.api.actions.extractor";
+    
+    public LocalSessionFactoryBean localSessionFactoryBean;
+    
     @Override
     protected void before() {
-        this.PersonIdentityDAO = new PersonIdentityDAOImpl(null);
+    	//this.entityManagerFactory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT, overwrittenJPAProps());
+        //this.entityManager = this.entityManagerFactory.createEntityManager();
+        this.localSessionFactoryBean = new LocalSessionFactoryBean();
+        
+        this.personIdentityDAO = new PersonIdentityDAOImpl();
+        Whitebox.setInternalState(this.personIdentityDAO, "sessionFactory", this.localSessionFactoryBean);
+       
+        this.appointmentDAO = new AppointmentDAOImpl();
+        Whitebox.setInternalState(this.appointmentDAO, "sessionFactory", this.localSessionFactoryBean);
+        
+        
     }
 
     private Properties overwrittenJPAProps() {
@@ -35,7 +57,9 @@ public class DerbyDatabase extends ExternalResource {
 
     @Override
     protected void after() {
-        this.entityManager.close();
+        //this.entityManager.close();
+        //if (this.entityManagerFactory.isOpen())
+        //	this.entityManagerFactory.close();
     }
 
 }

@@ -32,47 +32,15 @@ import org.junit.Rule;
 import org.junit.Test;
 
 public class ExtractActionTest {
+	@Rule
+    public final DerbyDatabase database = new DerbyDatabase();
 	
 	@Before
     public void setup() throws ActionException {
         System.out.println("Setting up test index...");
 	}
 
-    @Test
-    public void shouldExtractContentTypeOfPDF() throws ActionException {
-
-    	ExtractorAction action = new ExtractorAction();
-    	
-        Storage pdfStorage = new FakeFileStorage();
-        Progressable progressor = new Progressable() {
-            @Override
-            public void progress(String message) {
-                System.out.println(message);
-            }
-        };
-        
-        BackupJobExecutionDTO job = new BackupJobExecutionDTO();
-        
-        UserDTO user = new UserDTO() {
-            @Override
-            public Long getUserId() {
-                return null;
-            };
-        };
-
-        job.setUser(user);
-        PluginProfileDTO profile = new PluginProfileDTO();
-        profile.setProfileType(PluginType.Sink);
-        //profile.set();
-
-        job.setSink(profile);
-        action.doAction(new HashMap<String, String>(), new HashMap<String, String>(), new ArrayList<String>(), pdfStorage, job, progressor);
-
-        // fakeClient got a document, must contain content-type
-        //assertEquals("application/pdf", this.actualDocument.getFields().get("Content-Type"));
-    }
-
-    public class FakeFileStorage implements Storage {
+	public class FakeFileStorage implements Storage {
 
         @Override
         public Iterator<DataObject> getDataObjects() throws StorageException {
@@ -159,7 +127,38 @@ public class ExtractActionTest {
         public void move(String fromPath, String toPath) throws StorageException {
             Assert.fail("do not call");
         }
-
     }
+	
+    @Test
+    public void extractActionTest() throws ActionException {
 
+    	ExtractorAction action = new ExtractorAction();
+    	
+        Storage storage = new FakeFileStorage();
+        
+        Progressable progressor = new Progressable() {
+            @Override
+            public void progress(String message) {
+                System.out.println(message);
+            }
+        };
+        
+        BackupJobExecutionDTO job = new BackupJobExecutionDTO();
+        
+        UserDTO user = new UserDTO() {
+            @Override
+            public Long getUserId() {
+                return null;
+            };
+        };
+
+        job.setUser(user);
+        
+        PluginProfileDTO profile = new PluginProfileDTO();
+        profile.setProfileType(PluginType.Sink);
+        //profile.set();
+
+        job.setSink(profile);
+        action.doAction(new HashMap<String, String>(), new HashMap<String, String>(), new ArrayList<String>(), storage, job, progressor);
+    }
 }

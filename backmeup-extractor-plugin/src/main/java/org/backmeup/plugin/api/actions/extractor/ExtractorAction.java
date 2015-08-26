@@ -1,12 +1,20 @@
 package org.backmeup.plugin.api.actions.extractor;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.activation.MimetypesFileTypeMap;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
@@ -16,6 +24,8 @@ import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Property;
 
 import org.backmeup.model.dto.BackupJobExecutionDTO;
+import org.backmeup.plugin.api.Metainfo;
+import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.actions.extractor.dao.AppointmentDAO;
 import org.backmeup.plugin.api.actions.extractor.dao.PersonIdentityDAO;
 import org.backmeup.plugin.api.actions.extractor.model.Appointment;
@@ -62,6 +72,9 @@ public class ExtractorAction implements Action {
     
     private static final String EXTRACTION_PROCESS_STARTED = ">>>>>Extraction plugin started";
     private static final String EXTRACTION_PROCESS_COMPLETED = ">>>>>Extraction plugin completed ";
+    
+    private static final String COMPRESSION_STARTED = "Compression started";
+    private static final String COMPRESSION_COMPLETED = "Compression completed ";
 
     /**
      * This class must be public and have a public default constructor for it to be usable by the osgi Service Component
@@ -90,34 +103,20 @@ public class ExtractorAction implements Action {
     	System.out.println("ExtractorAction.doDestroy()");
   	}
     
+    private Metainfo create(String id, String type, String destination) {
+        Metainfo info = new Metainfo();
+        info.setBackupDate(new Date());
+        info.setDestination(destination);
+        info.setId(id);
+        info.setSource("extractor");
+        info.setType(type);
+        return info;
+    }
+    
     @Override
     public void doAction(Map<String, String> authData, Map<String, String> properties, List<String> options,
             Storage storage, BackupJobExecutionDTO job, Progressable progressor) throws ActionException {
         
-//    	ApplicationContextConfig config = new ApplicationContextConfig();
-//    	DataSource ds = config.getDataSource();
-//    	SessionFactory sf = config.getSessionFactory(ds);
-//    	userDao = config.getUserDao(sf);
-//    	
-//    	//List<PersonIdentity> listUsers = userDao.list();
-//    	PersonIdentity ident = new PersonIdentity();
-//    	ident.setName("Mihai");
-//    	ident.setSurname("Bartha");
-//    	
-//    	userDao.saveOrUpdate(ident); 
-    	
-//    	HibernateTransactionManager manager = config.getTransactionManager(sf);
-//    	TransactionTemplate transactionTemplate = new TransactionTemplate(manager);
-//    	final PersonIdentity id = ident;
-//    	
-//    	transactionTemplate.execute(
-//    	new TransactionCallbackWithoutResult() {
-//            public void doInTransactionWithoutResult(TransactionStatus status) {
-//            	userDao.saveOrUpdate(id);
-//            }
-//        });
-    	
-    	 
     	int itemsExtracted = 0;
         int itemsSkipped = 0;
         
@@ -148,12 +147,26 @@ public class ExtractorAction implements Action {
                     progressor.progress(OBJECT_EXTRACTION_FAILED + " " + e.toString());
                 }
             }
+            
+            // compress db folder and add to storage
+            String sourceFolderName =  "entities";
+            String outputFileName = "entities.zip";
+            compress(sourceFolderName, outputFileName, progressor);
+            
+            progressor.progress("Creating metadata for entity archive.");
+            
+            MetainfoContainer metadata = new MetainfoContainer();
+            String type = new MimetypesFileTypeMap().getContentType(outputFileName);
+            metadata.addMetainfo(create("1", type, outputFileName));
+            
+            progressor.progress("Adding entity archive to storage.");
+            storage.addFile(new FileInputStream(outputFileName), outputFileName, metadata);
+            
         } catch (Exception e) {
             throw new ActionException(e);
         }
 
-        progressor.progress(EXTRACTION_PROCESS_COMPLETED + " \n\t# of items extracted OK: " + itemsExtracted + " , SKIPPED: "
-                + itemsSkipped );
+        progressor.progress(EXTRACTION_PROCESS_COMPLETED + " \n\t# of items extracted OK: " + itemsExtracted + " , SKIPPED: " + itemsSkipped );
         
     }
 
@@ -246,11 +259,23 @@ public class ExtractorAction implements Action {
 	    	      for (Iterator j = component.getProperties().iterator(); j.hasNext();) {
 	    	          Property property = (Property) j.next();
 	    	          System.out.println("Property [" + property.getName() + ", " + property.getValue() + "]");
+	    	          if(property.getName().equals("DESCRIPTION"))
+	    	        	  event.setDescription(property.getValue());
+	    	          if(property.getName().equals("CREATED"))
+	    	        	  event.setDateCreated(property.getValue());
+	    	          if(property.getName().equals("DTSTAMP"))
+	    	        	  event.setDateStamp(property.getValue());
+	    	          if(property.getName().equals("DTSTART"))
+	    	        	  event.setDateStart(property.getValue());
+	    	          if(property.getName().equals("DTEND"))
+	    	        	  event.setDateEnd(property.getValue()); 
+	    	          if(property.getName().equals("STATUS"))
+	    	        	  event.setStatus(property.getValue());
+	    	          if(property.getName().equals("SUMMARY"))
+	    	        	  event.setSummary(property.getValue());
 	    	      }
 	    	      appointmentDAO.saveOrUpdate(event);
 	    	  }
-	    	
-	    	
     	} catch (IOException e) {
 			System.out.println(e.toString());
 		} catch (ParserException e) {
@@ -259,5 +284,55 @@ public class ExtractorAction implements Action {
 		}
 
     	return true;
+    }
+    
+    public void compress(String sourceFolderName, String outputFileName, Progressable progressor) throws IOException {
+	    FileOutputStream fos = new FileOutputStream(outputFileName);
+	    ZipOutputStream zos = new ZipOutputStream(fos);
+	    //level - the compression level (0-9)
+	    zos.setLevel(9);
+	    progressor.progress("Begin to compress folder : " + sourceFolderName + " to " + outputFileName);
+	    //File base = new File(sourceFolderName);
+	    //String baseFolderName = base.getParent().get;
+	    compressFolder(zos, sourceFolderName, /*sourceFolderName,*/ progressor);
+	
+	    zos.close();
+	    progressor.progress("Compression ended successfully.");
+    }
+	    
+    
+    private void compressFolder(ZipOutputStream zos, String folderName, /*String baseFolderName,*/ Progressable progressor) throws IOException {
+        File f = new File(folderName);
+        if(f.exists()){
+ 
+            if(f.isDirectory()){
+                /*if(!folderName.equalsIgnoreCase(baseFolderName)){
+                    String entryName = folderName.substring(baseFolderName.length()+1, folderName.length()) + File.separatorChar;
+                    progressor.progress("Adding folder entry " + entryName);
+                    ZipEntry ze= new ZipEntry(entryName);
+                    zos.putNextEntry(ze);    
+                }*/
+                File f2[] = f.listFiles();
+                for(int i=0; i<f2.length; i++){
+                	//compressFolder(zos, f2[i].getAbsolutePath(), baseFolderName, progressor);
+                	compressFolder(zos, f2[i].getPath(), /*baseFolderName,*/ progressor);
+                }
+            }else{
+                String entryName = folderName /*.substring(baseFolderName.length()+1, folderName.length())*/;
+                progressor.progress("Adding file entry " + entryName + "...");
+                ZipEntry ze = new ZipEntry(entryName);
+                zos.putNextEntry(ze);
+                FileInputStream in = new FileInputStream(folderName);
+                int len;
+                byte buffer[] = new byte[1024];
+                while ((len = in.read(buffer)) > 0) {
+                    zos.write(buffer, 0, len);
+                }
+                in.close();
+                zos.closeEntry();
+            }
+        }else{
+        	progressor.progress("File or directory not found " + folderName);
+        }
     }
 }

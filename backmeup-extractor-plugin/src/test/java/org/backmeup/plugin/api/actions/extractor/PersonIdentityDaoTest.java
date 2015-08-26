@@ -9,6 +9,7 @@ import org.backmeup.plugin.api.actions.extractor.model.PersonIdentity;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.internal.util.reflection.Whitebox;
 
 
 /**
@@ -18,12 +19,14 @@ import org.junit.Test;
 public class PersonIdentityDaoTest {
 	@Rule
     public final DerbyDatabase database = new DerbyDatabase();
+	
+	PersonIdentityDAO personIdentityDAO;
 
-//    @Override
-//    protected void before() {
-//    	PersonIdentityDao aa = this.database.personIdentityDao;
-//    }
-    
+	@Before
+    public void before() {
+    	this.personIdentityDAO = this.database.personIdentityDAO;    	
+    }
+
     private PersonIdentity createIdentity() {
     	PersonIdentity ident = new PersonIdentity();
         ident.setFamilyName("aaaa");
@@ -32,20 +35,10 @@ public class PersonIdentityDaoTest {
     }
     
     @Test
-    public void shouldStoreConfigurationAndReadFromDBByHttpPort() {
-    	
+    public void testStoreIdentity() {
         PersonIdentity ident = createIdentity();
-        List<PersonIdentity> found = this.database.PersonIdentityDAO.list();
+        this.personIdentityDAO.saveOrUpdate(ident);
+        List<PersonIdentity> found = this.personIdentityDAO.list();
         //assertNotZero("identity with id " + id, found);
     }
-
-    private PersonIdentity persistInTransaction(PersonIdentity config) {
-        // need manual transaction in test because transactional interceptor is not installed in tests
-    	PersonIdentity ret = null;
-//    	this.database.entityManager.getTransaction().begin();
-//      ret = this.database.PersonIdentityDAO.save();
-//      this.database.entityManager.getTransaction().commit();
-        return ret;
-    }
-
 }

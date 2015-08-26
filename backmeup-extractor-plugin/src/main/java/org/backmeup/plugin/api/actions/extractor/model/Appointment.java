@@ -19,11 +19,23 @@ public class Appointment {
 	@Column(name="DESCRIPTION")
 	private String description;
 	
+	@Column(name="DATE_CREATED")
+    private String dateCreated;
+	
+	@Column(name="DATE_STAMP")
+    private String dateStamp;
+	
 	@Column(name="DATE_START")
     private String dateStart;
 	
 	@Column(name="DATE_END")
 	private String dateEnd;
+	
+	@Column(name="STATUS")
+	private String status;
+	
+	@Column(name="SUMMARY")
+	private String summary;
 
 	
 	public Appointment() { }
@@ -64,5 +76,37 @@ public class Appointment {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getDateCreated() {
+		return dateCreated;
+	}
+
+	public void setDateCreated(String dateCreated) {
+		this.dateCreated = dateCreated;
+	}
+
+	public String getDateStamp() {
+		return dateStamp;
+	}
+
+	public void setDateStamp(String dateStamp) {
+		this.dateStamp = dateStamp;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getSummary() {
+		return summary;
+	}
+
+	public void setSummary(String summary) {
+		this.summary = summary;
 	}
 }

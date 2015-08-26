@@ -9,14 +9,17 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+
+import javax.inject.Inject;
 import javax.persistence.Entity;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 //@Transactional
 public class PersonIdentityDAOImpl implements PersonIdentityDAO {
-
-	private SessionFactory sessionFactory;
+	//@Inject
+	public SessionFactory sessionFactory;
 	
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
@@ -27,7 +30,6 @@ public class PersonIdentityDAOImpl implements PersonIdentityDAO {
 	}
     
 	public PersonIdentityDAOImpl() {
-    	System.out.println("asdf");
     }
     
     public PersonIdentityDAOImpl(SessionFactory sessionFactory) {
