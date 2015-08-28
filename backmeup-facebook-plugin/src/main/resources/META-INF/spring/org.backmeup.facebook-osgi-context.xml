@@ -6,7 +6,7 @@
 			<entry key="name" value="org.backmeup.facebook"/>
 		</service-properties>
 	</service>
-	<service id="facebookAuthService" ref="facebookAuthenticator" auto-export="interfaces">
+	<service id="facebookValidatorService" ref="facebookValidator" auto-export="interfaces">
 		<service-properties>
 			<entry key="name" value="org.backmeup.facebook"/>
 		</service-properties>
@@ -15,5 +15,5 @@
 		<service-properties>
 			<entry key="name" value="org.backmeup.facebook"/>
 		</service-properties>
-	</service>
+	</service>	
 </blueprint>

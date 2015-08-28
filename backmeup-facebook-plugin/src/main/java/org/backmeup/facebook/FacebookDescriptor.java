@@ -6,46 +6,46 @@ import java.util.Map;
 import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
-/**
- * This class provides all necessary information about the plugin.
- * 
- * @author mmurauer
- *
- */
-public class FacebookDescriptor extends BaseSourceSinkDescribable {
-	public static final String FACEBOOK_ID = "org.backmeup.facebook";
+public class FacebookDescriptor extends BaseSourceSinkDescribable
+{
+	public static final String ID = "org.backmeup.facebook";
 
 	@Override
-	public String getId() {
-		return FACEBOOK_ID;
+	public String getId()
+	{
+		return ID;
 	}
 
 	@Override
-	public String getTitle() {
-		return "BackMeUp Facebook Plug-In";
+	public String getTitle()
+	{
+		return "Backmeup Facebook Plugin R2";
 	}
 
 	@Override
-	public String getDescription() {
-		return "A plug-in that is capable of downloading from facebook";
+	public String getDescription()
+	{
+		return "A plugin which provides the Facebook datasource";
 	}
 
 	@Override
-	public String getImageURL() {
-		// from graph.facebook.com/facebook picture
-		return "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-snc4/174597_20531316728_2866555_s.jpg";
-	}
-
-	@Override
-	public PluginType getType() {
+	public PluginType getType()
+	{
 		return PluginType.Source;
 	}
 
 	@Override
-	public Map<String, String> getMetadata(Map<String, String> accessData) {
-	    Map<String, String> metadata = new HashMap<>();
-		metadata.put(Metadata.BACKUP_FREQUENCY, "daily");
-		return metadata;
+	public String getImageURL()
+	{
+		return "https://backmeup.at/facebook.png";
+	}
+
+	@Override
+	public Map<String, String> getMetadata(Map<String, String> authData)
+	{
+		HashMap<String, String> props = new HashMap<>();
+		props.put(Metadata.BACKUP_FREQUENCY, "daily");
+		return props;
 	}
 
 }
