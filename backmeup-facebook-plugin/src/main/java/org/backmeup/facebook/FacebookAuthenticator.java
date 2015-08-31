@@ -61,7 +61,7 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
             return user.getName();
 
         } catch (IOException | FacebookException e) {
-            throw new PluginException(FacebookDescriptor.FACEBOOK_ID, AUTHENTICATION_ERROR, e);
+            throw new PluginException(FacebookDescriptor.ID, AUTHENTICATION_ERROR, e);
         }
     }
 
@@ -70,7 +70,7 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
         try {
             code = PluginUtils.splitQuery(inputProperties.get(OAuthBasedAuthorizable.QUERY_PARAM_PROPERTY)).getParameter("code");
         } catch(NullPointerException e) {
-            throw new PluginException(FacebookDescriptor.FACEBOOK_ID, "cannot parse oAuth response", e);
+            throw new PluginException(FacebookDescriptor.ID, "cannot parse oAuth response", e);
         }
         String callback = inputProperties.get(FacebookHelper.PROPERTY_CALLBACK_URL);
         StringBuilder content = new StringBuilder();
@@ -87,7 +87,7 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
                 }
             }
         } catch (IOException ex) {
-            throw new PluginException(FacebookDescriptor.FACEBOOK_ID, AUTHENTICATION_ERROR, ex);
+            throw new PluginException(FacebookDescriptor.ID, AUTHENTICATION_ERROR, ex);
         }
 
         if (content.toString().contains("access_token")) {
@@ -101,6 +101,6 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
             }
         }
 
-        throw new PluginException(FacebookDescriptor.FACEBOOK_ID, AUTHENTICATION_ERROR);
+        throw new PluginException(FacebookDescriptor.ID, AUTHENTICATION_ERROR);
     }
 }
