@@ -5,8 +5,8 @@ import java.util.Arrays;
 
 import org.backmeup.facebook.storage.Datatype;
 
-public enum UserInfoKey implements SerializerKey
-{
+public enum UserInfoKey implements SerializerKey {
+    
 	ABOUT("Allgemein", Datatype.OTHER),
 	GENDER("Geschlecht", Datatype.OTHER),
 	DATE_OF_BIRTH("Geburtstag", Datatype.DATE),
@@ -51,30 +51,26 @@ public enum UserInfoKey implements SerializerKey
 	private String label;
 	private Datatype type;
 
-	private UserInfoKey(String label, Datatype type)
-	{
-		this.label = label;
-		this.type = type;
-	}
+    private UserInfoKey(String label, Datatype type) {
+        this.label = label;
+        this.type = type;
+    }
 
-	public String getLabel()
-	{
-		return label;
-	}
+    public String getLabel() {
+        return label;
+    }
 
-	public Datatype getType()
-	{
-		return type;
-	}
+    public Datatype getType() {
+        return type;
+    }
 
-	@Override
-	public UserInfoKey[] getReduced()
-	{
-		ArrayList<UserInfoKey> ret = new ArrayList<>(Arrays.asList(values()));
-		ret.remove(ID);
-		ret.remove(TIMEZONE);
-		ret.remove(VERIFIED);
-		ret.remove(THIRD_PARTY_ID);
-		return ret.toArray(new UserInfoKey[ret.size()]);
-	}
+    @Override
+    public UserInfoKey[] getReduced() {
+        ArrayList<UserInfoKey> ret = new ArrayList<>(Arrays.asList(values()));
+        ret.remove(ID);
+        ret.remove(TIMEZONE);
+        ret.remove(VERIFIED);
+        ret.remove(THIRD_PARTY_ID);
+        return ret.toArray(new UserInfoKey[ret.size()]);
+    }
 }

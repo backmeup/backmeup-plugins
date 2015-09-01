@@ -1,7 +1,6 @@
 package org.backmeup.facebook.storage;
 
-public enum Datatype
-{
+public enum Datatype {
 	DATE,
 	LIST,
 	NUMBER,

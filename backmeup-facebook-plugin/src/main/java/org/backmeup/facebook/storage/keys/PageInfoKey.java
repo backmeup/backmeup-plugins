@@ -5,8 +5,8 @@ import java.util.Arrays;
 
 import org.backmeup.facebook.storage.Datatype;
 
-public enum PageInfoKey implements SerializerKey
-{
+public enum PageInfoKey implements SerializerKey {
+    
 	ID("ID", Datatype.OTHER),
 	ABOUT("Allgemein", Datatype.OTHER),
 	AFFILIATION("Affiliation", Datatype.OTHER),
@@ -94,30 +94,26 @@ public enum PageInfoKey implements SerializerKey
 	WERE_HRER("Angesehen", Datatype.NUMBER),
 	WRITTEN_BY("Geschrieben von", Datatype.OTHER);
 
-	private String label;
-	private Datatype type;
+    private String label;
+    private Datatype type;
 
-	private PageInfoKey(String label, Datatype type)
-	{
-		this.label = label;
-		this.type = type;
-	}
+    private PageInfoKey(String label, Datatype type) {
+        this.label = label;
+        this.type = type;
+    }
 
-	public String getLabel()
-	{
-		return label;
-	}
+    public String getLabel() {
+        return label;
+    }
 
-	public Datatype getType()
-	{
-		return type;
-	}
+    public Datatype getType() {
+        return type;
+    }
 
-	@Override
-	public PageInfoKey[] getReduced()
-	{
-		ArrayList<PageInfoKey> ret = new ArrayList<>(Arrays.asList(values()));
-		ret.remove(ID);
-		return ret.toArray(new PageInfoKey[ret.size()]);
-	}
+    @Override
+    public PageInfoKey[] getReduced() {
+        ArrayList<PageInfoKey> ret = new ArrayList<>(Arrays.asList(values()));
+        ret.remove(ID);
+        return ret.toArray(new PageInfoKey[ret.size()]);
+    }
 }

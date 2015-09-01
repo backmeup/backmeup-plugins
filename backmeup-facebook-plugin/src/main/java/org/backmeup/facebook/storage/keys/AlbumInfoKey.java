@@ -2,8 +2,8 @@ package org.backmeup.facebook.storage.keys;
 
 import org.backmeup.facebook.storage.Datatype;
 
-public enum AlbumInfoKey implements SerializerKey
-{
+public enum AlbumInfoKey implements SerializerKey {
+    
 	COUNT("Anzahl der Fotos", Datatype.NUMBER),
 	COVER_PHOTO_ID("ID des Covers", Datatype.OTHER),
 	CREATED("Erstellungsdatum", Datatype.DATE),
@@ -23,26 +23,22 @@ public enum AlbumInfoKey implements SerializerKey
 	private String label;
 	private Datatype type;
 
-	private AlbumInfoKey(String label, Datatype type)
-	{
-		this.label = label;
-		this.type = type;
-	}
+    private AlbumInfoKey(String label, Datatype type) {
+        this.label = label;
+        this.type = type;
+    }
 
-	public String getLabel()
-	{
-		return label;
-	}
+    public String getLabel() {
+        return label;
+    }
 
-	public Datatype getType()
-	{
-		return type;
-	}
+    public Datatype getType() {
+        return type;
+    }
 
-	@Override
-	public AlbumInfoKey[] getReduced()
-	{
-		AlbumInfoKey[] ret = { NAME, DESCRIPTION, CREATED, LAST_UPDATE, COUNT, COMES_FROM, AlbumInfoKey.LOCATION, ORIGINAL_LINK, LOCAL_COUNT };
-		return ret;
-	}
+    @Override
+    public AlbumInfoKey[] getReduced() {
+        AlbumInfoKey[] ret = { NAME, DESCRIPTION, CREATED, LAST_UPDATE, COUNT, COMES_FROM, AlbumInfoKey.LOCATION, ORIGINAL_LINK, LOCAL_COUNT };
+        return ret;
+    }
 }

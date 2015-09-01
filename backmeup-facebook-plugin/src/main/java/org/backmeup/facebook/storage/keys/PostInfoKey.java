@@ -5,8 +5,8 @@ import java.util.Arrays;
 
 import org.backmeup.facebook.storage.Datatype;
 
-public enum PostInfoKey implements SerializerKey
-{
+public enum PostInfoKey implements SerializerKey {
+    
 	ID("ID", Datatype.OTHER),
 	ACTION("Aktionen", Datatype.LIST),
 	ADMIN("Administrator", Datatype.NFT),
@@ -36,32 +36,28 @@ public enum PostInfoKey implements SerializerKey
 	LAST_UPDATE("Zuletzt aktualisiert", Datatype.DATE),
 	WITH_TAGS("Tags", Datatype.LIST);
 
-	private String label;
-	private Datatype type;
+    private String label;
+    private Datatype type;
 
-	private PostInfoKey(String label, Datatype type)
-	{
-		this.label = label;
-		this.type = type;
-	}
+    private PostInfoKey(String label, Datatype type) {
+        this.label = label;
+        this.type = type;
+    }
 
-	public String getLabel()
-	{
-		return label;
-	}
+    public String getLabel() {
+        return label;
+    }
 
-	public Datatype getType()
-	{
-		return type;
-	}
+    public Datatype getType() {
+        return type;
+    }
 
-	@Override
-	public PostInfoKey[] getReduced()
-	{
-		ArrayList<PostInfoKey> ret = new ArrayList<>(Arrays.asList(values()));
-		ret.remove(ID);
-		ret.remove(PICTURE);
-		ret.remove(ICON);
-		return ret.toArray(new PostInfoKey[ret.size()]);
-	}
+    @Override
+    public PostInfoKey[] getReduced() {
+        ArrayList<PostInfoKey> ret = new ArrayList<>(Arrays.asList(values()));
+        ret.remove(ID);
+        ret.remove(PICTURE);
+        ret.remove(ICON);
+        return ret.toArray(new PostInfoKey[ret.size()]);
+    }
 }

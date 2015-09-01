@@ -15,8 +15,8 @@ import com.restfb.types.Photo;
 import com.restfb.types.Post;
 import com.restfb.types.User;
 
-public enum MasterParameter
-{
+public enum MasterParameter {
+    
 	ALBUM(Parameter.with("field", "id,can_upload,count,cover_photo,created_time,description,event,from,link,location,name,place,privacy,type,updated_time"),
 			Album.class),
 	COMMENT(Parameter.with("fields", "id,attachment,can_comment,can_remove,can_hide,can_like,comment_count,created_time,from,like_count,message,message_tags,object,parent,user_likes"),
@@ -33,35 +33,30 @@ public enum MasterParameter
 			User.class),
 	EMPTY(Parameter.with("null", ""), Object.class);
 
-	private Parameter param;
-	private Class<?> type;
+    private Parameter param;
+    private Class<?> type;
 
-	private MasterParameter(Parameter param, Class<?> type)
-	{
-		this.param = param;
-		this.type = type;
-	}
+    private MasterParameter(Parameter param, Class<?> type) {
+        this.param = param;
+        this.type = type;
+    }
 
-	public Parameter getParameter()
-	{
-		return param;
-	}
+    public Parameter getParameter() {
+        return param;
+    }
 
-	public Class<?> getParameterClass()
-	{
-		return type;
-	}
+    public Class<?> getParameterClass() {
+        return type;
+    }
 
-	public static Parameter getParameterByClass(Class<?> typeClass)
-	{
-		return getByClass(typeClass).getParameter();
-	}
+    public static Parameter getParameterByClass(Class<?> typeClass) {
+        return getByClass(typeClass).getParameter();
+    }
 
-	public static MasterParameter getByClass(Class<?> typeClass)
-	{
-		for (MasterParameter mp : MasterParameter.values())
-			if (mp.getParameterClass().equals(typeClass))
-				return mp;
-		return MasterParameter.EMPTY;
-	}
+    public static MasterParameter getByClass(Class<?> typeClass) {
+        for (MasterParameter mp : MasterParameter.values())
+            if (mp.getParameterClass().equals(typeClass))
+                return mp;
+        return MasterParameter.EMPTY;
+    }
 }

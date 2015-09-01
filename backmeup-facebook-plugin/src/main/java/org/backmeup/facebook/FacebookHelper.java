@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * offers application key and secret 
+ * offers application key and secret
  * 
  * @author Wolfgang Eibner
  *
@@ -12,10 +12,10 @@ import java.util.Properties;
 public class FacebookHelper {
     private static final String PROPERTY_APP_SECRET = "app.secret";
     private static final String PROPERTY_APP_KEY = "app.key";
-    
+
     public static final String PROPERTY_CALLBACK_URL = "fbcallback";
-	public static final String PROPERTY_ACCESS_TOKEN = "fbaccesstoken";
-	
+    public static final String PROPERTY_ACCESS_TOKEN = "fbaccesstoken";
+
     private static final Properties PROPERTIES = new Properties();
     private static final String PROPERTYFILE = "facebook.properties";
 
@@ -43,12 +43,12 @@ public class FacebookHelper {
         return PROPERTIES.getProperty(key, defaultValue);
     }
 
-	public static String getAppKey() {
-		return getProperty(PROPERTY_APP_KEY);
-	}
-	
-	public static String getAppSecret() {
-	    return getProperty(PROPERTY_APP_SECRET);
-	}
+    public static String getAppKey() {
+        return getProperty(PROPERTY_APP_KEY);
+    }
+
+    public static String getAppSecret() {
+        return getProperty(PROPERTY_APP_SECRET);
+    }
 
 }

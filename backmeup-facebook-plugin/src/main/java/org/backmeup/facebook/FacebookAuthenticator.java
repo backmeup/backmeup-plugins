@@ -69,15 +69,15 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
         String code = null;
         try {
             code = PluginUtils.splitQuery(inputProperties.get(OAuthBasedAuthorizable.QUERY_PARAM_PROPERTY)).getParameter("code");
-        } catch(NullPointerException e) {
+        } catch (NullPointerException e) {
             throw new PluginException(FacebookDescriptor.ID, "cannot parse oAuth response", e);
         }
         String callback = inputProperties.get(FacebookHelper.PROPERTY_CALLBACK_URL);
         StringBuilder content = new StringBuilder();
 
         try {
-            URL url = new URL("https://graph.facebook.com/oauth/access_token?" + "client_id=" + FacebookHelper.getAppKey() + "&redirect_uri="
-                    + callback + "&client_secret=" + FacebookHelper.getAppSecret() + "&code=" + code);
+            URL url = new URL("https://graph.facebook.com/oauth/access_token?" + "client_id=" + FacebookHelper.getAppKey() + "&redirect_uri=" + callback
+                    + "&client_secret=" + FacebookHelper.getAppSecret() + "&code=" + code);
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName("UTF-8")))) {
                 int temp;

@@ -1,39 +1,29 @@
 package org.backmeup.facebook.files;
 
-public class CustomStringBuilder
-{
-	private StringBuilder sb;
-	private String regex;
+public class CustomStringBuilder {
+    private StringBuilder sb;
+    private String regex;
 
-	public CustomStringBuilder(String regex)
-	{
-		if (regex == null)
-			regex = "|";
-		this.regex = regex;
-		sb = new StringBuilder();
-	}
+    public CustomStringBuilder(String regex) {
+        this.regex = regex;
+        this.sb = new StringBuilder();
+    }
 
-	public void append(String string)
-	{
-		sb.append(string);
-		sb.append(getRegex());
-	}
+    public void append(String string) {
+        this.sb.append(string);
+        this.sb.append(getRegex());
+    }
 
-	public String getRegex()
-	{
-		return regex;
-	}
+    public String getRegex() {
+        return regex;
+    }
 
-	public void empty()
-	{
-		sb = new StringBuilder();
-	}
+    public void empty() {
+        this.sb = new StringBuilder();
+    }
 
-	@Override
-	public String toString()
-	{
-		/*if (sb.length() > 0)
-			sb.delete(sb.length()-1, sb.length());*/
-		return sb.toString();
-	}
+    @Override
+    public String toString() {
+        return this.sb.toString();
+    }
 }

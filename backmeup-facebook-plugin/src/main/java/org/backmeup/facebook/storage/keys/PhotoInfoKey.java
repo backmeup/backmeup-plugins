@@ -2,8 +2,8 @@ package org.backmeup.facebook.storage.keys;
 
 import org.backmeup.facebook.storage.Datatype;
 
-public enum PhotoInfoKey implements SerializerKey
-{
+public enum PhotoInfoKey implements SerializerKey {
+    
 	BACK_DATE("Erstellt", Datatype.DATE),
 	COMMENT_DIR("Kommentar Ordner", Datatype.OTHER),
 	COMMENT_INFO_FILENAME("Kommentar xml Position in Kommentarordner", Datatype.OTHER),
@@ -25,29 +25,26 @@ public enum PhotoInfoKey implements SerializerKey
 	PICTURE("Verkleinertes Bild", Datatype.OTHER),
 	WIDTH("Breite", Datatype.NUMBER);
 
-	private String label;
-	private Datatype type;
+    private String label;
+    private Datatype type;
 
-	private PhotoInfoKey(String label, Datatype type)
-	{
-		this.label = label;
-		this.type = type;
-	}
+    private PhotoInfoKey(String label, Datatype type) {
+        this.label = label;
+        this.type = type;
+    }
 
-	public String getLabel()
-	{
-		return label;
-	}
+    public String getLabel() {
+        return label;
+    }
 
-	public Datatype getType()
-	{
-		return type;
-	}
+    public Datatype getType() {
+        return type;
+    }
 
-	@Override
-	public PhotoInfoKey[] getReduced()
-	{
-		PhotoInfoKey[] ret = { PhotoInfoKey.NAME, LIKES, LIKES_FROM_PEOPLE, PLACE, TAGS, PhotoInfoKey.LOCATION, PhotoInfoKey.PUBLISH_DATE, PhotoInfoKey.FROM, PhotoInfoKey.IMAGES, ORIGINAL_LINK };
-		return ret;
-	}
+    @Override
+    public PhotoInfoKey[] getReduced() {
+        PhotoInfoKey[] ret = { PhotoInfoKey.NAME, LIKES, LIKES_FROM_PEOPLE, PLACE, TAGS, PhotoInfoKey.LOCATION, PhotoInfoKey.PUBLISH_DATE, PhotoInfoKey.FROM,
+                PhotoInfoKey.IMAGES, ORIGINAL_LINK };
+        return ret;
+    }
 }

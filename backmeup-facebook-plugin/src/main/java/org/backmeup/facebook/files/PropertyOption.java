@@ -1,7 +1,6 @@
 package org.backmeup.facebook.files;
 
-public enum PropertyOption
-{
+public enum PropertyOption {
 	ACCESS_TOKEN,
 	DIRECTORY,
 	MAX_PHOTOS_PER_ALBUM,

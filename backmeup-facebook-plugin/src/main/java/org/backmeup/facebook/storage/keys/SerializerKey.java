@@ -2,11 +2,10 @@ package org.backmeup.facebook.storage.keys;
 
 import org.backmeup.facebook.storage.Datatype;
 
-public interface SerializerKey
-{
-	public String getLabel();
+public interface SerializerKey {
+    String getLabel();
 
-	public Datatype getType();
+    Datatype getType();
 
-	public SerializerKey[] getReduced();
+    SerializerKey[] getReduced();
 }

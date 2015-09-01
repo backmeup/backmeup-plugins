@@ -1,7 +1,6 @@
 package org.backmeup.facebook.files;
 
-public enum PropertyFile
-{
+public enum PropertyFile {
 	ALBUMS,
 	GROUPS,
 	USER,
