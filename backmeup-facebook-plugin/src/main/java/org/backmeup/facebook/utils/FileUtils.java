@@ -8,6 +8,9 @@ import java.nio.file.Path;
 
 public class FileUtils {
     public static String getWayTo(File from, File to) {
+        if (from == null || to == null) {
+			return "null";
+        }
         return from.toPath().relativize(to.toPath()).toString();
     }
 
