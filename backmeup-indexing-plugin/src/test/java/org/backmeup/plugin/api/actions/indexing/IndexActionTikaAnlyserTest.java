@@ -5,9 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
@@ -17,9 +15,10 @@ import org.backmeup.model.dto.BackupJobExecutionDTO;
 import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.dto.UserDTO;
 import org.backmeup.model.spi.PluginDescribable.PluginType;
+import org.backmeup.plugin.api.ActionException;
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.connectors.ActionException;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
@@ -46,6 +45,9 @@ public class IndexActionTikaAnlyserTest {
                 System.out.println(message);
             }
         };
+        
+        PluginContext context = new PluginContext();
+        
         BackupJobExecutionDTO job = new BackupJobExecutionDTO();
         UserDTO user = new UserDTO() {
             @Override
@@ -57,11 +59,11 @@ public class IndexActionTikaAnlyserTest {
         job.setUser(user);
         PluginProfileDTO profile = new PluginProfileDTO();
         profile.setProfileType(PluginType.Sink);
-        //profile.set();
 
         job.setSink(profile);
-        action.doAction(new HashMap<String, String>(), new HashMap<String, String>(), new ArrayList<String>(),
-                pdfStorage, job, progressor);
+        context.setAttribute("org.backmeup.job", job);
+        
+        action.doAction(new PluginProfileDTO(), context, pdfStorage, progressor);
 
         // fakeClient got a document, must contain content-type
         assertEquals("application/pdf", this.actualDocument.getFields().get("Content-Type"));

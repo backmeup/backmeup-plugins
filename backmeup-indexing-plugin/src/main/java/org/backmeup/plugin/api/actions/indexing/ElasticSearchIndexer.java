@@ -16,6 +16,7 @@ import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
+import org.backmeup.plugin.api.PluginContext;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class ElasticSearchIndexer {
         this.client = client;
     }
 
-    public void doIndexing(Map<String, String> externalProps, BackupJobExecutionDTO job, DataObject dataObject,
+    public void doIndexing(PluginContext pluginContext, DataObject dataObject,
             Map<String, String> meta, Date timestamp) throws IOException {
         // Build the index object
         IndexDocument document = new IndexDocument();
@@ -56,8 +57,9 @@ public class ElasticSearchIndexer {
             document.field(metaKey, meta.get(metaKey));
         }
 
-        String relObjectPathOnStorage = getBMULocation(externalProps) + dataObject.getPath();
-
+        String relObjectPathOnStorage = getBMULocation(pluginContext) + dataObject.getPath();
+        
+        BackupJobExecutionDTO job = pluginContext.getAttribute("org.backmeup.job", BackupJobExecutionDTO.class);
         document.field(IndexFields.FIELD_OWNER_ID, job.getUser().getUserId());
         document.field(IndexFields.FIELD_OWNER_NAME, job.getUser().getUsername());
         document.field(IndexFields.FIELD_FILENAME, getFilename(dataObject.getPath()));
@@ -89,12 +91,12 @@ public class ElasticSearchIndexer {
             }
         }
 
-        if (externalProps != null) {
+        if (pluginContext != null) {
             //check if download access is supported by the sink plugin
-            if (externalProps.containsKey(Metadata.STORAGE_ALWAYS_ACCESSIBLE)
-                    && externalProps.containsKey(Metadata.DOWNLOAD_BASE)) {
-                boolean alwaysAccess = Boolean.parseBoolean(externalProps.get(Metadata.STORAGE_ALWAYS_ACCESSIBLE));
-                String downloadBase = externalProps.get(Metadata.DOWNLOAD_BASE);
+            if (pluginContext.hasAttribute(Metadata.STORAGE_ALWAYS_ACCESSIBLE)
+                    && pluginContext.hasAttribute(Metadata.DOWNLOAD_BASE)) {
+                boolean alwaysAccess = Boolean.parseBoolean(pluginContext.getAttribute(Metadata.STORAGE_ALWAYS_ACCESSIBLE, String.class));
+                String downloadBase = pluginContext.getAttribute(Metadata.DOWNLOAD_BASE, String.class);
                 //we're having a file sink like the themis central storage with permanent access
                 if (alwaysAccess) {
                     document.field(IndexFields.FIELD_SINK_DOWNLOAD_BASE, downloadBase);
@@ -142,9 +144,9 @@ public class ElasticSearchIndexer {
      * @param accessData
      * @return
      */
-    private String getBMULocation(Map<String, String> p) {
-        if (p.containsKey("org.backmeup.bmuprefix")) {
-            return p.get("org.backmeup.bmuprefix");
+    private String getBMULocation(PluginContext context) {
+        if (context.hasAttribute("org.backmeup.bmuprefix")) {
+            return context.getAttribute("org.backmeup.bmuprefix", String.class);
         } else {
             return "";
         }
