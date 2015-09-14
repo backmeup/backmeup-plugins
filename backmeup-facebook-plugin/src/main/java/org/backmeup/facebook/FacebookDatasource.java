@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -14,10 +13,12 @@ import org.backmeup.facebook.files.PropertyOption;
 import org.backmeup.facebook.htmlgenerator.HTMLGenerator;
 import org.backmeup.facebook.storage.Serializer;
 import org.backmeup.facebook.utils.FileUtils;
+import org.backmeup.model.dto.PluginProfileDTO;
+import org.backmeup.plugin.api.Datasource;
+import org.backmeup.plugin.api.DatasourceException;
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.connectors.Datasource;
-import org.backmeup.plugin.api.connectors.DatasourceException;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
@@ -81,7 +82,7 @@ public class FacebookDatasource implements Datasource {
     }
 
     @Override
-    public void downloadAll(Map<String, String> authData, Map<String, String> properties, List<String> options, Storage storage, Progressable progressor)
+    public void downloadAll(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage, Progressable progressor)
             throws DatasourceException, StorageException {
         FacebookClient fbc;
         Facebook facebook;
@@ -90,6 +91,9 @@ public class FacebookDatasource implements Datasource {
         File dir;
         HTMLGenerator mainGen;
         File target;
+        
+        // TODO: check if we use the right properties
+        Map<String, String> properties = pluginProfile.getProperties();
         if (!ConfLoader.confExists() && properties != null)
             ConfLoader.genProperties();
         Properties props;

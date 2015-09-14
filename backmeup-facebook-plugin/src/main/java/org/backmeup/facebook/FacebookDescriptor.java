@@ -3,8 +3,8 @@ package org.backmeup.facebook;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.backmeup.plugin.api.BaseSourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
-import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 public class FacebookDescriptor extends BaseSourceSinkDescribable {
     public static final String ID = "org.backmeup.facebook";

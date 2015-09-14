@@ -29,7 +29,7 @@ import org.backmeup.facebook.storage.keys.SerializerKey;
 import org.backmeup.facebook.storage.keys.UserInfoKey;
 import org.backmeup.facebook.utils.ConsoleDrawer;
 import org.backmeup.facebook.utils.FileUtils;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.Progressable;
 
 import com.hp.gagawa.java.elements.A;
 import com.restfb.Connection;

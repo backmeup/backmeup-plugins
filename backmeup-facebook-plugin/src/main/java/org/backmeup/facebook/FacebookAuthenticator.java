@@ -8,8 +8,9 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.backmeup.model.exceptions.PluginException;
-import org.backmeup.plugin.spi.OAuthBasedAuthorizable;
-import org.backmeup.plugin.util.PluginUtils;
+import org.backmeup.plugin.api.OAuthBasedAuthorizable;
+import org.backmeup.plugin.api.OAuthBasedConstants;
+import org.backmeup.plugin.api.util.PluginUtils;
 
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
@@ -29,7 +30,7 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
 
     @Override
     public AuthorizationType getAuthType() {
-        return AuthorizationType.OAuth;
+        return AuthorizationType.OAUTH;
     }
 
     @Override
@@ -68,7 +69,7 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
     private String retrieveAccessToken(Map<String, String> inputProperties) throws IOException {
         String code = null;
         try {
-            code = PluginUtils.splitQuery(inputProperties.get(OAuthBasedAuthorizable.QUERY_PARAM_PROPERTY)).getParameter("code");
+            code = PluginUtils.splitQuery(inputProperties.get(OAuthBasedConstants.QUERY_PARAM_PROPERTY)).getParameter("code");
         } catch (NullPointerException e) {
             throw new PluginException(FacebookDescriptor.ID, "cannot parse oAuth response", e);
         }

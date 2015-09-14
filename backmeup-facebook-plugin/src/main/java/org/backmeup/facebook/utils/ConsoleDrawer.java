@@ -1,6 +1,6 @@
 package org.backmeup.facebook.utils;
 
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.Progressable;
 
 public class ConsoleDrawer {
     /**
