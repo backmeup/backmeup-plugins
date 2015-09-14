@@ -2,12 +2,12 @@ package org.backmeup.dropbox;
 
 import java.io.ByteArrayInputStream;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
+import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.exceptions.PluginException;
-import org.backmeup.plugin.api.connectors.Datasink;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.Datasink;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
@@ -24,11 +24,10 @@ import com.dropbox.client2.session.WebAuthSession;
  */
 public class DropboxDatasink implements Datasink {
     @Override
-    public String upload(Map<String, String> authData, Map<String, String> properties,
-            List<String> options, Storage storage, Progressable progressor)
+    public String upload(PluginProfileDTO pluginProfile, PluginContext context, Storage storage, Progressable progressor)
             throws StorageException {
         
-        DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(authData);
+        DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(pluginProfile.getAuthData());
         Iterator<DataObject> it = storage.getDataObjects();
         while (it.hasNext()) {
             DataObject dataObj = it.next();
@@ -40,8 +39,8 @@ public class DropboxDatasink implements Datasink {
             String tmpDir;
             // TODO: do we really get this in properties (before it was
             // "items")?
-            if (properties.containsKey("org.backmeup.tmpdir") == true) {
-                tmpDir = properties.get("org.backmeup.tmpdir");
+            if (context.hasAttribute("org.backmeup.tmpdir")) {
+                tmpDir = context.getAttribute("org.backmeup.tmpdir", String.class);
             } else {
                 throw new PluginException(DropboxDescriptor.DROPBOX_ID,
                         "Property \"org.backmeup.tmpdir\" is not set");

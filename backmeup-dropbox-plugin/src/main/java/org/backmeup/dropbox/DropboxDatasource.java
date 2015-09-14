@@ -18,11 +18,12 @@ import javax.activation.MimetypesFileTypeMap;
 
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
+import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.model.spi.Validationable;
+import org.backmeup.plugin.api.FilesystemLikeDatasource;
+import org.backmeup.plugin.api.FilesystemURI;
 import org.backmeup.plugin.api.Metainfo;
-import org.backmeup.plugin.api.connectors.FilesystemLikeDatasource;
-import org.backmeup.plugin.api.connectors.FilesystemURI;
 
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.DropboxAPI.Entry;
@@ -50,9 +51,9 @@ public class DropboxDatasource extends FilesystemLikeDatasource implements Valid
     }
 
     @Override
-    public List<FilesystemURI> list(Map<String, String> accessData, List<String> options, FilesystemURI uri) {
+    public List<FilesystemURI> list(PluginProfileDTO pluginProfile, FilesystemURI uri) {
         String path = uri == null ? "/" : uri.toString();
-        DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(accessData);
+        DropboxAPI<WebAuthSession> api = DropboxHelper.getInstance().getApi(pluginProfile.getAuthData());
         List<FilesystemURI> uris = new ArrayList<>();
 
         try {
@@ -86,6 +87,7 @@ public class DropboxDatasource extends FilesystemLikeDatasource implements Valid
                 meta.setSource(DROPBOX);
                 meta.setType(e.isDir ? "directory" : new MimetypesFileTypeMap().getContentType(e.path));
                 furi.addMetainfo(meta);
+                List<String> options = pluginProfile.getOptions();
                 if (options == null || options.isEmpty() || beginsWith(options, e.path.replace(" ", "%20"))) {
                     uris.add(furi);
                 }
@@ -112,8 +114,7 @@ public class DropboxDatasource extends FilesystemLikeDatasource implements Valid
     }
 
     @Override
-    public InputStream getFile(Map<String, String> accessData, List<String> options,
-            FilesystemURI uri) {
+    public InputStream getFile(PluginProfileDTO pluginProfile, FilesystemURI uri) {
         String path = "";
         try {
             try {
@@ -121,7 +122,7 @@ public class DropboxDatasource extends FilesystemLikeDatasource implements Valid
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            return DropboxHelper.getInstance().getApi(accessData)
+            return DropboxHelper.getInstance().getApi(pluginProfile.getAuthData())
                     .getFileStream(path, null);
         } catch (DropboxServerException e) {
             // Handle undocumented error 460 (Restricted).

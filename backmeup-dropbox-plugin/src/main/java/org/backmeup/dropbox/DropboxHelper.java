@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
 
+import org.backmeup.model.dto.AuthDataDTO;
 import org.backmeup.model.exceptions.InvalidKeyException;
 import org.backmeup.model.exceptions.PluginException;
 
@@ -57,6 +58,10 @@ public class DropboxHelper {
         return new WebAuthSession(appKeys, AccessType.DROPBOX);
     }
 
+    public DropboxAPI<WebAuthSession> getApi(AuthDataDTO authData) {
+        return getApi(authData.getProperties());
+    }
+    
     public DropboxAPI<WebAuthSession> getApi(Map<String, String> accessData) {
         String token = accessData.get(DropboxHelper.PROPERTY_ACCESS_TOKEN);
         String secret = accessData.get(DropboxHelper.PROPERTY_ACCESS_SECRET);

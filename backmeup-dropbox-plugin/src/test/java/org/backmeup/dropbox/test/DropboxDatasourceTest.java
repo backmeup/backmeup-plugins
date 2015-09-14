@@ -3,14 +3,15 @@ package org.backmeup.dropbox.test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
 import org.backmeup.dropbox.DropboxDatasource;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.model.dto.PluginProfileDTO;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
@@ -30,7 +31,7 @@ public class DropboxDatasourceTest {
         DropboxDatasource source = new DropboxDatasource();
         Storage storage = new LocalFilesystemStorage();
         storage.open("C:/TEMP/TEST/");
-        source.downloadAll(authData, new HashMap<String, String>(), new ArrayList<String>(), storage, new Progressable() {
+        source.downloadAll(new PluginProfileDTO(), new PluginContext(), storage, new Progressable() {
             @Override
             public void progress(String message) {}
         });

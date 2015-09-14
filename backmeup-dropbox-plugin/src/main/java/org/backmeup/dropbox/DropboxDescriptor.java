@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.backmeup.model.exceptions.PluginException;
+import org.backmeup.plugin.api.BaseSourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
-import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.session.WebAuthSession;
