@@ -1,37 +1,25 @@
 package org.backmeup.sftp;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.Stack;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.activation.MimetypesFileTypeMap;
 
+import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.exceptions.PluginException;
+import org.backmeup.plugin.api.Datasource;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.connectors.Datasource;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
@@ -72,14 +60,15 @@ public class SftpDatasource implements Datasource {
     }
     
     @Override
-    public void downloadAll(Map<String, String> accessData, Map<String, String> properties, List<String> options,
+    public void downloadAll(PluginProfileDTO pluginProfile, PluginContext pluginContext,
     						Storage storage, Progressable progressor) throws StorageException {
     	Session session = null;
         ChannelSftp sftpChannel = null;
         
         try {
         	JSch jsch = new JSch();
-
+        	
+        	Map<String, String> accessData = pluginProfile.getAuthData().getProperties();
             progressor.progress("Connecting to sftp server " + accessData.get("Host"));
             
             session = jsch.getSession(accessData.get("Username"), accessData.get("Host"), Integer.parseInt(accessData.get("Port")));

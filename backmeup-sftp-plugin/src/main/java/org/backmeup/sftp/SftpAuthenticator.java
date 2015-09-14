@@ -1,17 +1,14 @@
 package org.backmeup.sftp;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
 import org.backmeup.model.api.RequiredInputField.Type;
-import org.backmeup.model.exceptions.ValidationException;
 import org.backmeup.model.spi.ValidationExceptionType;
-import org.backmeup.plugin.spi.InputBasedAuthorizable;
+import org.backmeup.plugin.api.InputBasedAuthorizable;
 
 public class SftpAuthenticator implements InputBasedAuthorizable {
 	
@@ -37,7 +34,7 @@ public class SftpAuthenticator implements InputBasedAuthorizable {
 	
 	@Override
 	public AuthorizationType getAuthType() {
-		return AuthorizationType.InputBased;
+		return AuthorizationType.INPUTBASED;
 	}
 
 	@Override

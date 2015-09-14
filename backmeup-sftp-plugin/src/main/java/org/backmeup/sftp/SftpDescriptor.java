@@ -2,10 +2,9 @@ package org.backmeup.sftp;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
+import org.backmeup.plugin.api.BaseSourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
-import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 /**
  * The DropboxDescriptor provides all necessary information about this plugin.
