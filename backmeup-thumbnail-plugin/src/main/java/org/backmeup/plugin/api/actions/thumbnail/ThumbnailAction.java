@@ -6,16 +6,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.backmeup.model.dto.BackupJobExecutionDTO;
+import org.backmeup.model.dto.PluginProfileDTO;
+import org.backmeup.plugin.api.Action;
+import org.backmeup.plugin.api.ActionException;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.connectors.Action;
-import org.backmeup.plugin.api.connectors.ActionException;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.im4java.core.ConvertCmd;
@@ -119,12 +119,11 @@ public class ThumbnailAction implements Action {
     }
 
     @Override
-    public void doAction(Map<String, String> accessData, Map<String, String> properties, List<String> options,
-            Storage storage, BackupJobExecutionDTO job, Progressable progressor) throws ActionException {
+    public void doAction(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage, Progressable progressor) throws ActionException {
 
         progressor.progress("Starting thumbnail rendering");
 
-        this.tempDir = setPluginOutputLocation(properties);
+        this.tempDir = setPluginOutputLocation(pluginContext);
         progressor.progress("plugin output directory: " + this.tempDir.getAbsolutePath());
 
         try {
@@ -175,8 +174,8 @@ public class ThumbnailAction implements Action {
         progressor.progress("Thumbnail rendering complete");
     }
 
-    private File setPluginOutputLocation(Map<String, String> p) {
-        String path = p.get("org.backmeup.thumbnails.tmpdir");
+    private File setPluginOutputLocation(PluginContext context) {
+        String path = context.getAttribute("org.backmeup.thumbnails.tmpdir", String.class);
         if (path == null) {
             path = "/data/thumbnails";
         }

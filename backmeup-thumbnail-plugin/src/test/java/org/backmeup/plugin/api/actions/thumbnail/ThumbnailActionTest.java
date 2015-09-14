@@ -3,9 +3,9 @@ package org.backmeup.plugin.api.actions.thumbnail;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import org.backmeup.plugin.api.ActionException;
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.connectors.ActionException;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 import org.backmeup.plugin.api.storage.filesystem.LocalFilesystemStorage;
@@ -42,7 +42,7 @@ public class ThumbnailActionTest {
     @Test
     public void testThumbnailAction() throws ActionException {
         ThumbnailAction t = new ThumbnailAction();
-        t.doAction(null, null, null, storage, null, this.logProgressable);
+        t.doAction(null, null, storage, this.logProgressable);
     }
 
     @After
