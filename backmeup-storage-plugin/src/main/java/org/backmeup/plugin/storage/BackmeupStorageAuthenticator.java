@@ -9,7 +9,7 @@ import org.backmeup.model.api.RequiredInputField;
 import org.backmeup.model.api.RequiredInputField.Type;
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.model.spi.ValidationExceptionType;
-import org.backmeup.plugin.spi.InputBasedAuthorizable;
+import org.backmeup.plugin.api.InputBasedAuthorizable;
 import org.backmeup.plugin.storage.constants.Constants;
 import org.backmeup.plugin.storage.utils.PropertiesUtil;
 import org.backmeup.storage.api.StorageClient;
@@ -19,7 +19,7 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
 
     @Override
     public AuthorizationType getAuthType() {
-        return AuthorizationType.InputBased;
+        return AuthorizationType.INPUTBASED;
     }
 
     @Override

@@ -5,15 +5,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.exceptions.PluginException;
+import org.backmeup.plugin.api.Datasink;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.connectors.Datasink;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
@@ -31,17 +32,18 @@ public class BackmeupStorageDatasink implements Datasink {
     private static final String FIELD_THUMBNAIL_PATH = "thumbnail_path";
 
     @Override
-    public String upload(Map<String, String> authData, Map<String, String> properties, List<String> options, Storage storage,
+    public String upload(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage,
             Progressable progressor) throws StorageException {
         progressor.progress("Start backmeup-storage-plugin");
 
-        String tmpDir = authData.get("org.backmeup.tmpdir");
+        String tmpDir = pluginContext.getAttribute("org.backmeup.tmpdir", String.class);
         if (tmpDir == null) {
             tmpDir = "";
         }
 
         progressor.progress("Get connection string");
         progressor.progress("AuthData:");
+        Map<String, String> authData = pluginProfile.getAuthData().getProperties();
         for (Entry<String,String> entry : authData.entrySet()) {
             progressor.progress(entry.getKey() + ": " + entry.getValue());
         }
