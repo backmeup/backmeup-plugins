@@ -36,12 +36,14 @@ import javax.mail.internet.MimeUtility;
 
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
+import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.model.spi.Validationable;
+import org.backmeup.plugin.api.Datasource;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.connectors.Datasource;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
@@ -474,9 +476,10 @@ public class MailDatasource implements Datasource, Validationable {
     }
 
     @Override
-    public void downloadAll(Map<String, String> accessData, Map<String, String> properties, List<String> options, Storage storage,
+    public void downloadAll(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage,
             Progressable progressor) throws StorageException {
         try {
+            Map<String, String> accessData = pluginProfile.getAuthData().getProperties();
             Properties mailProps = new Properties();
             mailProps.putAll(accessData);
             
@@ -494,6 +497,7 @@ public class MailDatasource implements Datasource, Validationable {
             progressor.progress("No. of folders retrieved: " + folders.length);
 
             List<MessageInfo> indexDetails = new ArrayList<>();
+            List<String> options = pluginProfile.getOptions();
             if (options.size() > 0) {
                 List<Folder> toVisit = new ArrayList<>();
                 for (Folder f : folders) {

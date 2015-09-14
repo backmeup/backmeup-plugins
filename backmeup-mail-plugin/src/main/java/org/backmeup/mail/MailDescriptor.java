@@ -3,8 +3,8 @@ package org.backmeup.mail;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.backmeup.plugin.api.BaseSourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
-import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 /**
  * The DropboxDescriptor provides all necessary information about this plugin.

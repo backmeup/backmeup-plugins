@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.backmeup.mail.MailDatasource;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.model.dto.PluginProfileDTO;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.filesystem.LocalFilesystemStorage;
@@ -24,7 +26,7 @@ public class MailTest {
     MailDatasource source = new MailDatasource();
     Storage storage = new LocalFilesystemStorage();
     storage.open("C:/TEMP/TEST/");
-    source.downloadAll(authProps, props, options, storage, new Progressable() {
+    source.downloadAll(new PluginProfileDTO(), new PluginContext(), storage, new Progressable() {
       @Override
       public void progress(String message) {}
     });

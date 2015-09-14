@@ -15,7 +15,7 @@ import org.backmeup.model.api.RequiredInputField;
 import org.backmeup.model.api.RequiredInputField.Type;
 import org.backmeup.model.exceptions.ValidationException;
 import org.backmeup.model.spi.ValidationExceptionType;
-import org.backmeup.plugin.spi.InputBasedAuthorizable;
+import org.backmeup.plugin.api.InputBasedAuthorizable;
 
 public class MailAuthenticator implements InputBasedAuthorizable {
 	private static final String PROP_SSL = "SSL";
@@ -39,7 +39,7 @@ public class MailAuthenticator implements InputBasedAuthorizable {
  
 	@Override
 	public AuthorizationType getAuthType() {
-		return AuthorizationType.InputBased;
+		return AuthorizationType.INPUTBASED;
 	}
 
 	@Override
