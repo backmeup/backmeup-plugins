@@ -11,13 +11,15 @@ import java.util.Map;
 
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
+import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.model.spi.ValidationExceptionType;
 import org.backmeup.model.spi.Validationable;
+import org.backmeup.plugin.api.Datasource;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.connectors.Datasource;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
@@ -52,7 +54,7 @@ public class DummyDatasource implements Datasource, Validationable {
     }
 
     @Override
-    public void downloadAll(Map<String, String> accessData, Map<String, String> properties, List<String> options, Storage storage, Progressable progressor) throws StorageException {
+    public void downloadAll(PluginProfileDTO pluginProfile, PluginContext context, Storage storage, Progressable progressor) throws StorageException {
         MetainfoContainer cont = new MetainfoContainer();
         cont.addMetainfo(create("1", "text/plain", "/plain.txt"));
         InputStream is = stringToStream("This is an important text file.\nPlease create a backup with this file");
