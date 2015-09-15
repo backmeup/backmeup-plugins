@@ -6,11 +6,6 @@
 			<entry key="name" value="org.backmeup.zip"/>
 		</service-properties>
 	</service>
-	<service id="zipAuthService" ref="zipAuthenticator" auto-export="interfaces">
-		<service-properties>
-			<entry key="name" value="org.backmeup.zip"/>
-		</service-properties>
-	</service>	
 	<service id="zipDatasinkService" ref="zipDatasink" auto-export="interfaces">
 		<service-properties>
 			<entry key="name" value="org.backmeup.zip"/>
