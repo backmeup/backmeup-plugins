@@ -1,12 +1,14 @@
 package org.backmeup.zip;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.UUID;
 
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
@@ -22,6 +24,7 @@ import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 import org.backmeup.zip.constants.Constants;
+import org.backmeup.zip.utils.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,29 +36,28 @@ public class ZipAction implements Action {
     public void doAction(PluginProfileDTO profile, PluginContext context, Storage storage, Progressable progressor)
             throws ActionException, StorageException {
 
+        String tempDir = PropertiesUtil.getInstance().getProperty(Constants.PROPERTY_TEMP_DIR);
+        String tempFileName = UUID.randomUUID() + ZIP_FILE_EXTENSION + ".tmp";
+        String tempFilePath = tempDir + "/" + tempFileName;
+        
+        File temp = new File(tempDir);
+        if (!temp.exists()) {
+            temp.mkdirs();
+        }
+
         String tmpDirName = context.getAttribute("org.backmeup.tmpdir", String.class);
-        String tmpDirPath = context.getAttribute("org.backmeup.tmpdirpath", String.class);
-        String userId = context.getAttribute("org.backmeup.userid", String.class);
 
         if (tmpDirName == null) {
-            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Error: org.backmeup.tmpdir property has not been set!");
-        }
-        
-        if (tmpDirPath == null) {
-            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Error: org.backmeup.tmpdirpath property has not been set!");
-        }
-
-
-        if (userId == null) {
-            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Error: org.backmeup.userid property has not been set!");
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID,
+                    "Error: org.backmeup.tmpdir property has not been set!");
         }
 
         String zipFile = tmpDirName + "_" + new Date().getTime() + ZIP_FILE_EXTENSION;
-        String zipFilePath =  tmpDirPath + "/" + zipFile;
-        LOGGER.info("Creating zip backup file: " + zipFilePath);
+        String zipFilePath = "/" + zipFile;
+        LOGGER.info("Creating zip backup file: " + zipFile);
 
-        // Create and write zip file
-        try (FileOutputStream fos = new FileOutputStream(zipFilePath);
+        // Create and write temporary zip file
+        try (FileOutputStream fos = new FileOutputStream(tempFilePath);
                 BufferedOutputStream bos = new BufferedOutputStream(fos);
                 ZipOutputStream zos = new ZipOutputStream(bos);) {
 
@@ -87,18 +89,24 @@ public class ZipAction implements Action {
 
         // Put newly created zip file in storage
         LOGGER.info("Add zip file to local storage.");
-        try (FileInputStream fis = new FileInputStream(zipFilePath)) {
+        try (FileInputStream fis = new FileInputStream(tempFilePath)) {
             MetainfoContainer metaContainer = new MetainfoContainer();
             Metainfo meta = new Metainfo();
             meta.setBackupDate(new Date());
             meta.setCreated(new Date());
             metaContainer.addMetainfo(meta);
 
-            storage.addFile(fis, "/test.zip", metaContainer);
+            storage.addFile(fis, zipFilePath, metaContainer);
         } catch (FileNotFoundException e) {
             throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not find created zip file", e);
         } catch (IOException e) {
             throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not read created zip file", e);
+        }
+        
+        // Delete temporary zip file
+        File file = new File(tempFilePath);
+        if(!file.delete()){
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not delete temp zip file");
         }
     }
 }
