@@ -55,12 +55,14 @@ public class FacebookDatasource implements Datasource {
             String CURRENT_ACCESSTOKEN = ConfLoader.getProperties().getProperty(PropertyOption.ACCESS_TOKEN.toString());
             maxPics = (long) -1;
             try {
-                maxPics = Long.parseLong(ConfLoader.getProperties().getProperty(PropertyOption.MAX_PHOTOS_PER_ALBUM.toString()));
+                maxPics = Long.parseLong(ConfLoader.getProperties().getProperty(
+                        PropertyOption.MAX_PHOTOS_PER_ALBUM.toString()));
             } catch (NumberFormatException e) {
 
             }
             skipAlbums = new ArrayList<>();
-            skipAlbums.addAll(Arrays.asList(ConfLoader.getProperties().getProperty(PropertyOption.SKIP_ALBUMS.toString()).split(";")));
+            skipAlbums.addAll(Arrays.asList(ConfLoader.getProperties()
+                    .getProperty(PropertyOption.SKIP_ALBUMS.toString()).split(";")));
             fbc = new DefaultFacebookClient(CURRENT_ACCESSTOKEN, Version.VERSION_2_3);
             facebook = new Facebook(fbc);
             dir = new File(ConfLoader.getProperties().getProperty(PropertyOption.DIRECTORY.toString()));
@@ -71,12 +73,10 @@ public class FacebookDatasource implements Datasource {
             target = new File(props.getProperty(PropertyOption.HTML_DIR.toString()));
             if (!target.exists())
                 target.mkdirs();
-            try {
-                FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/main.css", new File("" + target + "/main.css"), HTMLGenerator.class);
-                FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/menu.css", new File("" + target + "/menu.css"), HTMLGenerator.class);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/main.css", new File("" + target
+                    + "/main.css"), HTMLGenerator.class);
+            FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/menu.css", new File("" + target
+                    + "/menu.css"), HTMLGenerator.class);
             mainGen.genOverview(target, new File(path));
         }
     }
@@ -97,15 +97,14 @@ public class FacebookDatasource implements Datasource {
         if (!ConfLoader.confExists() && properties != null)
             ConfLoader.genProperties();
         Properties props;
-        if (!ConfLoader.confExists())
-            ConfLoader.genProperties();
         if (properties == null)
             props = ConfLoader.getProperties();
         else {
             props = new Properties();
             props.putAll(properties);
         }
-
+        if (!ConfLoader.confExists())
+            ConfLoader.genProperties();
         /*
          * if (options.contains("--download")) {
          */
@@ -117,7 +116,7 @@ public class FacebookDatasource implements Datasource {
             e.printStackTrace();
         }
         skipAlbums = new ArrayList<>();
-        skipAlbums.addAll(Arrays.asList(props.getProperty(PropertyOption.SKIP_ALBUMS.toString()).split(";")));
+        // skipAlbums.addAll(Arrays.asList(ConfLoader.getProperties().getProperty(PropertyOption.SKIP_ALBUMS.toString()).split(";")));
         fbc = new DefaultFacebookClient(CURRENT_ACCESSTOKEN, Version.VERSION_2_3);
         facebook = new Facebook(fbc);
         String tDir = System.getProperty("java.io.tmpdir");
@@ -131,23 +130,27 @@ public class FacebookDatasource implements Datasource {
         if (!target.exists())
             target.mkdirs();
 
-        try {
-            FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/main.css", new File("" + target + "/main.css"), HTMLGenerator.class);
-            FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/menu.css", new File("" + target + "/menu.css"), HTMLGenerator.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/main.css", new File("" + target
+                + "/main.css"), HTMLGenerator.class);
+        FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/menu.css", new File("" + target
+                + "/menu.css"), HTMLGenerator.class);
+
         mainGen.genOverview(target, dir);
-        // }
+
         ArrayList<File> allXmlFiles = new ArrayList<>();
         files(dir.getParentFile(), allXmlFiles);
         ArrayList<File> allHtmlFiles = new ArrayList<>();
         files(target, allHtmlFiles);
-        for (File file : allXmlFiles)
+
+        for (File file : allXmlFiles) {
             registerFile(dir.getParentFile(), file, storage);
-        for (File file : allHtmlFiles)
+        }
+        for (File file : allHtmlFiles) {
             registerFile(target, file, storage);
-        try (FileInputStream fishtml = new FileInputStream(target); FileInputStream fisxml = new FileInputStream(dir.getParentFile())) {
+        }
+
+        try (FileInputStream fishtml = new FileInputStream(target);
+                FileInputStream fisxml = new FileInputStream(dir.getParentFile())) {
             storage.addFile(fisxml, "xmldata", new MetainfoContainer());
             storage.addFile(fishtml, "html", new MetainfoContainer());
         } catch (IOException e) {
