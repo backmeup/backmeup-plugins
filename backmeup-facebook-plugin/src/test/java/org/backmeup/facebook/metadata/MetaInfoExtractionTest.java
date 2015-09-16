@@ -27,8 +27,8 @@ public class MetaInfoExtractionTest {
         MetaInfoExtractor extractor = new MetaInfoExtractor();
         Metainfo metaInfo = extractor.extract(this.imageFBHtml);
         assertEquals("Unteres Donauinsel Wehr", metaInfo.getLocationName());
-        assertEquals("48.163243875326", metaInfo.getLocationLatitude());
-        assertEquals("16.511982714185", metaInfo.getLocationLongitude());
+        assertEquals("48.163243875326", metaInfo.getLocationLatitude() + "");
+        assertEquals("16.511982714185", metaInfo.getLocationLongitude() + "");
         assertEquals("Vienna", metaInfo.getLocationCity());
         assertEquals("Austria", metaInfo.getLocationCountry());
     }
