@@ -1,7 +1,6 @@
 package org.backmeup.zip;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -22,39 +21,41 @@ import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
+import org.backmeup.zip.constants.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ZipAction implements Action {
     private static final String ZIP_FILE_EXTENSION = ".zip";
-    private static final String ZIP_ID = "org.backmeup.zip";
     private static final Logger LOGGER = LoggerFactory.getLogger(ZipAction.class);
 
     @Override
     public void doAction(PluginProfileDTO profile, PluginContext context, Storage storage, Progressable progressor)
             throws ActionException, StorageException {
 
-        String tmpDir = context.getAttribute("org.backmeup.tmpdir", String.class);
+        String tmpDirName = context.getAttribute("org.backmeup.tmpdir", String.class);
+        String tmpDirPath = context.getAttribute("org.backmeup.tmpdirpath", String.class);
         String userId = context.getAttribute("org.backmeup.userid", String.class);
 
-        if (tmpDir == null) {
-            throw new PluginException(ZIP_ID, "Error: org.backmeup.tmpDir property has not been set!");
+        if (tmpDirName == null) {
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Error: org.backmeup.tmpdir property has not been set!");
         }
+        
+        if (tmpDirPath == null) {
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Error: org.backmeup.tmpdirpath property has not been set!");
+        }
+
 
         if (userId == null) {
-            throw new PluginException(ZIP_ID, "Error: org.backmeup.userid property has not been set!");
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Error: org.backmeup.userid property has not been set!");
         }
 
-        String zipFile = tmpDir + "_" + new Date().getTime() + ZIP_FILE_EXTENSION;
-        LOGGER.info("Creating zip backup file: " + zipFile);
-
-        boolean created = new File(zipFile).getParentFile().mkdirs();
-        if (!created) {
-            throw new PluginException(ZIP_ID, "Could not create temp directory");
-        }
+        String zipFile = tmpDirName + "_" + new Date().getTime() + ZIP_FILE_EXTENSION;
+        String zipFilePath =  tmpDirPath + "/" + zipFile;
+        LOGGER.info("Creating zip backup file: " + zipFilePath);
 
         // Create and write zip file
-        try (FileOutputStream fos = new FileOutputStream(zipFile);
+        try (FileOutputStream fos = new FileOutputStream(zipFilePath);
                 BufferedOutputStream bos = new BufferedOutputStream(fos);
                 ZipOutputStream zos = new ZipOutputStream(bos);) {
 
@@ -81,23 +82,23 @@ public class ZipAction implements Action {
 
             LOGGER.info("Zip file created.");
         } catch (Exception ex) {
-            throw new PluginException(ZIP_ID, "An exception occurred during zip creation!", ex);
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "An exception occurred during zip creation!", ex);
         }
 
         // Put newly created zip file in storage
-        LOGGER.info("Add zip file to local stroage.");
-        try (FileInputStream fis = new FileInputStream(zipFile)) {
+        LOGGER.info("Add zip file to local storage.");
+        try (FileInputStream fis = new FileInputStream(zipFilePath)) {
             MetainfoContainer metaContainer = new MetainfoContainer();
             Metainfo meta = new Metainfo();
             meta.setBackupDate(new Date());
             meta.setCreated(new Date());
             metaContainer.addMetainfo(meta);
 
-            storage.addFile(fis, "/", metaContainer);
+            storage.addFile(fis, "/test.zip", metaContainer);
         } catch (FileNotFoundException e) {
-            throw new PluginException(ZIP_ID, "Could not find created zip file", e);
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not find created zip file", e);
         } catch (IOException e) {
-            throw new PluginException(ZIP_ID, "Could not read created zip file", e);
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not read created zip file", e);
         }
     }
 }
