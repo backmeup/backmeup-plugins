@@ -11,8 +11,10 @@ import java.util.Properties;
 import org.backmeup.facebook.files.ConfLoader;
 import org.backmeup.facebook.files.PropertyOption;
 import org.backmeup.facebook.htmlgenerator.HTMLGenerator;
+import org.backmeup.facebook.metadata.MetaInfoExtractor;
 import org.backmeup.facebook.storage.Serializer;
 import org.backmeup.facebook.utils.FileUtils;
+import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.plugin.api.Datasource;
 import org.backmeup.plugin.api.DatasourceException;
@@ -179,7 +181,12 @@ public class FacebookDatasource implements Datasource {
     public static void registerFile(File root, File file, Storage storage) {
         try (FileInputStream fis = new FileInputStream(file)) {
             String path = FileUtils.getWayTo(root.getParentFile(), file);
-            storage.addFile(fis, path.substring(2, path.length() - 1), new MetainfoContainer());
+            //iterate through the html and xml files and extract standardized metadata (geo location, dates, etc.)
+            MetainfoContainer metaInfoContainer = new MetainfoContainer();
+            Metainfo metaInfo = new MetaInfoExtractor().extract(file);
+            metaInfoContainer.addMetainfo(metaInfo);
+            //add this file to the storage
+            storage.addFile(fis, path.substring(2, path.length() - 1), metaInfoContainer);
         } catch (IOException | StorageException e) {
             e.printStackTrace();
         }
