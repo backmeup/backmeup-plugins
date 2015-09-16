@@ -52,6 +52,8 @@ public class ElasticSearchIndexer {
         // Build the index object
         IndexDocument document = new IndexDocument();
 
+        //TODO AL: call dog.getMetaInfo to get the standardized metadata from the plugins and add it to the index
+
         //add the metadata provided by Tika 
         for (String metaKey : meta.keySet()) {
             document.field(metaKey, meta.get(metaKey));

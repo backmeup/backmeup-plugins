@@ -1,6 +1,7 @@
 package org.backmeup.facebook.metadata;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -43,6 +44,7 @@ public class MetaInfoExtractionTest {
     public void extractCreationDate() {
         MetaInfoExtractor extractor = new MetaInfoExtractor();
         Metainfo metaInfo = extractor.extract(this.imageFBHtml);
+        assertNotNull(metaInfo.getCreated());
         assertEquals("Sun Jul 26 13:11:27 CEST 2015", metaInfo.getCreated().toString());
     }
 

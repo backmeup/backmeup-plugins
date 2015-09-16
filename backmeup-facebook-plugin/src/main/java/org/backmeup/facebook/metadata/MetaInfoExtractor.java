@@ -75,7 +75,7 @@ public class MetaInfoExtractor {
     }
 
     private String extractFieldByPatternFromHTML(File f, String patternString) throws IOException {
-        String string = new String(Files.readAllBytes(Paths.get(f.getAbsolutePath())));
+        String string = new String(Files.readAllBytes(Paths.get(f.getAbsolutePath())), "UTF-8");
         Pattern pattern = Pattern.compile(patternString);
         Matcher matcher = pattern.matcher(string);
 
@@ -92,7 +92,7 @@ public class MetaInfoExtractor {
 
     private LocationInfos extractLocationInformationFromHTML(File f) throws IOException {
         LocationInfos locInfos = new LocationInfos();
-        String string = new String(Files.readAllBytes(Paths.get(f.getAbsolutePath())));
+        String string = new String(Files.readAllBytes(Paths.get(f.getAbsolutePath())), "UTF-8");
         Pattern pattern = Pattern.compile("(?i)(<tr><td>Ort</td><td>)(.+?)(</td>)");
         Matcher matcher = pattern.matcher(string);
 

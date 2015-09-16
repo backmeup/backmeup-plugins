@@ -33,6 +33,7 @@ public class FacebookDatasource implements Datasource {
      * @deprecated use standalone version instead
      * @param args
      *            arguments
+     * @throws IOException
      */
     @Deprecated
     public static void main(String[] args) {
@@ -73,10 +74,13 @@ public class FacebookDatasource implements Datasource {
             target = new File(props.getProperty(PropertyOption.HTML_DIR.toString()));
             if (!target.exists())
                 target.mkdirs();
-            FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/main.css", new File("" + target
-                    + "/main.css"), HTMLGenerator.class);
-            FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/menu.css", new File("" + target
-                    + "/menu.css"), HTMLGenerator.class);
+            try {
+                FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/main.css", new File("" + target
+                        + "/main.css"), HTMLGenerator.class);
+                FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/menu.css", new File("" + target
+                        + "/menu.css"), HTMLGenerator.class);
+            } catch (IOException e1) {
+            }
             mainGen.genOverview(target, new File(path));
         }
     }
@@ -130,10 +134,13 @@ public class FacebookDatasource implements Datasource {
         if (!target.exists())
             target.mkdirs();
 
-        FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/main.css", new File("" + target
-                + "/main.css"), HTMLGenerator.class);
-        FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/menu.css", new File("" + target
-                + "/menu.css"), HTMLGenerator.class);
+        try {
+            FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/main.css", new File("" + target
+                    + "/main.css"), HTMLGenerator.class);
+            FileUtils.exctractFromJar("/org/backmeup/facebook/htmlgenerator/css/menu.css", new File("" + target
+                    + "/menu.css"), HTMLGenerator.class);
+        } catch (IOException e1) {
+        }
 
         mainGen.genOverview(target, dir);
 
