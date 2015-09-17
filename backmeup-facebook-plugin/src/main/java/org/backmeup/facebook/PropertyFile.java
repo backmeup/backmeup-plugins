@@ -1,4 +1,4 @@
-package org.backmeup.facebook.files;
+package org.backmeup.facebook;
 
 public enum PropertyFile {
 	ALBUMS,

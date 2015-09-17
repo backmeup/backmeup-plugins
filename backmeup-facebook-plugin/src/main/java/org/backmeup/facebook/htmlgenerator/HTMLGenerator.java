@@ -18,8 +18,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 
-import org.backmeup.facebook.files.ConfLoader;
-import org.backmeup.facebook.files.PropertyFile;
+import org.backmeup.facebook.FacebookHelper;
+import org.backmeup.facebook.PropertyFile;
 import org.backmeup.facebook.storage.Datatype;
 import org.backmeup.facebook.storage.keys.AlbumInfoKey;
 import org.backmeup.facebook.storage.keys.CommentKey;
@@ -29,6 +29,7 @@ import org.backmeup.facebook.storage.keys.PhotoInfoKey;
 import org.backmeup.facebook.storage.keys.PostInfoKey;
 import org.backmeup.facebook.storage.keys.SerializerKey;
 import org.backmeup.facebook.storage.keys.UserInfoKey;
+import org.backmeup.facebook.utils.CustomStringBuilder;
 import org.backmeup.facebook.utils.FileUtils;
 
 import com.hp.gagawa.java.Document;
@@ -50,227 +51,278 @@ import com.hp.gagawa.java.elements.Tr;
 import com.hp.gagawa.java.elements.Ul;
 
 public class HTMLGenerator {
-    public void genOverview(File root, File dirProps) {
+	private File htmlDir;
+	private File dataDir;
+	
+	public HTMLGenerator(File htmlDir, File dataDir) {
+		this.htmlDir = htmlDir;
+		this.dataDir = dataDir;
+	}
+	
+    public void genOverview() throws IOException {
+        if (!htmlDir.exists()) {
+        	htmlDir.mkdirs();
+    	}
+    
+        FileUtils.exctractFromJar("htmlgenerator/css/main.css", new File(htmlDir, "main.css"), HTMLGenerator.class);
+        FileUtils.exctractFromJar("htmlgenerator/css/menu.css", new File(htmlDir, "menu.css"), HTMLGenerator.class);
+    	
         Document index = new Document(DocumentType.HTMLTransitional);
-        Properties dirs = loadProperties(dirProps);
-        File target = FileUtils.resolveRelativePath(dirProps.getParentFile(), dirs.getProperty(PropertyFile.USER.toString()));
-        Properties userProps = loadProperties(target);
-        File indexTarget = new File("" + root + "/index.html");
-        initDocumentHeader(index, "Ihr Account", indexTarget, null, root, true);
-        File groups = new File("" + root + "/groups/groups.html");
-        ArrayList<File> groupXmls = new ArrayList<>();
-        for (String s : dirs.getProperty(PropertyFile.GROUPS.toString()).split("\\|")) {
-            File singleFile = FileUtils.resolveRelativePath(dirProps.getParentFile(), s);
-            groupXmls.add(singleFile);
-        }
-        groupOverview(groups, root, groupXmls);
-        ArrayList<File> postFiles = new ArrayList<>();
-        for (String s : dirs.getProperty(PropertyFile.POSTS.toString()).split("\\|"))
-            postFiles.add(FileUtils.resolveRelativePath(dirProps.getParentFile(), s));
-        genPosts(postFiles, new File("" + root + "/posts.html"), root);
-        ArrayList<File> pageFiles = new ArrayList<>();
-        for (String s : dirs.getProperty(PropertyFile.PAGES.toString()).split("\\|"))
-            pageFiles.add(FileUtils.resolveRelativePath(dirProps.getParentFile(), s));
-        genPages(new File("" + root + "/pages/pages.html"), pageFiles, root);
-        initDocumentHeader(index, userProps.getProperty(UserInfoKey.FIRST_NAME.toString()), indexTarget, null, root, false);
+        Properties dirs = loadProperties(new File(dataDir, "core.xml"));
+        
+        groupOverview(new File(htmlDir, "groups"), split(dirs.getProperty(PropertyFile.GROUPS.toString())));
+        
+        genPosts(new File(htmlDir, "posts.html"), split(dirs.getProperty(PropertyFile.POSTS.toString())));
+        
+        genPages(new File(htmlDir, "pages" + File.separator + "pages.html"), split(dirs.getProperty(PropertyFile.PAGES.toString())));
+        
+        genAlbums(new File(htmlDir, "albums" + File.separator + "albums.html"), split(dirs.getProperty(PropertyFile.ALBUMS.toString())));
+        
+        File indexTarget = new File(htmlDir, "index.html");
+        Properties userProps = loadProperties(new File(dataDir, dirs.getProperty(PropertyFile.USER.toString())));
+        initDocumentHeader(index, userProps.getProperty(UserInfoKey.FIRST_NAME.toString()), indexTarget, null, htmlDir, true);
         Div sideInfos = new Div();
         sideInfos.setCSSClass("sidebar");
         sideInfos.appendChild(wrapInfos(UserInfoKey.values(), userProps, true));
-        index.body.appendChild(sideInfos);
-        ArrayList<File> albumFiles = new ArrayList<>();
-        for (String s : dirs.getProperty(PropertyFile.ALBUMS.toString()).split("\\|"))
-            albumFiles.add(FileUtils.resolveRelativePath(dirProps, s));
-        genAlbums(new File("" + root + "/albums/albums.html"), albumFiles, root);
+        index.body.appendChild(sideInfos);        
         writeDocument(index, indexTarget);
     }
 
-    private void genAlbums(File albumsHtml, ArrayList<File> albumsPropsFiles, File root) {
+    private void genAlbums(File albumsHtml, String[] albumsPropsFiles) throws IOException {
         File albumFolder = albumsHtml.getParentFile();
-        if (!albumFolder.exists())
+        if (!albumFolder.exists()) {
             albumFolder.mkdirs();
+        }
+        
         Document albums = new Document(DocumentType.HTMLTransitional);
-        albums = initDocumentHeader(albums, "Alben", albumsHtml, null, root, true);
+        albums = initDocumentHeader(albums, "Alben", albumsHtml, null, htmlDir, true);
         Div albumContainer = new Div();
         albumContainer.setCSSClass("picture_container");
+        
         Ul albumlist = new Ul();
-        for (File albumProps : albumsPropsFiles) {
+        for (String albumPropsPath : albumsPropsFiles) {
+        	File albumProps = new File(dataDir, albumPropsPath);
             Properties albumsProps = loadProperties(albumProps);
             Div innerItem = new Div();
             Li item = new Li();
             String relativeImg = "";
             File photoFolder = FileUtils.resolveRelativePath(albumProps, albumsProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString()));
-            File coverDir = new File("" + photoFolder + "/" + albumsProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString()));
-            File coverXml = FileUtils.resolveRelativePath(coverDir, albumsProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
-            Properties coverProps = loadProperties(coverXml);
-            File photo = FileUtils.resolveRelativePath(coverXml, coverProps.getProperty(PhotoInfoKey.FILE.toString()));
-            relativeImg = FileUtils.getWayTo(albumsHtml, photo);
+            File coverDir = new File(photoFolder, albumsProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString()));
+            File coverPhoto = null;
+            if (coverDir.exists()) {
+            	File coverXml = new File(coverDir, albumsProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
+            	Properties coverProps = loadProperties(coverXml);
+            	coverPhoto = FileUtils.resolveRelativePath(coverXml, coverProps.getProperty(PhotoInfoKey.FILE.toString()));
+            	relativeImg = FileUtils.getWayTo(albumsHtml, coverPhoto);
+            }
+            
             A albumLink = new A();
-            Img cover = new Img(albumsProps.getProperty(AlbumInfoKey.NAME.toString()), relativeImg);
-            innerItem.setCSSClass("album_picture");
-            innerItem.appendChild(cover);
-            albumLink.appendChild(innerItem);
-            File singleAlbumHtml = new File("" + albumsHtml.getParentFile() + "/" + albumsProps.getProperty(AlbumInfoKey.ID.toString()) + "/album.html");
+            if (coverPhoto != null) {
+	            Img cover = new Img(albumsProps.getProperty(AlbumInfoKey.NAME.toString()), relativeImg);
+	            innerItem.setCSSClass("album_picture");
+	            innerItem.appendChild(cover);
+	            albumLink.appendChild(innerItem);
+            }
+            File singleAlbumHtml = new File(albumsHtml.getParentFile(), albumsProps.getProperty(AlbumInfoKey.ID.toString()) + File.separator + "album.html");
             albumLink.setHref(FileUtils.getWayTo(albumsHtml, singleAlbumHtml));
             String albumName = albumsProps.getProperty(AlbumInfoKey.NAME.toString());
             String desc = albumsProps.getProperty(AlbumInfoKey.DESCRIPTION.toString());
             P textBelow = new P();
-            if (albumName != null)
+            if (albumName != null) {
                 textBelow.appendText(albumName);
-            if (desc != null)
+            }
+            if (desc != null) {
                 textBelow.appendText("<br/>" + desc);
+            }
             innerItem.appendChild(textBelow);
             item.appendChild(albumLink);
             albumlist.appendChild(item);
-            genAlbum(albumsProps, albumProps, singleAlbumHtml, root);
+            genAlbum(albumsProps, albumProps, singleAlbumHtml, coverPhoto);
         }
+        
         albumContainer.appendChild(albumlist);
         albums.body.appendChild(albumContainer);
+        
         writeDocument(albums, albumsHtml);
     }
 
-    private void genPosts(ArrayList<File> postXmls, File out, File root) {
+    private void genPosts(File out, String[] postXmls) throws IOException {
         Document postsDoc = new Document(DocumentType.HTMLTransitional);
-        initDocumentHeader(postsDoc, "Posts", out, null, root, true);
-        for (File postXml : postXmls) {
+        initDocumentHeader(postsDoc, "Posts", out, null, htmlDir, true);
+        
+        for (String postXmlPath : postXmls) {
+        	File postXml = new File(dataDir, postXmlPath);
             Properties props = loadProperties(postXml);
             Div singlePost = new Div();
-            File photoXml = FileUtils.resolveRelativePath(postXml, props.getProperty(PostInfoKey.PICTURE.toString()));
-            Properties picProps = loadProperties(photoXml);
-            File picFile = FileUtils.resolveRelativePath(photoXml, picProps.getProperty(PhotoInfoKey.FILE.toString()));
-            Img pic = new Img("Photo", FileUtils.getWayTo(out, picFile));
-            singlePost.appendChild(pic);
+            String picturePath = props.getProperty(PostInfoKey.PICTURE.toString());
+            if (picturePath != null) {
+	            File photoXml = FileUtils.resolveRelativePath(postXml.getParentFile(), picturePath);
+	            Properties picProps = loadProperties(photoXml);
+	            File picFile = FileUtils.resolveRelativePath(photoXml.getParentFile(), picProps.getProperty(PhotoInfoKey.FILE.toString()));
+	            Img pic = new Img("Photo", FileUtils.getWayTo(out, picFile));
+	            singlePost.appendChild(pic);
+            }
             singlePost.setCSSClass("comment");
             singlePost.appendChild(wrapInfos(PostInfoKey.values(), props, true));
             postsDoc.body.appendChild(singlePost);
         }
+        
         writeDocument(postsDoc, out);
     }
 
-    private void genAlbum(Properties albumProps, File albumXml, File albumHtml, File root) {
+    private void genAlbum(Properties albumProps, File albumXml, File albumHtml, File coverPhoto) throws IOException {
         Document albumFile = new Document(DocumentType.HTMLTransitional);
         File photoHtmlContainer = albumHtml.getParentFile();
-        if (!photoHtmlContainer.exists())
+        if (!photoHtmlContainer.exists()) {
             photoHtmlContainer.mkdirs();
-        File coverXml = FileUtils.resolveRelativePath(
-                FileUtils.resolveRelativePath(albumXml,
-                        albumProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString()) + "/" + albumProps.getProperty(AlbumInfoKey.COVER_PHOTO_ID.toString())),
-                albumProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
-        Properties coverProps = loadProperties(coverXml);
-        File cover = FileUtils.resolveRelativePath(coverXml, coverProps.getProperty(PhotoInfoKey.FILE.toString()));
-        albumFile = initDocumentHeader(albumFile, albumProps.getProperty(AlbumInfoKey.NAME.toString(), "Album"), albumHtml, cover, root, true);
+        }
+        
+        albumFile = initDocumentHeader(albumFile, albumProps.getProperty(AlbumInfoKey.NAME.toString(), "Album"), albumHtml, coverPhoto, htmlDir, true);
+        
         Div photoContainer = new Div();
         photoContainer.setCSSClass("picture_container");
+        
         Ul photoList = new Ul();
         File photosFolder = FileUtils.resolveRelativePath(albumXml, albumProps.getProperty(AlbumInfoKey.PHOTO_DIR.toString()));
-        if (photosFolder != null && photosFolder.isDirectory() && photosFolder.listFiles().length > 0)
+        if (photosFolder != null && photosFolder.isDirectory()) {
             for (File photoFolder : photosFolder.listFiles()) {
                 File photoXml = FileUtils.resolveRelativePath(photoFolder, albumProps.getProperty(AlbumInfoKey.PHOTO_INFO.toString()));
                 Properties photoProps = loadProperties(photoXml);
                 Li photoItem = new Li();
                 A photoLink = new A();
-                File photoHtml = new File("" + albumHtml.getParentFile() + "/" + photoProps.getProperty(PhotoInfoKey.ID.toString()) + ".html");
+                File photoHtml = new File(albumHtml.getParentFile(), photoProps.getProperty(PhotoInfoKey.ID.toString()) + ".html");
                 photoLink.setHref(FileUtils.getWayTo(albumHtml, photoHtml));
+                
                 Div innerItem = new Div().setCSSClass("album_picture");
                 String relativePhoto = FileUtils.getWayTo(albumHtml,
                         FileUtils.resolveRelativePath(photoXml, photoProps.getProperty(PhotoInfoKey.FILE.toString())));
                 innerItem.appendChild(new Img("Photo", relativePhoto));
                 innerItem.appendChild(new P().appendText("Likes: " + photoProps.getProperty(PhotoInfoKey.LIKES.toString())));
+                
                 photoLink.appendChild(innerItem);
                 photoItem.appendChild(photoLink);
                 photoList.appendChild(photoItem);
-                ArrayList<Node> commentNodes = new ArrayList<>();
-                File comments = new File("" + photoXml.getParentFile() + "/" + photoProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
-                if (comments.exists())
-                    for (File f : comments.listFiles())
+                
+                List<Node> commentNodes = new ArrayList<>();
+                File comments = new File(photoXml.getParentFile(), photoProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
+                if (comments.exists()) {
+                    for (File f : comments.listFiles()) {
                         commentNodes.add(genComment(f, photoHtml));
-                genPhotoFile(photoProps, photoHtml, photoXml, root, commentNodes.toArray(new Node[commentNodes.size()]));
+                    }
+                }
+                
+                genPhotoFile(photoProps, photoHtml, photoXml, htmlDir, commentNodes.toArray(new Node[commentNodes.size()]));
             }
+        }
+        
         Div sideInfos = new Div();
         sideInfos.setCSSClass("sidebar");
         sideInfos.appendChild(wrapInfos(AlbumInfoKey.values(), albumProps, true));
+        
         photoContainer.appendChild(photoList);
         albumFile.body.appendChild(sideInfos);
         albumFile.body.appendChild(photoContainer);
+        
         writeDocument(albumFile, albumHtml);
     }
 
-    public void groupOverview(File groupHtml, File root, ArrayList<File> groupXmls) {
-        if (!groupHtml.getParentFile().exists())
-            groupHtml.getParentFile().mkdirs();
+    public void groupOverview(File groupsDir, String[] groupXmls) throws IOException {
+        if (!groupsDir.exists()) {
+            groupsDir.mkdirs();
+        }
+        
+        File groupHtml =  new File(groupsDir, "groups.html");
         Document groupsDoc = new Document(DocumentType.HTMLTransitional);
-        initDocumentHeader(groupsDoc, "Gruppen", groupHtml, null, root, true);
+        initDocumentHeader(groupsDoc, "Gruppen", groupHtml, null, htmlDir, true);
+        
         Ul groupList = new Ul();
-        for (File groupXml : groupXmls) {
+        for (String groupXmlPath : groupXmls) {
+        	File groupXml = new File(dataDir, groupXmlPath);
             Properties groupProps = loadProperties(groupXml);
             Li groupItem = new Li();
             A groupLink = new A();
-            File singleGroupHtml = new File("" + groupHtml.getParentFile() + "/" + groupProps.getProperty(GroupInfoKey.ID.toString()));
-            genGroup(groupProps, singleGroupHtml, root);
-            groupLink.setHref(FileUtils.getWayTo(groupHtml, singleGroupHtml));
+            String path = groupProps.getProperty(GroupInfoKey.ID.toString());
+            genGroup(groupProps, new File(groupsDir, path), htmlDir);
+            groupLink.setHref(path);
             groupLink.appendText(groupProps.getProperty(GroupInfoKey.NAME.toString()));
             groupItem.appendChild(groupLink);
             groupList.appendChild(groupItem);
         }
         groupsDoc.body.appendChild(groupList);
+        
         writeDocument(groupsDoc, groupHtml);
     }
 
-    public void genGroup(Properties groupProps, File groupHTML, File root) {
-        if (!groupHTML.getParentFile().exists())
+    public void genGroup(Properties groupProps, File groupHTML, File root) throws IOException {
+        if (!groupHTML.getParentFile().exists()) {
             groupHTML.getParentFile().mkdirs();
+        }
+        
         Document groupDoc = new Document(DocumentType.HTMLTransitional);
         initDocumentHeader(groupDoc, groupProps.getProperty(GroupInfoKey.NAME.toString()), groupHTML, null, root, true);
+        
         Div sidebar = new Div();
         sidebar.setCSSClass("sidebar");
         sidebar.appendChild(wrapInfos(GroupInfoKey.values(), groupProps, true));
         groupDoc.body.appendChild(sidebar);
+        
         writeDocument(groupDoc, groupHTML);
     }
 
-    public void genPages(File pagesHtml, ArrayList<File> pageXmls, File root) {
-        if (!pagesHtml.getParentFile().exists())
+    public void genPages(File pagesHtml, String[] pageXmls) throws IOException {
+        if (!pagesHtml.getParentFile().exists()) {
             pagesHtml.getParentFile().mkdirs();
+        }
+        
         Document pagesDoc = new Document(DocumentType.HTMLTransitional);
-        initDocumentHeader(pagesDoc, "Seiten", pagesHtml, null, root, true);
+        initDocumentHeader(pagesDoc, "Seiten", pagesHtml, null, htmlDir, true);
+        
         Ul pageList = new Ul();
-        for (File pageXml : pageXmls) {
+        for (String pageXmlPath : pageXmls) {
+        	File pageXml = new File(dataDir, pageXmlPath);
             Li item = new Li();
             A link = new A();
             Properties pageProps = loadProperties(pageXml);
-            File pageHtml = new File("" + pagesHtml.getParentFile() + "/" + pageProps.getProperty(PageInfoKey.ID.toString()) + "/page.html");
+            File pageHtml = new File(pagesHtml.getParentFile(), pageProps.getProperty(PageInfoKey.ID.toString())  + File.separator + "page.html");
             link.setHref(FileUtils.getWayTo(pagesHtml, pageHtml));
             link.appendText(pageProps.getProperty(PageInfoKey.NAME.toString()));
-            genPage(pageHtml, pageProps, root);
+            genPage(pageHtml, pageProps, htmlDir);
             item.appendChild(link);
             pageList.appendChild(item);
         }
         pagesDoc.body.appendChild(pageList);
+        
         writeDocument(pagesDoc, pagesHtml);
     }
 
-    public void genPage(File pageHtml, Properties pageProps, File root) {
-        if (!pageHtml.getParentFile().exists())
+    public void genPage(File pageHtml, Properties pageProps, File root) throws IOException {
+        if (!pageHtml.getParentFile().exists()) {
             pageHtml.getParentFile().mkdirs();
+        }
+        
         Document pageDoc = new Document(DocumentType.HTMLTransitional);
         initDocumentHeader(pageDoc, pageProps.getProperty(PageInfoKey.NAME.toString()), pageHtml, null, root, true);
+        
         Div sidebar = new Div();
         sidebar.setCSSClass("sidebar");
         sidebar.appendChild(wrapInfos(PageInfoKey.values(), pageProps, true));
         pageDoc.body.appendChild(sidebar);
+        
         Div realContent = new Div();
         realContent.setCSSClass("page");
         H1 head = new H1();
         head.appendText(pageProps.getProperty(PageInfoKey.NAME.toString()));
         realContent.appendChild(head);
         pageDoc.body.appendChild(realContent);
+        
         writeDocument(pageDoc, pageHtml);
     }
 
-    public Node genComment(File dir, File html) {
+    public Node genComment(File dir, File html) throws IOException {
         Div container = new Div();
         container.setCSSClass("comment");
         container.appendChild(new Br());
-        Properties props = loadProperties(new File("" + dir + "/commentinfo.xml"));
+        Properties props = loadProperties(new File(dir, "commentinfo.xml"));
         String confImg = props.getProperty(CommentKey.ATTACHMENT.toString());
         if (confImg != null && !confImg.equalsIgnoreCase("null")) {
             File img = FileUtils.resolveRelativePath(dir, confImg);
@@ -279,21 +331,27 @@ public class HTMLGenerator {
             container.appendChild(imgTag);
         }
         container.appendChild(wrapInfos(CommentKey.values(), props, true));
-        for (File f : dir.listFiles())
-            if (f.isDirectory() && f.exists() && !f.getName().equalsIgnoreCase("attachment"))
+        
+        for (File f : dir.listFiles()) {
+            if (!f.getName().equalsIgnoreCase("attachment") && f.isDirectory()) {
                 container.appendChild(genComment(f, html));
+            }
+        }
+        
         return container;
     }
 
     private Table wrapInfos(SerializerKey[] aik, Properties albumsProps, boolean skipinvalid) {
         Table table = new Table();
-        if (aik.length >= 1 && ConfLoader.reducedInfos())
+        if (aik.length >= 1 && !FacebookHelper.isDebugVerbose()) {
             aik = aik[0].getReduced();
+        }
         for (SerializerKey key : aik) {
             String value = albumsProps.getProperty(key.toString());
             if ((value != null && !value.equals("")) || !skipinvalid) {
-                if (value == null)
+                if (value == null) {
                     value = "keine Infos vorhanden";
+                }
                 if (key.getType().equals(Datatype.DATE)) {
                     GregorianCalendar time = new GregorianCalendar();
                     Date d = new Date(Long.parseLong(value));
@@ -310,8 +368,9 @@ public class HTMLGenerator {
                     link.setHref(value);
                     value = link.write();
                 }
-                if (key.getType().equals(Datatype.LIST))
+                if (key.getType().equals(Datatype.LIST)) {
                     value = unpackList(Arrays.asList(value.split(";")));
+                }
                 Tr row = new Tr();
                 row.appendChild(new Td().appendText(key.getLabel()));
                 row.appendChild(new Td().appendText(value));
@@ -322,24 +381,23 @@ public class HTMLGenerator {
     }
 
     public static String unpackList(List<?> list) {
-        if (list == null)
+        if (list == null) {
             return "keine Informationen vorhanden";
-        StringBuilder sb = new StringBuilder();
+        }
+        
+        CustomStringBuilder sb = new CustomStringBuilder(", ");
         for (Object o : list) {
-            if (o != null) {
-                if (o instanceof List<?>)
-                    sb.append(unpackList((List<?>) o));
-                else
-                    sb.append(o.toString());
-                sb.append(", ");
+            if (o instanceof List<?>) {
+            	sb.append(unpackList((List<?>) o));
+            }
+            else if (o != null) {
+            	sb.append(o.toString());
             }
         }
-        if (sb.length() > 0)
-            sb.delete(sb.length() - 2, sb.length());
         return sb.toString();
     }
 
-    public void genPhotoFile(Properties photoProps, File photoHtml, File photoXml, File root, Node... add) {
+    public void genPhotoFile(Properties photoProps, File photoHtml, File photoXml, File root, Node... add) throws IOException {
         File icon = FileUtils.resolveRelativePath(photoXml, photoProps.getProperty(PhotoInfoKey.FILE.toString()));
         Document photoDoc = new Document(DocumentType.HTMLTransitional);
         photoDoc = initDocumentHeader(photoDoc, photoProps.getProperty(PhotoInfoKey.ID.toString(), "Foto"), photoHtml, icon, root, true);
@@ -351,10 +409,9 @@ public class HTMLGenerator {
         sideInfos.appendChild(wrapInfos(PhotoInfoKey.values(), photoProps, true));
         photoDoc.body.appendChild(sideInfos);
         photoDoc.body.appendChild(picture);
-        if (add != null)
-            for (Node n : add)
-                if (n != null)
-                    photoDoc.body.appendChild(n);
+        for (Node n : add) {
+        	photoDoc.body.appendChild(n);
+        }
         writeDocument(photoDoc, photoHtml);
     }
 
@@ -362,11 +419,11 @@ public class HTMLGenerator {
         Div container = new Div();
         container.setCSSClass("navContainer");
         Ul menuList = new Ul();
-        menuList = appendItem(menuList, htmlDir, new File("" + root + "/index.html"), "Home");
-        menuList = appendItem(menuList, htmlDir, new File("" + root + "/albums/albums.html"), "Alben");
-        menuList = appendItem(menuList, htmlDir, new File("" + root + "/groups/groups.html"), "Gruppen");
-        menuList = appendItem(menuList, htmlDir, new File("" + root + "/posts.html"), "Posts");
-        menuList = appendItem(menuList, htmlDir, new File("" + root + "/pages/pages.html"), "Seiten");
+        menuList = appendItem(menuList, htmlDir, new File(root, "index.html"), "Home");
+        menuList = appendItem(menuList, htmlDir, new File(root, "albums" + File.separator + "albums.html"), "Alben");
+        menuList = appendItem(menuList, htmlDir, new File(root, "groups" + File.separator + "groups.html"), "Gruppen");
+        menuList = appendItem(menuList, htmlDir, new File(root, "posts.html"), "Posts");
+        menuList = appendItem(menuList, htmlDir, new File(root, "pages" + File.separator + "pages.html"), "Seiten");
         container.appendChild(menuList);
         return container;
     }
@@ -387,44 +444,51 @@ public class HTMLGenerator {
         headMeta.setAttribute("content", "text/html");
         doc.head.appendChild(headMeta);
         doc.head.appendChild(new Title().appendText(title));
+        
         Link iconLink = new Link();
         iconLink.setType("image/jpg");
         iconLink.setHref(FileUtils.getWayTo(targetFile.getParentFile(), icon));
         iconLink.setRel("icon");
         doc.head.appendChild(iconLink);
-        ArrayList<File> instantcssFiles = new ArrayList<>();
-        instantcssFiles.add(new File("" + root + "/menu.css"));
-        instantcssFiles.add(new File("" + root + "/main.css"));
-        ArrayList<File> revList = new ArrayList<>();
-        if (cssFiles != null)
-            revList = new ArrayList<>(Arrays.asList(cssFiles));
-        revList.addAll(instantcssFiles);
-        for (File cssFile : revList) {
-            Link link = new Link();
-            link.setType("text/css");
-            link.setRel("stylesheet");
-            link.setHref(FileUtils.getWayTo(targetFile.getParentFile(), cssFile));
-            doc.head.appendChild(link);
+        
+        doc.head.appendChild(createCSSLink(FileUtils.getWayTo(targetFile.getParentFile(), new File(root, "menu.css"))));
+        doc.head.appendChild(createCSSLink(FileUtils.getWayTo(targetFile.getParentFile(), new File(root, "main.css"))));
+        for (File cssFile : cssFiles) {
+            doc.head.appendChild(createCSSLink(FileUtils.getWayTo(targetFile.getParentFile(), cssFile)));
         }
-        if (menuBar)
+        
+        if (menuBar) {
             doc.body.appendChild(navGenerator(targetFile.getParentFile(), root));
+        }
+        
         return doc;
     }
+    
+    private Link createCSSLink(String path) {
+    	Link link = new Link();
+        link.setType("text/css");
+        link.setRel("stylesheet");
+        link.setHref(path);
+        return link;
+    }
+    
+    private static String[] split(String s) {
+    	if (s == null || s.trim().equals("")) {
+    		return new String[0];
+    	}
+    	return s.split("\\|");
+    }
 
-    public static void writeDocument(Document document, File html) {
-        try (FileOutputStream fos = new FileOutputStream(html); OutputStreamWriter osw = new OutputStreamWriter(fos, Charset.forName("UTF-8"))) {
+    public static void writeDocument(Document document, File html) throws IOException {
+        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(html), Charset.forName("UTF-8"))) {
             osw.write(document.write());
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
-    public static Properties loadProperties(File xml) {
+    public static Properties loadProperties(File xml) throws IOException {
         Properties props = new Properties();
         try (FileInputStream fis = new FileInputStream(xml)) {
             props.loadFromXML(fis);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return props;
     }

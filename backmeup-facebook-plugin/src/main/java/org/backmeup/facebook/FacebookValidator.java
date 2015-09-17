@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.backmeup.facebook.files.PropertyOption;
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
-import org.backmeup.model.api.RequiredInputField.Type;
 import org.backmeup.model.spi.Validationable;
 
 public class FacebookValidator implements Validationable {
@@ -19,6 +17,7 @@ public class FacebookValidator implements Validationable {
 
     @Override
     public List<RequiredInputField> getRequiredProperties() {
+        /*
         ArrayList<RequiredInputField> ret = new ArrayList<>();
         ret.add(new RequiredInputField(PropertyOption.ACCESS_TOKEN.toString(), "Accesstoken", "Is required to acces to a facebookprofile", true, 0,
                 Type.String, "Enter your Accestoken here"));
@@ -29,6 +28,8 @@ public class FacebookValidator implements Validationable {
         ret.add(new RequiredInputField(PropertyOption.SKIP_ALBUMS.toString(), "Albumblacklist", "The downloader will skip these albums", false, 0, Type.String,
                 ";"));
         return ret;
+        */
+        return new ArrayList<RequiredInputField>();
     }
 
     @Override

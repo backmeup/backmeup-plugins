@@ -12,7 +12,7 @@ public enum PostInfoKey implements SerializerKey {
 	ADMIN("Administrator", Datatype.NFT),
 	APPLICATION("Benutzte Anwendung", Datatype.NFT),
 	ATTRIBUTION("Benutzte Anwendung", Datatype.OTHER),
-	CAPTION("Link", Datatype.LINK),
+	CAPTION("Link Caption", Datatype.OTHER),
 	COMMENTS("Kommentare", Datatype.OTHER),
 	COMMENTS_COUNT("Anzahl der Kommentare", Datatype.NUMBER),
 	CREATED_TIME("Erstellungsdatum", Datatype.DATE),

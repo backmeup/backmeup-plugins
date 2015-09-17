@@ -5,13 +5,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileUtils {
     public static String getWayTo(File from, File to) {
         if (from == null || to == null) {
 			return "null";
         }
-        return from.toPath().relativize(to.toPath()).toString();
+        Path p = from.toPath();
+        if (!from.isDirectory()) {
+        	p = p.getParent();
+        }
+        return p.relativize(to.toPath()).toString();
     }
 
     public static File resolveRelativePath(File start, String relativePath) {
@@ -29,7 +35,8 @@ public class FileUtils {
     }
 
     public static void exctractFromJar(String resource, File target, Class<?> root) throws IOException {
-        try (InputStream is = root.getResourceAsStream(resource); FileOutputStream fos = new FileOutputStream(target)) {
+    	ClassLoader loader = root.getClassLoader();
+        try (InputStream is = loader.getResourceAsStream(resource); FileOutputStream fos = new FileOutputStream(target)) {
             int len = 0;
             byte[] data = new byte[4096];
             while ((len = is.read(data)) > 0) {
@@ -37,4 +44,19 @@ public class FileUtils {
             }
         }
     }
+
+	public static List<File> files(File root) {
+		List<File> list = new ArrayList<>();
+	    if (root == null || list == null)
+	        return list;
+	    
+	    if (root.isDirectory())
+	        for (File file : root.listFiles())
+	            if (file.isDirectory())
+	                list.addAll(files(file));
+	            else
+	                list.add(file);
+	    
+	    return list;
+	}
 }

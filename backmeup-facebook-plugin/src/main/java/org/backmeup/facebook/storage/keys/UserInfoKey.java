@@ -32,7 +32,7 @@ public enum UserInfoKey implements SerializerKey {
 	INTERESTED_IN("Hobbies", Datatype.LIST),
 	MEETING_FOR("Treffen", Datatype.LIST),
 	POLITICAL("Politik", Datatype.OTHER),
-	QUOTES("Anführungszeichen", Datatype.OTHER),
+	QUOTES("Zitate", Datatype.OTHER),
 	RELATIONSHIP_STATUS("Beziehungsstatus", Datatype.OTHER),
 	RELIGION("Religion", Datatype.OTHER),
 	SIGNIFICANT_OTHER("Andere Merkmale", Datatype.NFT),
