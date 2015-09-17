@@ -14,6 +14,7 @@ import com.restfb.FacebookClient.AccessToken;
 import com.restfb.Parameter;
 import com.restfb.Version;
 import com.restfb.exception.FacebookException;
+import com.restfb.scope.ExtendedPermissions;
 import com.restfb.scope.ScopeBuilder;
 import com.restfb.scope.UserDataPermissions;
 import com.restfb.types.User;
@@ -42,6 +43,7 @@ public class FacebookAuthenticator implements OAuthBasedAuthorizable {
     	for (UserDataPermissions permission : UserDataPermissions.values()) {
     		scopeBuilder.addPermission(permission);
     	}
+    	scopeBuilder.addPermission(ExtendedPermissions.MANAGE_PAGES);
 
     	FacebookClient client = new DefaultFacebookClient(Version.VERSION_2_3);
     	String redirectURL = client.getLoginDialogUrl(FacebookHelper.getAppKey(), callback, scopeBuilder);
