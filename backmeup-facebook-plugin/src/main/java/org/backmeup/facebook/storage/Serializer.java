@@ -63,26 +63,30 @@ public class Serializer {
     private Serializer() {
     }
 
-    public static void generateAll(FacebookClient fbc, File coreFile, List<String> skipAlbums, long maxAlbumpics, Progressable progress) throws IOException {
+    public static void generateAll(FacebookClient fbc, File coreFile, List<String> skipAlbums, long maxAlbumpics,
+            Progressable progress) throws IOException {
         generateAll(fbc, new Facebook(fbc), coreFile, skipAlbums, maxAlbumpics, progress);
     }
-	
-    public static void generateAll(FacebookClient fbc, Facebook facebook, File dir, List<String> skipAlbums, long maxAlbumpics, Progressable progress) throws IOException {
+
+    public static void generateAll(FacebookClient fbc, Facebook facebook, File dir, List<String> skipAlbums,
+            long maxAlbumpics, Progressable progress) throws IOException {
         CustomStringBuilder builder = new CustomStringBuilder("|");
         Properties listProps = new Properties();
-        
+
         String path = "user.xml";
         User user = fbc.fetchObject("me", User.class, MasterParameter.getParameterByClass(User.class));
         userInfo(user, true, true, new File(dir, path));
         listProps.put(PropertyFile.USER.toString(), path);
-        
+
         // the Graph API only returns friends who are using this app, so it is
         // useless to fetch them
-        
-        Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class, MasterParameter.getParameterByClass(Album.class));
+
+        Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class,
+                MasterParameter.getParameterByClass(Album.class));
         List<Album> albumList = new ArrayList<>(albums.getData());
-        
-        Connection<Photo> photos = fbc.fetchConnection("me/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
+
+        Connection<Photo> photos = fbc.fetchConnection("me/photos", Photo.class,
+                MasterParameter.getParameterByClass(Photo.class));
         Album lonelyAlbum = new Album();
         lonelyAlbum.setName("Einzelbilder");
         lonelyAlbum.setDescription("Fotos ohne Album");
@@ -91,26 +95,28 @@ public class Serializer {
         }
         lonelyAlbum.setId(LONELY_ALBUM_ID);
         albumList.add(lonelyAlbum);
-        
+
         for (Album album : albumList) {
             if (!skipAlbums.contains(album.getName())) {
-            	path = "albums" + File.separator + album.getId() + File.separator + "albuminfo.xml";
+                path = "albums" + File.separator + album.getId() + File.separator + "albuminfo.xml";
                 builder.append(path);
-                albumInfo(album, fbc, new File(dir, path), maxAlbumpics, LONELY_ALBUM_ID.equalsIgnoreCase(album.getId()), photos, progress);
+                albumInfo(album, fbc, new File(dir, path), maxAlbumpics,
+                        LONELY_ALBUM_ID.equalsIgnoreCase(album.getId()), photos, progress);
             }
         }
         listProps.put(PropertyFile.ALBUMS.toString(), builder.toString());
         builder.empty();
-        
-        Connection<Post> posts = fbc.fetchConnection("me/posts", Post.class, MasterParameter.getParameterByClass(Post.class));
+
+        Connection<Post> posts = fbc.fetchConnection("me/posts", Post.class,
+                MasterParameter.getParameterByClass(Post.class));
         for (Post post : posts.getData()) {
-        	path = "posts" + File.separator + post.getId() + File.separator + "postinfo.xml";
+            path = "posts" + File.separator + post.getId() + File.separator + "postinfo.xml";
             builder.append(path);
             postInfo(post, new File(dir, path), fbc);
         }
         listProps.put(PropertyFile.POSTS.toString(), builder.toString());
         builder.empty();
-        
+
         for (String pageToken : facebook.pages().fetchAllAccessTokens().values()) {
             FacebookClient fc = new DefaultFacebookClient(pageToken, Version.VERSION_2_3);
             Page page = fc.fetchObject("me", Page.class, MasterParameter.getParameterByClass(Page.class));
@@ -120,27 +126,29 @@ public class Serializer {
         }
         listProps.put(PropertyFile.PAGES.toString(), builder.toString());
         builder.empty();
-        
-        Connection<Group> groups = fbc.fetchConnection("me/groups", Group.class, MasterParameter.getParameterByClass(Group.class));
+
+        Connection<Group> groups = fbc.fetchConnection("me/groups", Group.class,
+                MasterParameter.getParameterByClass(Group.class));
         for (Group group : groups.getData()) {
-        	path = "groups" + File.separator + group.getId() + File.separator + "groupinfo.xml";
+            path = "groups" + File.separator + group.getId() + File.separator + "groupinfo.xml";
             builder.append(path);
             groupInfo(group, new File(dir, path));
         }
         listProps.put(PropertyFile.GROUPS.toString(), builder.toString());
-        
+
         writeProperties(listProps, new File(dir, "core.xml"), "list of all xml files");
     }
 
-    public static Map<SerializerKey, Object> userInfo(User user, boolean thisIsMe, boolean makeDirs, File userXml) throws IOException {
-    	Map<SerializerKey, Object> infos = new HashMap<SerializerKey, Object>();
+    public static Map<SerializerKey, Object> userInfo(User user, boolean thisIsMe, boolean makeDirs, File userXml)
+            throws IOException {
+        Map<SerializerKey, Object> infos = new HashMap<SerializerKey, Object>();
         if (user == null) {
             return infos;
         }
         if (!userXml.getParentFile().exists()) {
             userXml.getParentFile().mkdirs();
         }
-        
+
         infos.put(UserInfoKey.ABOUT, user.getAbout());
         infos.put(UserInfoKey.DATE_OF_BIRTH, user.getBirthdayAsDate());
         infos.put(UserInfoKey.FIRST_NAME, user.getFirstName());
@@ -176,7 +184,7 @@ public class Serializer {
         infos.put(UserInfoKey.WORK, user.getWork());
         infos.put(UserInfoKey.NAME, user.getName());
         infos.put(UserInfoKey.MIDDLE_NAME, user.getMiddleName());
-        
+
         writeInfos(infos, userXml, "Represents a user");
         return infos;
     }
@@ -186,7 +194,7 @@ public class Serializer {
         if (post == null || postXml == null) {
             return infos;
         }
-        
+
         infos.put(PostInfoKey.ACTION, post.getActions());
         infos.put(PostInfoKey.ADMIN, post.getAdminCreator());
         infos.put(PostInfoKey.APPLICATION, post.getApplication());
@@ -206,11 +214,12 @@ public class Serializer {
         infos.put(PostInfoKey.MESSAGE, post.getMessage());
         infos.put(PostInfoKey.MESSAGE_TAGS, post.getMessageTags());
         infos.put(PostInfoKey.OBJECT_ID, post.getObjectId());
-        
+
         File photoXml = null;
         if (post.getObjectId() != null) {
             try {
-                Photo photo = fbc.fetchObject(post.getObjectId(), Photo.class, MasterParameter.getParameterByClass(Photo.class));
+                Photo photo = fbc.fetchObject(post.getObjectId(), Photo.class,
+                        MasterParameter.getParameterByClass(Photo.class));
                 String photoXmlPath = "object" + File.separator + "photoinfo.xml";
                 photoXml = new File(postXml.getParentFile(), photoXmlPath);
                 photoInfo(photo, photoXml, fbc);
@@ -219,16 +228,18 @@ public class Serializer {
                 LOGGER.error("Facebook sent you some bullshit", e);
             }
         }
-        
+
         // In my case, it does not send any comments, but i also get no comments
         // from the Graph API Explorer
-        Connection<Comment> commentConnection = fbc.fetchConnection(post.getId() + "/comments", Comment.class, MasterParameter.getByClass(Comment.class).getParameter());
+        Connection<Comment> commentConnection = fbc.fetchConnection(post.getId() + "/comments", Comment.class,
+                MasterParameter.getByClass(Comment.class).getParameter());
         for (List<Comment> comments : commentConnection) {
             for (Comment comment : comments) {
-                commentInfo(comment, new File(postXml.getParentFile(), "comments" + File.separator + comment.getId() + File.separator + "commentinfo.xml"), fbc);
+                commentInfo(comment, new File(postXml.getParentFile(), "comments" + File.separator + comment.getId()
+                        + File.separator + "commentinfo.xml"), fbc);
             }
         }
-        
+
         infos.put(PostInfoKey.PLACE, post.getPlace());
         infos.put(PostInfoKey.PRIVACY, post.getPrivacy());
         infos.put(PostInfoKey.PROPERTIES, post.getProperties());
@@ -236,7 +247,7 @@ public class Serializer {
         infos.put(PostInfoKey.SHARES_COUNT, post.getSharesCount());
         infos.put(PostInfoKey.SOURCE, post.getSource());
         infos.put(PostInfoKey.STATUS_TYPE, post.getStatusType());
-        
+
         writeInfos(infos, postXml, "Represents a post");
         return infos;
     }
@@ -246,7 +257,7 @@ public class Serializer {
         if (group == null) {
             return infos;
         }
-        
+
         infos.put(GroupInfoKey.DESCRIPTION, group.getDescription());
         infos.put(GroupInfoKey.ICON, group.getIcon());
         infos.put(GroupInfoKey.ID, group.getId());
@@ -257,18 +268,18 @@ public class Serializer {
         infos.put(GroupInfoKey.OWNER, group.getOwner());
         infos.put(GroupInfoKey.PRIVACY, group.getPrivacy());
         infos.put(GroupInfoKey.VENUE, group.getVenue());
-        
+
         writeInfos(infos, groupXml, "Represents a group");
         return infos;
     }
 
-    public static Map<SerializerKey, Object> albumInfo(Album album, FacebookClient fcb, File albumXml, long maxPics, boolean fakeAlbum,
-            Connection<Photo> fakePhotos, Progressable progress) throws IOException {
+    public static Map<SerializerKey, Object> albumInfo(Album album, FacebookClient fcb, File albumXml, long maxPics,
+            boolean fakeAlbum, Connection<Photo> fakePhotos, Progressable progress) throws IOException {
         Map<SerializerKey, Object> infos = new HashMap<>();
         if (album == null) {
             return infos;
         }
-        
+
         infos.put(AlbumInfoKey.COUNT, album.getCount());
         infos.put(AlbumInfoKey.COVER_PHOTO_ID, album.getCoverPhoto());
         infos.put(AlbumInfoKey.CREATED, album.getCreatedTime());
@@ -282,27 +293,29 @@ public class Serializer {
         infos.put(AlbumInfoKey.COMES_FROM, album.getFrom());
         infos.put(AlbumInfoKey.LOCATION, album.getLocation());
         infos.put(AlbumInfoKey.ID, album.getId());
-        
+
         File dir = albumXml.getParentFile();
         Connection<Photo> photosConn = null;
         if (fakeAlbum && fakePhotos != null) {
             photosConn = fakePhotos;
         } else {
-            photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
+            photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class,
+                    MasterParameter.getParameterByClass(Photo.class));
         }
         if (progress != null) {
-            progress.progress("Fetching " + (album.getCount() != null && (maxPics > album.getCount()) ? album.getCount() : maxPics) + " photos from "
-                    + album.getName() + ". This may take a while...");
+            progress.progress("Fetching "
+                    + (album.getCount() != null && (maxPics > album.getCount()) ? album.getCount() : maxPics)
+                    + " photos from " + album.getName() + ". This may take a while...");
         }
-        
+
         long iterator = 0;
         Iterator<List<Photo>> it = photosConn.iterator();
         if (!albumXml.getParentFile().exists()) {
             albumXml.getParentFile().mkdirs();
         }
-        File albumPhotos = FileUtils.resolveRelativePath(albumXml.getParentFile(), infos.get(AlbumInfoKey.PHOTO_DIR).toString());
-        outer:
-        while (it.hasNext()) {
+        File albumPhotos = FileUtils.resolveRelativePath(albumXml.getParentFile(), infos.get(AlbumInfoKey.PHOTO_DIR)
+                .toString());
+        outer: while (it.hasNext()) {
             List<Photo> photos = it.next();
             for (Photo photo : photos) {
                 if (iterator >= maxPics && maxPics >= 0) {
@@ -320,18 +333,19 @@ public class Serializer {
                 iterator++;
             }
         }
-        
-        infos.put(AlbumInfoKey.LOCAL_COUNT, iterator);        
+
+        infos.put(AlbumInfoKey.LOCAL_COUNT, iterator);
         writeInfos(infos, albumXml, "Represents an album");
         return infos;
     }
 
-    public static Map<SerializerKey, Object> photoInfo(Photo photo, File photoXml, FacebookClient fbc) throws IOException {
+    public static Map<SerializerKey, Object> photoInfo(Photo photo, File photoXml, FacebookClient fbc)
+            throws IOException {
         Map<SerializerKey, Object> infos = new HashMap<>();
         if (photo == null) {
             return infos;
         }
-        
+
         infos.put(PhotoInfoKey.FILE, "photo.jpg");
         infos.put(PhotoInfoKey.BACK_DATE, (photo.getBackdatedTime() == null) ? null : photo.getBackdatedTime());
         infos.put(PhotoInfoKey.COMMENT_DIR, "comments");
@@ -353,18 +367,22 @@ public class Serializer {
         infos.put(PhotoInfoKey.PICTURE, photo.getPicture());
         infos.put(PhotoInfoKey.WIDTH, photo.getWidth());
         writeInfos(infos, photoXml, "Represents a photo");
-        
-        File commentsDir = FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.COMMENT_DIR).toString());
+
+        File commentsDir = FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.COMMENT_DIR)
+                .toString());
         for (Comment cmt : photo.getComments()) {
 
-            Comment comment = fbc.fetchObject(cmt.getId(), Comment.class, MasterParameter.getParameterByClass(Comment.class));
+            Comment comment = fbc.fetchObject(cmt.getId(), Comment.class,
+                    MasterParameter.getParameterByClass(Comment.class));
             File commentDir = new File(commentsDir, comment.getId());
             commentDir.mkdirs();
-            File commentXml = FileUtils.resolveRelativePath(commentDir, infos.get(PhotoInfoKey.COMMENT_INFO_FILENAME).toString());
+            File commentXml = FileUtils.resolveRelativePath(commentDir, infos.get(PhotoInfoKey.COMMENT_INFO_FILENAME)
+                    .toString());
             commentInfo(comment, commentXml, fbc);
         }
-        
-        downloadPhoto(photo, FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.FILE).toString()));
+
+        downloadPhoto(photo,
+                FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.FILE).toString()));
         return infos;
     }
 
@@ -379,7 +397,7 @@ public class Serializer {
                 url = img.getSource();
             }
         }
-        
+
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 FileOutputStream fw = new FileOutputStream(out);
                 BufferedInputStream br = new BufferedInputStream(new URL(url).openStream());) {
@@ -397,7 +415,7 @@ public class Serializer {
 
     public static Map<SerializerKey, Object> pageInfo(Page page, File pageXml) throws IOException {
         Map<SerializerKey, Object> infos = new HashMap<>();
-        
+
         infos.put(PageInfoKey.ABOUT, page.getAbout());
         infos.put(PageInfoKey.AFFILIATION, page.getAffiliation());
         infos.put(PageInfoKey.ARTISTS_WE_LIKE, page.getArtistsWeLike());
@@ -483,7 +501,7 @@ public class Serializer {
         infos.put(PageInfoKey.WEBSITE, page.getWebsite());
         infos.put(PageInfoKey.WERE_HRER, page.getWereHereCount());
         infos.put(PageInfoKey.WRITTEN_BY, page.getWrittenBy());
-        
+
         writeInfos(infos, pageXml, "Represents a page");
         return infos;
     }
@@ -493,7 +511,7 @@ public class Serializer {
             commentXml.getParentFile().mkdirs();
         }
         Map<SerializerKey, Object> infos = new HashMap<>();
-        
+
         File photoJpg = null;
         if (comment.getAttachment() != null) {
             Comment.Image cimg = comment.getAttachment().getMedia().getImage();
@@ -509,7 +527,7 @@ public class Serializer {
             photoInfo(photo, photoJpg, fbc);
             infos.put(CommentKey.ATTACHMENT, photoJpgPath);
         }
-        
+
         infos.put(CommentKey.CAN_REMOVE, comment.getCanRemove());
         infos.put(CommentKey.CREATED, comment.getCreatedTime());
         infos.put(CommentKey.FROM, comment.getFrom());
@@ -519,7 +537,7 @@ public class Serializer {
         infos.put(CommentKey.MESSAGE, comment.getMessage());
         infos.put(CommentKey.REPLIES_COUNT, comment.getCommentCount());
         infos.put(CommentKey.METADATA, comment.getMetadata());
-        
+
         writeInfos(infos, commentXml, "Represents a comment");
         if (comment.getComments() != null) {
             for (Comment c : comment.getComments().getData()) {
@@ -533,71 +551,71 @@ public class Serializer {
         if (userInfos == null) {
             return infos;
         }
-        
-        for(Map.Entry<SerializerKey, Object> entry : userInfos.entrySet()) {
-        	Object value = entry.getValue();
+
+        for (Map.Entry<SerializerKey, Object> entry : userInfos.entrySet()) {
+            Object value = entry.getValue();
             if (value != null) {
                 infos.put(entry.getKey().toString(), value.toString());
             }
         }
-        
+
         return infos;
     }
 
     public static Properties dataValidator(Map<SerializerKey, Object> map) {
-    	Properties props = new Properties();
+        Properties props = new Properties();
         if (map == null) {
             return props;
         }
-        
-        for(Map.Entry<SerializerKey, Object> entry : map.entrySet()) {
+
+        for (Map.Entry<SerializerKey, Object> entry : map.entrySet()) {
             SerializerKey key = entry.getKey();
             Object value = entry.getValue();
             if (value != null && key.getType() != null) {
                 String stringKey = key.toString();
                 String stringValue = null;
-                
+
                 switch (key.getType()) {
-                    case OTHER: {
-                        stringValue = packList(value);
-                        break;
-                    }
-                    case DATE: {
-                        if (value instanceof Date) {
-                            stringValue = "" + ((Date) value).getTime();
-                        }
-                        break;
-                    }
-                    case LIST: {
-                        if (value instanceof List<?>) {
-                            stringValue = packList((List<?>) value);
-                        }
-                        break;
-                    }
-                    case NFT: {
-                        if (value instanceof NamedFacebookType) {
-                            stringValue = ((NamedFacebookType) value).getName();
-                        }
-                        break;
-                    }
-                    case CFT: {
-                        if (value instanceof CategorizedFacebookType) {
-                            stringValue = ((CategorizedFacebookType) value).getName();
-                        }
-                        break;
-                    }
-                    default: {
-                        stringValue = value.toString();
-                        break;
-                    }
+                case OTHER: {
+                    stringValue = packList(value);
+                    break;
                 }
-                
+                case DATE: {
+                    if (value instanceof Date) {
+                        stringValue = "" + ((Date) value).getTime();
+                    }
+                    break;
+                }
+                case LIST: {
+                    if (value instanceof List<?>) {
+                        stringValue = packList((List<?>) value);
+                    }
+                    break;
+                }
+                case NFT: {
+                    if (value instanceof NamedFacebookType) {
+                        stringValue = ((NamedFacebookType) value).getName();
+                    }
+                    break;
+                }
+                case CFT: {
+                    if (value instanceof CategorizedFacebookType) {
+                        stringValue = ((CategorizedFacebookType) value).getName();
+                    }
+                    break;
+                }
+                default: {
+                    stringValue = value.toString();
+                    break;
+                }
+                }
+
                 if (stringValue != null) {
                     props.setProperty(stringKey, stringValue);
                 }
             }
         }
-        
+
         return props;
     }
 
@@ -607,7 +625,7 @@ public class Serializer {
         }
 
         if (object instanceof List<?>) {
-        	CustomStringBuilder sb = new CustomStringBuilder(";");
+            CustomStringBuilder sb = new CustomStringBuilder(";");
             List<?> list = (List<?>) object;
             for (Object o : list) {
                 sb.append(packList(o));
@@ -630,7 +648,7 @@ public class Serializer {
             A a = new A();
             a.setHref(img.getSource());
             a.appendText(img.getWidth() + " x " + img.getHeight());
-            return a.write(); //+ ", ";
+            return a.write(); // + ", ";
         } else if (object instanceof CategorizedFacebookType) {
             return ((CategorizedFacebookType) object).getName();
         } else if (object instanceof Tag) {
@@ -645,7 +663,7 @@ public class Serializer {
         if (likes == null) {
             return "";
         }
-        
+
         CustomStringBuilder sb = new CustomStringBuilder(";");
         for (NamedFacebookType nft : likes) {
             sb.append(nft.getName());
@@ -661,7 +679,7 @@ public class Serializer {
         if (!xml.getParentFile().exists()) {
             xml.getParentFile().mkdirs();
         }
-        
+
         try (FileOutputStream fos = new FileOutputStream(xml);) {
             props.storeToXML(fos, comment);
         }
