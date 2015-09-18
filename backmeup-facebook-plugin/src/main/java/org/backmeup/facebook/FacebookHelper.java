@@ -24,14 +24,14 @@ public class FacebookHelper {
 
     private static final Map<String, String> DEFAULTS = new HashMap<>();
     static {
-    	DEFAULTS.put(PROPERTY_MAX_PHOTOS_PER_ALBUM, "-1");
+        DEFAULTS.put(PROPERTY_MAX_PHOTOS_PER_ALBUM, "-1");
         DEFAULTS.put(PROPERTY_SKIP_ALBUMS, "");
-    	DEFAULTS.put(PROPERTY_VERBOSE, Boolean.FALSE.toString());
-    	
-    	DEFAULTS.put(PROPERTY_DATA_DIR, "xmldata");
-    	DEFAULTS.put(PROPERTY_HTML_DIR, "html");
+        DEFAULTS.put(PROPERTY_VERBOSE, Boolean.FALSE.toString());
+
+        DEFAULTS.put(PROPERTY_DATA_DIR, "xmldata");
+        DEFAULTS.put(PROPERTY_HTML_DIR, "html");
     }
-    
+
     /* only used at runtime/with service */
     public static final String RT_PROPERTY_CALLBACK_URL = "fbcallback";
     public static final String RT_PROPERTY_ACCESS_TOKEN = "fbaccesstoken";
@@ -58,8 +58,8 @@ public class FacebookHelper {
     public static String getProperty(String key) {
         String ret = PROPERTIES.getProperty(key);
         if (ret != null) {
-        	return ret;
-    	}
+            return ret;
+        }
         return DEFAULTS.get(key);
     }
 
@@ -74,19 +74,19 @@ public class FacebookHelper {
     public static String getAppSecret() {
         return getProperty(PROPERTY_APP_SECRET);
     }
-    
+
     public static long getDebugMaxPics() {
-	    try {
-	        return Long.parseLong(FacebookHelper.getProperty(FacebookHelper.PROPERTY_MAX_PHOTOS_PER_ALBUM, "-1"));
-	    } catch (NumberFormatException e) {
-	    	return -1;
-	    }
-	}
-    
-    public static List<String> getDebugSkipAlbums() {
-    	return Arrays.asList(FacebookHelper.getProperty(FacebookHelper.PROPERTY_SKIP_ALBUMS, "").split(";"));
+        try {
+            return Long.parseLong(FacebookHelper.getProperty(FacebookHelper.PROPERTY_MAX_PHOTOS_PER_ALBUM, "-1"));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
-    
+
+    public static List<String> getDebugSkipAlbums() {
+        return Arrays.asList(FacebookHelper.getProperty(FacebookHelper.PROPERTY_SKIP_ALBUMS, "").split(";"));
+    }
+
     public static boolean isDebugVerbose() {
         return Boolean.parseBoolean(getProperty(PROPERTY_VERBOSE));
     }

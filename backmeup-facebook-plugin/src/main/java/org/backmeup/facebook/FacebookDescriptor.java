@@ -36,7 +36,7 @@ public class FacebookDescriptor extends BaseSourceSinkDescribable {
 
     @Override
     public Map<String, String> getMetadata(Map<String, String> authData) {
-        HashMap<String, String> props = new HashMap<>();
+        Map<String, String> props = new HashMap<>();
         props.put(Metadata.BACKUP_FREQUENCY, "daily");
         return props;
     }

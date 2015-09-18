@@ -16,8 +16,9 @@ public class FileWalker {
         File root = new File(path);
         File[] list = root.listFiles();
 
-        if (list == null)
+        if (list == null) {
             return ret;
+        }
 
         for (File f : list) {
             if (f.isDirectory()) {

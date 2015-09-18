@@ -2,6 +2,7 @@ package org.backmeup.facebook.storage.keys;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.backmeup.facebook.storage.Datatype;
 
@@ -112,7 +113,7 @@ public enum PageInfoKey implements SerializerKey {
 
     @Override
     public PageInfoKey[] getReduced() {
-        ArrayList<PageInfoKey> ret = new ArrayList<>(Arrays.asList(values()));
+        List<PageInfoKey> ret = new ArrayList<>(Arrays.asList(values()));
         ret.remove(ID);
         return ret.toArray(new PageInfoKey[ret.size()]);
     }

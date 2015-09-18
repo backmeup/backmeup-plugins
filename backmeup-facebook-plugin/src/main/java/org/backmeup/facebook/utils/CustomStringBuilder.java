@@ -11,11 +11,11 @@ public class CustomStringBuilder {
     }
 
     public void append(String string) {
-    	if (!this.first) {
-    		this.sb.append(this.seperator);
-    	} else {
-    		this.first = false;
-    	}
+        if (!this.first) {
+            this.sb.append(this.seperator);
+        } else {
+            this.first = false;
+        }
         this.sb.append(string);
     }
 

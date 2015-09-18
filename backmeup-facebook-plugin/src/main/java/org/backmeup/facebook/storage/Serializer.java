@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.backmeup.facebook.FacebookDatasource;
 import org.backmeup.facebook.PropertyFile;
 import org.backmeup.facebook.storage.keys.AlbumInfoKey;
 import org.backmeup.facebook.storage.keys.CommentKey;
@@ -30,6 +31,8 @@ import org.backmeup.facebook.storage.keys.UserInfoKey;
 import org.backmeup.facebook.utils.CustomStringBuilder;
 import org.backmeup.facebook.utils.FileUtils;
 import org.backmeup.plugin.api.Progressable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.gagawa.java.elements.A;
 import com.restfb.Connection;
@@ -54,9 +57,15 @@ import com.restfb.types.User;
 import com.restfb.types.User.Currency;
 
 public class Serializer {
-	public static void generateAll(FacebookClient fbc, File coreFile, List<String> skipAlbums, long maxAlbumpics, Progressable progress) throws IOException {
-		generateAll(fbc, new Facebook(fbc), coreFile, skipAlbums, maxAlbumpics, progress);			
-	}
+    private static final String LONELY_ALBUM_ID = "lonely";
+    private static final Logger LOGGER = LoggerFactory.getLogger(FacebookDatasource.class);
+
+    private Serializer() {
+    }
+
+    public static void generateAll(FacebookClient fbc, File coreFile, List<String> skipAlbums, long maxAlbumpics, Progressable progress) throws IOException {
+        generateAll(fbc, new Facebook(fbc), coreFile, skipAlbums, maxAlbumpics, progress);
+    }
 	
     public static void generateAll(FacebookClient fbc, Facebook facebook, File dir, List<String> skipAlbums, long maxAlbumpics, Progressable progress) throws IOException {
         CustomStringBuilder builder = new CustomStringBuilder("|");
@@ -77,17 +86,17 @@ public class Serializer {
         Album lonelyAlbum = new Album();
         lonelyAlbum.setName("Einzelbilder");
         lonelyAlbum.setDescription("Fotos ohne Album");
-        if (photos.getData().size() >= 1) {
+        if (!photos.getData().isEmpty()) {
             lonelyAlbum.setCoverPhoto(photos.getData().get(0).getId());
         }
-        lonelyAlbum.setId("lonely");
+        lonelyAlbum.setId(LONELY_ALBUM_ID);
         albumList.add(lonelyAlbum);
         
         for (Album album : albumList) {
             if (!skipAlbums.contains(album.getName())) {
             	path = "albums" + File.separator + album.getId() + File.separator + "albuminfo.xml";
                 builder.append(path);
-                albumInfo(album, fbc, new File(dir, path), maxAlbumpics, album.getId().equalsIgnoreCase("lonely"), photos, progress);
+                albumInfo(album, fbc, new File(dir, path), maxAlbumpics, LONELY_ALBUM_ID.equalsIgnoreCase(album.getId()), photos, progress);
             }
         }
         listProps.put(PropertyFile.ALBUMS.toString(), builder.toString());
@@ -207,7 +216,7 @@ public class Serializer {
                 photoInfo(photo, photoXml, fbc);
                 infos.put(PostInfoKey.PICTURE, photoXmlPath);
             } catch (FacebookOAuthException e) {
-                System.out.println("Facebook sent you some bullshit");
+                LOGGER.error("Facebook sent you some bullshit", e);
             }
         }
         
@@ -278,8 +287,7 @@ public class Serializer {
         Connection<Photo> photosConn = null;
         if (fakeAlbum && fakePhotos != null) {
             photosConn = fakePhotos;
-        }
-        else {
+        } else {
             photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
         }
         if (progress != null) {
@@ -383,7 +391,7 @@ public class Serializer {
             byte[] result = baos.toByteArray();
             fw.write(result);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("cannot download photo", e);
         }
     }
 
@@ -526,10 +534,10 @@ public class Serializer {
             return infos;
         }
         
-        for (Object uik : userInfos.keySet()) {
-            Object value = userInfos.get(uik);
+        for(Map.Entry<SerializerKey, Object> entry : userInfos.entrySet()) {
+        	Object value = entry.getValue();
             if (value != null) {
-                infos.put(uik.toString(), value.toString());
+                infos.put(entry.getKey().toString(), value.toString());
             }
         }
         
@@ -542,11 +550,10 @@ public class Serializer {
             return props;
         }
         
-        Iterator<SerializerKey> it = map.keySet().iterator();
-        while (it.hasNext()) {
-            SerializerKey key = it.next();
-            if (map.get(key) != null && key.getType() != null) {
-                Object value = map.get(key);
+        for(Map.Entry<SerializerKey, Object> entry : map.entrySet()) {
+            SerializerKey key = entry.getKey();
+            Object value = entry.getValue();
+            if (value != null && key.getType() != null) {
                 String stringKey = key.toString();
                 String stringValue = null;
                 
@@ -581,6 +588,7 @@ public class Serializer {
                     }
                     default: {
                         stringValue = value.toString();
+                        break;
                     }
                 }
                 

@@ -14,8 +14,8 @@ import java.util.regex.Pattern;
 import org.backmeup.plugin.api.Metainfo;
 
 /**
- * Takes the html and xml output files of the plugin and extracts structured metadata which is passed along through the
- * Themis MetaInfo data descriptor
+ * Takes the html and xml output files of the plugin and extracts structured
+ * metadata which is passed along through the Themis MetaInfo data descriptor
  *
  */
 public class MetaInfoExtractor {
@@ -40,7 +40,7 @@ public class MetaInfoExtractor {
                 meta.setLocationLongitude(locInfos.getLong());
             }
         } catch (StackOverflowError | IOException e) {
-            //ignore file
+            // ignore file
         }
 
         try {
@@ -49,7 +49,7 @@ public class MetaInfoExtractor {
                 meta.setAuthorName(author);
             }
         } catch (StackOverflowError | IOException e) {
-            //ignore file
+            // ignore file
         }
 
         try {
@@ -60,7 +60,7 @@ public class MetaInfoExtractor {
                 meta.setCreated(cDate);
             }
         } catch (StackOverflowError | IOException | ParseException e) {
-            //ignore file
+            // ignore file
         }
 
         return meta;
@@ -103,12 +103,14 @@ public class MetaInfoExtractor {
         }
 
         for (String s : listMatches) {
-            //distinguish Location Name and Location Geo coordinates
+            // distinguish Location Name and Location Geo coordinates
             if (s.startsWith("<a href=\"https://www.google.at/maps/@")) {
-                //input is a string like <a href="https://www.google.at/maps/@48.163243875326,16.511982714185,17z">null, Vienna, null, Austria</a>
+                // input is a string like <a
+                // href="https://www.google.at/maps/@48.163243875326,16.511982714185,17z">null,
+                // Vienna, null, Austria</a>
                 String[] elements = s.split(",");
                 if (elements.length == 6) {
-                    locInfos.setLat(elements[0].substring(elements[0].indexOf("@") + 1, elements[0].length()));
+                    locInfos.setLat(elements[0].substring(elements[0].indexOf('@') + 1, elements[0].length()));
                     locInfos.setLong(elements[1]);
                     locInfos.setCity(elements[3].substring(1, elements[3].length()));
                     locInfos.setCountry(elements[5].substring(1, elements[5].indexOf("</a>")));
@@ -120,47 +122,51 @@ public class MetaInfoExtractor {
         return locInfos;
     }
 
-    public class LocationInfos {
-        String Lat, Long, City, Country, LocationName;
+    public static class LocationInfos {
+        private String latitute;
+        private String longitude;
+        private String city;
+        private String country;
+        private String locationName;
 
         public String getLat() {
-            return this.Lat;
+            return this.latitute;
         }
 
         public void setLat(String lat) {
-            this.Lat = lat;
+            this.latitute = lat;
         }
 
         public String getLong() {
-            return this.Long;
+            return this.longitude;
         }
 
         public void setLong(String l) {
-            this.Long = l;
+            this.longitude = l;
         }
 
         public String getCity() {
-            return this.City;
+            return this.city;
         }
 
         public void setCity(String city) {
-            this.City = city;
+            this.city = city;
         }
 
         public String getCountry() {
-            return this.Country;
+            return this.country;
         }
 
         public void setCountry(String country) {
-            this.Country = country;
+            this.country = country;
         }
 
         public String getLocationName() {
-            return this.LocationName;
+            return this.locationName;
         }
 
         public void setLocationName(String locationName) {
-            this.LocationName = locationName;
+            this.locationName = locationName;
         }
     }
 

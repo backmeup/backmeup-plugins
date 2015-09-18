@@ -9,13 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileUtils {
+    private FileUtils() {
+    }
+
     public static String getWayTo(File from, File to) {
         if (from == null || to == null) {
-			return "null";
+            return "null";
         }
         Path p = from.toPath();
         if (!from.isDirectory()) {
-        	p = p.getParent();
+            p = p.getParent();
         }
         return p.relativize(to.toPath()).toString();
     }
@@ -35,7 +38,7 @@ public class FileUtils {
     }
 
     public static void exctractFromJar(String resource, File target, Class<?> root) throws IOException {
-    	ClassLoader loader = root.getClassLoader();
+        ClassLoader loader = root.getClassLoader();
         try (InputStream is = loader.getResourceAsStream(resource); FileOutputStream fos = new FileOutputStream(target)) {
             int len = 0;
             byte[] data = new byte[4096];
@@ -45,18 +48,20 @@ public class FileUtils {
         }
     }
 
-	public static List<File> files(File root) {
-		List<File> list = new ArrayList<>();
-	    if (root == null || list == null)
-	        return list;
-	    
-	    if (root.isDirectory())
-	        for (File file : root.listFiles())
-	            if (file.isDirectory())
-	                list.addAll(files(file));
-	            else
-	                list.add(file);
-	    
-	    return list;
-	}
+    public static List<File> files(File root) {
+        List<File> list = new ArrayList<>();
+        if (root == null || list == null || !root.isDirectory()) {
+            return list;
+        }
+
+        for (File file : root.listFiles()) {
+            if (file.isDirectory()) {
+                list.addAll(files(file));
+            } else {
+                list.add(file);
+            }
+        }
+
+        return list;
+    }
 }

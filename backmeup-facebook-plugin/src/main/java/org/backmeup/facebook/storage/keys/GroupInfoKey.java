@@ -4,16 +4,16 @@ import org.backmeup.facebook.storage.Datatype;
 
 public enum GroupInfoKey implements SerializerKey {
     
-	ID("ID", Datatype.OTHER),
-	DESCRIPTION("Beschreibung", Datatype.OTHER),
-	ICON("Gruppenbild", Datatype.OTHER),
-	LINK("Originaler Link", Datatype.LINK),
-	OWNER("Ersteller", Datatype.NFT),
-	PRIVACY("Zugänglichkeit", Datatype.OTHER),
-	LAST_UPDATE("Zuletzt bearbeitet", Datatype.DATE),
-	VENUE("Venue", Datatype.OTHER),
-	METATDATA("Metadaten", Datatype.OTHER),
-	NAME("Name", Datatype.OTHER);
+    ID("ID", Datatype.OTHER), 
+    DESCRIPTION("Beschreibung", Datatype.OTHER), 
+    ICON("Gruppenbild", Datatype.OTHER), 
+    LINK("Originaler Link", Datatype.LINK), 
+    OWNER("Ersteller", Datatype.NFT), 
+    PRIVACY("Zugänglichkeit", Datatype.OTHER), 
+    LAST_UPDATE("Zuletzt bearbeitet", Datatype.DATE), 
+    VENUE("Venue", Datatype.OTHER), 
+    METATDATA("Metadaten", Datatype.OTHER), 
+    NAME("Name", Datatype.OTHER);
 
     private String label;
     private Datatype type;
@@ -33,7 +33,6 @@ public enum GroupInfoKey implements SerializerKey {
 
     @Override
     public GroupInfoKey[] getReduced() {
-        GroupInfoKey[] ret = { GroupInfoKey.NAME, DESCRIPTION, OWNER, ICON, GroupInfoKey.PRIVACY, LAST_UPDATE, GroupInfoKey.LINK };
-        return ret;
+        return new GroupInfoKey[] { GroupInfoKey.NAME, DESCRIPTION, OWNER, ICON, GroupInfoKey.PRIVACY, LAST_UPDATE, GroupInfoKey.LINK };
     }
 }

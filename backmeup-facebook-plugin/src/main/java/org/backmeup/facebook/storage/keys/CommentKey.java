@@ -4,16 +4,16 @@ import org.backmeup.facebook.storage.Datatype;
 
 public enum CommentKey implements SerializerKey {
     
-	ATTACHMENT("Bild", Datatype.PHOTO),
-	CAN_REMOVE("Kann entfernt werden", Datatype.OTHER),
-	REPLIES_COUNT("Antwortenanzahl", Datatype.NUMBER),
-	CREATED("Erstellt", Datatype.DATE),
-	FROM("Von", Datatype.CFT),
-	HIDDEN("Versteckt", Datatype.OTHER),
-	LIKE_COUNT("Likes", Datatype.NUMBER),
-	MESSAGE("Nachricht", Datatype.OTHER),
-	ID("ID", Datatype.OTHER),
-	METADATA("Metadaten", Datatype.OTHER);
+    ATTACHMENT("Bild", Datatype.PHOTO),
+    CAN_REMOVE("Kann entfernt werden", Datatype.OTHER),
+    REPLIES_COUNT("Antwortenanzahl", Datatype.NUMBER),
+    CREATED("Erstellt", Datatype.DATE),
+    FROM("Von", Datatype.CFT),
+    HIDDEN("Versteckt", Datatype.OTHER),
+    LIKE_COUNT("Likes", Datatype.NUMBER),
+    MESSAGE("Nachricht", Datatype.OTHER),
+    ID("ID", Datatype.OTHER),
+    METADATA("Metadaten", Datatype.OTHER);
 
     private String label;
     private Datatype type;
@@ -33,7 +33,6 @@ public enum CommentKey implements SerializerKey {
 
     @Override
     public CommentKey[] getReduced() {
-        CommentKey[] ret = { FROM, MESSAGE, CommentKey.LIKE_COUNT, CommentKey.REPLIES_COUNT, CREATED };
-        return ret;
+        return new CommentKey[] { FROM, MESSAGE, CommentKey.LIKE_COUNT, CommentKey.REPLIES_COUNT, CREATED };
     }
 }
