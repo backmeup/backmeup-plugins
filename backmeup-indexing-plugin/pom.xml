@@ -17,6 +17,13 @@
             <artifactId>backmeup-indexer-client</artifactId>
             <version>${version.backmeup.indexer}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>org.backmeup</groupId>
+            <artifactId>backmeup-indexer-model</artifactId>
+            <version>${version.backmeup.indexer}</version>
+        </dependency>
+        
 
 		<!-- removing Tika osgi dependencies, using external Tika in Server via JAXRS -->
 		<!-- dependency>
@@ -110,7 +117,11 @@
                             javax.microedition.io.*;resolution:=optional,
                             *
 						</Import-Package>
-						<Embed-Dependency>httpclient-osgi,commons-io,commons-lang</Embed-Dependency>
+						<Embed-Dependency>httpclient-osgi,
+						                  commons-io,
+										  commons-lang,
+										  backmeup-indexer-model,
+										  backmeup-indexer-client</Embed-Dependency>
 						<Embed-Transitive>false</Embed-Transitive>
 						<Embed-Directory>lib</Embed-Directory>
 						<Export-Package>org.backmeup.plugin.api.actions.indexing</Export-Package>
