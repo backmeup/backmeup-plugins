@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<artifactId>plugins</artifactId>
 		<groupId>org.backmeup</groupId>
@@ -10,20 +10,19 @@
 
 	<artifactId>indexing</artifactId>
 	<packaging>bundle</packaging>
-	
+
 	<dependencies>
-        <dependency>
-            <groupId>org.backmeup</groupId>
-            <artifactId>backmeup-indexer-client</artifactId>
-            <version>${version.backmeup.indexer}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.backmeup</groupId>
-            <artifactId>backmeup-indexer-model</artifactId>
-            <version>${version.backmeup.indexer}</version>
-        </dependency>
-        
+		<dependency>
+			<groupId>org.backmeup</groupId>
+			<artifactId>backmeup-indexer-client</artifactId>
+			<version>${version.backmeup.indexer}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.backmeup</groupId>
+			<artifactId>backmeup-indexer-model</artifactId>
+			<version>${version.backmeup.indexer}</version>
+		</dependency>
 
 		<!-- removing Tika osgi dependencies, using external Tika in Server via JAXRS -->
 		<!-- dependency>
@@ -44,59 +43,59 @@
 			<version>${version.org.apache.tika}</version>
 			<scope>test</scope>
 		</dependency-->
-		
+	
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>${version.org.slf4j}</version>
 		</dependency>
-		
-        <dependency>
-            <groupId>org.backmeup</groupId>
-            <artifactId>backmeup-indexer-core</artifactId>
-            <version>${version.backmeup.indexer}</version>
-            <scope>test</scope>
-        </dependency>
-
+	
+		<dependency>
+			<groupId>org.backmeup</groupId>
+			<artifactId>backmeup-indexer-core</artifactId>
+			<version>${version.backmeup.indexer}</version>
+			<scope>test</scope>
+		</dependency>
+	
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${version.commons-io}</version>
 		</dependency>
-		
+	
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>${version.commons-lang}</version>
 		</dependency>
-			
+	
 		<dependency>
 			<groupId>org.backmeup</groupId>
 			<artifactId>localfsstorage</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient-osgi</artifactId>
-            <version>${version.org.apache.httpcomponents.httpclient-osgi}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>commons-logging</artifactId>
-                    <groupId>commons-logging</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>httpclient</artifactId>
-                    <groupId>org.apache.httpcomponents</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>httpcore</artifactId>
-                    <groupId>org.apache.httpcomponents</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-  	</dependencies>
+	
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-osgi</artifactId>
+			<version>${version.org.apache.httpcomponents.httpclient-osgi}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>httpclient</artifactId>
+					<groupId>org.apache.httpcomponents</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>httpcore</artifactId>
+					<groupId>org.apache.httpcomponents</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -104,7 +103,7 @@
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<version>2.3.7</version>
-				<!--<version>2.4.0</version>-->
+				<!--<version>2.4.0</version> -->
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
@@ -113,15 +112,16 @@
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Import-Package>
 							net.sf.ehcache.*;resolution:=optional,
-                            net.spy.*;resolution:=optional,
-                            javax.microedition.io.*;resolution:=optional,
-                            *
+							net.spy.*;resolution:=optional,
+							javax.microedition.io.*;resolution:=optional,
+							*
 						</Import-Package>
-						<Embed-Dependency>httpclient-osgi,
-						                  commons-io,
-										  commons-lang,
-										  backmeup-indexer-model,
-										  backmeup-indexer-client</Embed-Dependency>
+						<Embed-Dependency>
+							httpclient-osgi,
+							commons-io,
+							commons-lang,
+							backmeup-indexer-model,
+							backmeup-indexer-client</Embed-Dependency>
 						<Embed-Transitive>false</Embed-Transitive>
 						<Embed-Directory>lib</Embed-Directory>
 						<Export-Package>org.backmeup.plugin.api.actions.indexing</Export-Package>
@@ -188,14 +188,14 @@
 			</plugin>
 		</plugins>
 		<resources>
-        	<resource>
-            	<directory>src/main/resources</directory>
-            	<!--  we don't want the 75 MB Tika jar file ending up within our plugin.jar -->
-            	<excludes>
-                	<exclude>processisolatedtika-0.0.4-SNAPSHOT-jar-with-dependencies.jar</exclude>
-            	</excludes>
-            	<filtering>false</filtering>
-        	</resource>
-    	</resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<!-- we don't want the 75 MB Tika jar file ending up within our plugin.jar -->
+				<excludes>
+					<exclude>processisolatedtika-0.0.4-SNAPSHOT-jar-with-dependencies.jar</exclude>
+				</excludes>
+				<filtering>false</filtering>
+			</resource>
+		</resources>
 	</build>
 </project>
