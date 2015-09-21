@@ -50,7 +50,7 @@ public class FacebookDatasource implements Datasource {
             }
             // get all html files
             for (File file : FileUtils.files(htmlDir)) {
-                registerFile(htmlDir, file, storage);
+                registerFile(htmlDir.getParentFile(), file, storage);
             }
         } catch (IOException e) {
             throw new DatasourceException(e);
@@ -66,6 +66,6 @@ public class FacebookDatasource implements Datasource {
 
         // add this file to the storage
         String path = FileUtils.getWayTo(root.getParentFile(), file);
-        storage.addFile(new FileInputStream(file), path.substring(2, path.length() - 1), metaInfoContainer);
+        storage.addFile(new FileInputStream(file), path, metaInfoContainer);
     }
 }
