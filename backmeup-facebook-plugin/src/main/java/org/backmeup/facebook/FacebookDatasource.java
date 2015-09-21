@@ -30,6 +30,7 @@ public class FacebookDatasource implements Datasource {
         String currentAccessToken = pluginProfile.getAuthData().getProperties()
                 .get(FacebookHelper.RT_PROPERTY_ACCESS_TOKEN);
 
+        //TODO: use backmeup-worker tempdir
         String tempDir = System.getProperty("java.io.tmpdir") + File.separator + "facebook_"
                 + System.currentTimeMillis();
         File dataDir = new File(tempDir, FacebookHelper.getProperty(FacebookHelper.PROPERTY_DATA_DIR));
@@ -51,9 +52,6 @@ public class FacebookDatasource implements Datasource {
             for (File file : FileUtils.files(htmlDir)) {
                 registerFile(htmlDir, file, storage);
             }
-
-            storage.addFile(new FileInputStream(dataDir), "xmldata", new MetainfoContainer());
-            storage.addFile(new FileInputStream(htmlDir), "html", new MetainfoContainer());
         } catch (IOException e) {
             throw new DatasourceException(e);
         }
