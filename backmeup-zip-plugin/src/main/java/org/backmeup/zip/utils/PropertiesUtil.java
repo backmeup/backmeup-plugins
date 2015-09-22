@@ -6,6 +6,8 @@ import java.util.Properties;
 
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.zip.constants.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This Util class constructs loads properties form the file storage.properties
@@ -13,6 +15,7 @@ import org.backmeup.zip.constants.Constants;
  * 
  */
 public class PropertiesUtil {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesUtil.class);
     public static final String PROPERTIES_FILE = "zip.properties";
 
     private static PropertiesUtil propertiesUtil;
@@ -28,13 +31,13 @@ public class PropertiesUtil {
         }
 
         if (properties == null) {
-            propertiesUtil.loadProperties();
+            PropertiesUtil.loadProperties();
         }
         return propertiesUtil;
     }
 
-    private void loadProperties() {
-        InputStream is = getClass().getClassLoader().getResourceAsStream(
+    private static void loadProperties() {
+        InputStream is = PropertiesUtil.class.getClassLoader().getResourceAsStream(
                 PROPERTIES_FILE);
         if (is == null) {
             throw new PluginException(
@@ -51,16 +54,8 @@ public class PropertiesUtil {
                     "Fatal error: could not load zip.properties: "
                             + e.getMessage(), e);
         } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (Exception e) {
-                throw new PluginException(
-                        Constants.BACKMEUP_ZIP_ID,
-                        "Error: could not close zip.properties: "
-                                + e.getMessage(), e);
-            }
+            closeQuietly(is);
+            
         }
     }
 
@@ -69,5 +64,15 @@ public class PropertiesUtil {
             return properties.getProperty(key);
         }
         return null;
+    }
+    
+    private static void closeQuietly(InputStream resource) {
+        try {
+            if (resource != null) {
+                resource.close();
+            }
+        } catch (Exception ex) {
+            LOGGER.error("", ex);
+        }
     }
 }

@@ -42,7 +42,9 @@ public class ZipAction implements Action {
         
         File temp = new File(tempDir);
         if (!temp.exists()) {
-            temp.mkdirs();
+            if (!temp.mkdirs()) {
+                throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Unable to create directory " + temp);
+            }
         }
 
         String tmpDirName = context.getAttribute("org.backmeup.tmpdir", String.class);
@@ -83,7 +85,7 @@ public class ZipAction implements Action {
             }
 
             LOGGER.info("Zip file created.");
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new PluginException(Constants.BACKMEUP_ZIP_ID, "An exception occurred during zip creation!", ex);
         }
 
