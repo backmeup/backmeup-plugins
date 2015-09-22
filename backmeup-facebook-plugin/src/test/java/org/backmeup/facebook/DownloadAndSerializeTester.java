@@ -26,9 +26,9 @@ public class DownloadAndSerializeTester
         File htmlDir = new File(tempDir, FacebookHelper.getProperty(FacebookHelper.PROPERTY_HTML_DIR));
 		
         //only execute test if there is an access token in properties file
-		String CURRENT_ACCESSTOKEN = FacebookHelper.getProperty(FacebookHelper.RT_PROPERTY_ACCESS_TOKEN);
-		if (CURRENT_ACCESSTOKEN != null) {
-			FacebookClient fbc = new DefaultFacebookClient(CURRENT_ACCESSTOKEN, Version.VERSION_2_3);
+		String currentAccessToken = FacebookHelper.getProperty(FacebookHelper.RT_PROPERTY_ACCESS_TOKEN);
+		if (currentAccessToken != null) {
+			FacebookClient fbc = new DefaultFacebookClient(currentAccessToken, Version.VERSION_2_3);
 			Serializer.generateAll(fbc, dataDir, FacebookHelper.getDebugSkipAlbums(), FacebookHelper.getDebugMaxPics(), null);
 			
 			HTMLGenerator mainGen = new HTMLGenerator(htmlDir, dataDir);
