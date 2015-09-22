@@ -8,6 +8,7 @@ import org.backmeup.facebook.htmlgenerator.HTMLGenerator;
 import org.backmeup.facebook.metadata.MetaInfoExtractor;
 import org.backmeup.facebook.storage.Serializer;
 import org.backmeup.facebook.utils.FileUtils;
+import org.backmeup.model.dto.AuthDataDTO;
 import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.plugin.api.Datasource;
 import org.backmeup.plugin.api.DatasourceException;
@@ -27,8 +28,15 @@ public class FacebookDatasource implements Datasource {
     @Override
     public void downloadAll(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage, Progressable progressor) 
             throws DatasourceException, StorageException {
-        String currentAccessToken = pluginProfile.getAuthData().getProperties()
-                .get(FacebookHelper.RT_PROPERTY_ACCESS_TOKEN);
+        String currentAccessToken = null;
+        AuthDataDTO authData = pluginProfile.getAuthData();
+        if (authData != null) {
+            currentAccessToken = authData.getProperties().get(FacebookHelper.RT_PROPERTY_ACCESS_TOKEN);
+        }
+        //use token from properties file for local testing if there was no token in authData
+        if (currentAccessToken == null) {
+            currentAccessToken = FacebookHelper.getProperty(FacebookHelper.RT_PROPERTY_ACCESS_TOKEN);
+        }
 
         //TODO: use backmeup-worker tempdir
         String tempDir = System.getProperty("java.io.tmpdir") + File.separator + "facebook_"
