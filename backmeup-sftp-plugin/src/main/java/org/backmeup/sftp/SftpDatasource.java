@@ -80,17 +80,14 @@ public class SftpDatasource implements Datasource {
             channel.connect(60000);
             sftpChannel = (ChannelSftp) channel;
 
-            if(channel.isConnected())
+            if(channel.isConnected()) {
             	progressor.progress("Connection successfull");
-//			TODO:            
-//            else
-//            	throw new SftpException()
+            } else {
+                throw new PluginException(SftpDescriptor.SFTP_ID, "Could not connect to sftp server " + accessData.get("Host"));
+            }
 
             progressor.progress("Change to remote folder");
             sftpChannel.cd(accessData.get("Folder"));
-            
-            //browse root ftp directory
-            progressor.progress("Get list of folders");
             
             StringBuilder sb = new StringBuilder(); 
             handleDownloadAll(".", sftpChannel, storage, progressor, sb);
@@ -103,18 +100,10 @@ public class SftpDatasource implements Datasource {
             
             progressor.progress("Download completed");
 
-        } catch (JSchException e) {
+        } catch (JSchException | SftpException | UnsupportedEncodingException e) {
         	progressor.progress(e.toString());
             progressor.progress(e.getMessage());
             throw new PluginException(SftpDescriptor.SFTP_ID, "An error occured during the backup", e);
-        } catch (SftpException e) {
-        	progressor.progress(e.toString());
-            progressor.progress(e.getMessage());
-        	throw new PluginException(SftpDescriptor.SFTP_ID, "An error occured during the backup", e);
-        }  catch (UnsupportedEncodingException e) {
-        	progressor.progress(e.toString());
-            progressor.progress(e.getMessage());
-        	throw new PluginException(SftpDescriptor.SFTP_ID, "An error occured during the backup", e);
         } finally {
             if (sftpChannel != null) {
                 sftpChannel.exit();
@@ -129,11 +118,13 @@ public class SftpDatasource implements Datasource {
     	List<String> toVisit = new ArrayList<>();
     	
         progressor.progress("Get list of folders");
+        @SuppressWarnings("unchecked")
         Vector<ChannelSftp.LsEntry> vEntries = sftpChannel.ls(folder);
         for (LsEntry entry : vEntries) {
         	String fname = entry.getFilename();
-        	if (fname.equals(".") || fname.equals(".."))
+        	if (".".equals(fname) || "..".equals(fname)) {
         		continue;
+        	}
 	        MetainfoContainer cont = new MetainfoContainer();
 	        SftpATTRS attrs = entry.getAttrs();
 	        if(attrs.isDir()) {
