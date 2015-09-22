@@ -1,5 +1,6 @@
 package org.backmeup.plugin.storage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +36,9 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
             authData.put(Constants.PROP_STORAGE_URL, storageUrl);
             
             return username;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new PluginException(BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID, 
-                    "An error occurred during authorization: " + e.getMessage());
+                    "An error occurred during authorization", e);
         }
     }
 

@@ -21,6 +21,8 @@ import org.backmeup.plugin.api.storage.StorageException;
 import org.backmeup.plugin.storage.constants.Constants;
 import org.backmeup.storage.api.StorageClient;
 import org.backmeup.storage.client.BackmeupStorageClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The BackmeupStorageDatasink class uploads all elements from the StorageReader up to the Backmeup-Storage service
@@ -28,7 +30,8 @@ import org.backmeup.storage.client.BackmeupStorageClient;
  * 
  */
 public class BackmeupStorageDatasink implements Datasink {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(BackmeupStorageDatasink.class);
+    
     private static final String FIELD_THUMBNAIL_PATH = "thumbnail_path";
 
     @Override
@@ -84,6 +87,7 @@ public class BackmeupStorageDatasink implements Datasink {
                 //check if we've got a thumbnail for this data object
                 String thumbnailLocalLocation = extractThumbnailFileLocation(dataObj.getMetainfo());
                 if (thumbnailLocalLocation != null) {
+                    thumbnailLocalLocation = normalizeThumbnailPath(thumbnailLocalLocation);
                     String destPath = buildThumnailStorageDestinationPath(filepath, thumbnailLocalLocation);
                     uploadThumbnail(client, accessToken, thumbnailLocalLocation, destPath, progressor);
                 }
@@ -104,16 +108,20 @@ public class BackmeupStorageDatasink implements Datasink {
      * @return relative path of thumbnail on storage to ingest into elasticsearch
      */
     private String buildThumnailStorageDestinationPath(String parentOjbectPath, String thumbnailLocalLocation) {
-
-        if (thumbnailLocalLocation.indexOf('\\') > -1) {
-            thumbnailLocalLocation = thumbnailLocalLocation.replace('\\', '/');
-        }
         String fileName = getFilename(thumbnailLocalLocation);
         String pathPrefix = "";
         if (thumbnailLocalLocation.indexOf('/') > -1) {
             pathPrefix = parentOjbectPath.substring(0, parentOjbectPath.lastIndexOf('/'));
         }
         return pathPrefix + "/thumbs/" + fileName;
+    }
+    
+    private String normalizeThumbnailPath(String thumbnailLocalLocation) {
+        String normalizedPath = thumbnailLocalLocation;
+        if (normalizedPath.indexOf('\\') > -1) {
+            normalizedPath = normalizedPath.replace('\\', '/');
+        }
+        return normalizedPath;
     }
 
     private String getFilename(String path) {
@@ -136,11 +144,12 @@ public class BackmeupStorageDatasink implements Datasink {
     private void uploadThumbnail(StorageClient client, String accessToken, String thumbLocalStorageLocation,
             String thumbStorageDestinationPath, Progressable progressor) {
 
-        if ((thumbStorageDestinationPath != null)) {
+        if (thumbStorageDestinationPath != null) {
             progressor.progress("Uploading thumbnail to: " + thumbStorageDestinationPath);
             try (InputStream is = new FileInputStream(thumbLocalStorageLocation)) {
                 client.saveFile(accessToken, thumbStorageDestinationPath, true, is.available(), is);
             } catch (PluginException | IOException e) {
+                LOGGER.error("", e);
                 progressor.progress("Error handing over thumbnail to storage");
             }
         }
