@@ -79,6 +79,7 @@ public class SftpDatasource implements Datasource {
             Channel channel = session.openChannel("sftp");
             channel.connect(60000);
             sftpChannel = (ChannelSftp) channel;
+            sftpChannel.setFilenameEncoding("UTF-8");
 
             if (channel.isConnected()) {
                 progressor.progress("Connection successfull");
