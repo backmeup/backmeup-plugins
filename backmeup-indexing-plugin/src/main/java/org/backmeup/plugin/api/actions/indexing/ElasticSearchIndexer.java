@@ -50,8 +50,8 @@ public class ElasticSearchIndexer {
         this.client = client;
     }
 
-    public void doIndexing(PluginContext pluginContext, DataObject dataObject,
-            Map<String, String> meta, Date timestamp) throws IOException {
+    public void doIndexing(PluginContext pluginContext, DataObject dataObject, Map<String, String> meta, Date timestamp)
+            throws IOException {
         // Build the index object
         IndexDocument document = new IndexDocument();
 
@@ -65,7 +65,7 @@ public class ElasticSearchIndexer {
         }
 
         String relObjectPathOnStorage = getBMULocation(pluginContext) + dataObject.getPath();
-        
+
         BackupJobExecutionDTO job = pluginContext.getAttribute("org.backmeup.job", BackupJobExecutionDTO.class);
         document.field(IndexFields.FIELD_OWNER_ID, job.getUser().getUserId());
         document.field(IndexFields.FIELD_OWNER_NAME, job.getUser().getUsername());
@@ -102,7 +102,8 @@ public class ElasticSearchIndexer {
             //check if download access is supported by the sink plugin
             if (pluginContext.hasAttribute(Metadata.STORAGE_ALWAYS_ACCESSIBLE)
                     && pluginContext.hasAttribute(Metadata.DOWNLOAD_BASE)) {
-                boolean alwaysAccess = Boolean.parseBoolean(pluginContext.getAttribute(Metadata.STORAGE_ALWAYS_ACCESSIBLE, String.class));
+                boolean alwaysAccess = Boolean.parseBoolean(pluginContext.getAttribute(
+                        Metadata.STORAGE_ALWAYS_ACCESSIBLE, String.class));
                 String downloadBase = pluginContext.getAttribute(Metadata.DOWNLOAD_BASE, String.class);
                 //we're having a file sink like the themis central storage with permanent access
                 if (alwaysAccess) {
@@ -154,6 +155,7 @@ public class ElasticSearchIndexer {
             while (it.hasNext()) {
                 //there actually should only be one Metainfo record at the moment
                 Metainfo metainfo = it.next();
+                //TODO AL: Multiple METAINFO RECORDS, which are overwritten by TIKA!
 
                 //initialize location name
                 if (metainfo.getLocationName() != null) {
@@ -177,8 +179,12 @@ public class ElasticSearchIndexer {
                 if ((metainfo.getLocationLatitude() != null) && (metainfo.getLocationLatitude() != -1D)) {
                     latitude = metainfo.getLocationLatitude();
                     document.field(IndexFields.FIELD_LOC_LATITUDE, latitude + "");
-                } else if (tikaMetadata.containsKey(IndexFields.TIKA_FIELDS_PREFIX + "GPS Latitude")) {
+                } else if (tikaMetadata.containsKey(IndexFields.TIKA_FIELDS_PREFIX + "geo:lat")) {
                     //in this case try to get the value from tika
+                    latitude = Double.valueOf(tikaMetadata.get(IndexFields.TIKA_FIELDS_PREFIX + "geo:lat"));
+                    document.field(IndexFields.FIELD_LOC_LATITUDE, latitude + "");
+                } else if (tikaMetadata.containsKey(IndexFields.TIKA_FIELDS_PREFIX + "GPS Latitude")) {
+                    //in this case try to get the value from tika and parse it ourselves 
                     try {
                         latitude = GeoMetadataConverter.extractAndConvertGeoCoordinates(tikaMetadata
                                 .get(IndexFields.TIKA_FIELDS_PREFIX + "GPS Latitude"));
@@ -191,8 +197,12 @@ public class ElasticSearchIndexer {
                 if ((metainfo.getLocationLongitude() != null) && (metainfo.getLocationLongitude() != -1D)) {
                     longitude = metainfo.getLocationLongitude();
                     document.field(IndexFields.FIELD_LOC_LONGITUDE, longitude + "");
-                } else if (tikaMetadata.containsKey(IndexFields.TIKA_FIELDS_PREFIX + "GPS Longitude")) {
+                } else if (tikaMetadata.containsKey(IndexFields.TIKA_FIELDS_PREFIX + "geo:long")) {
                     //in this case try to get the value from tika
+                    longitude = Double.valueOf(tikaMetadata.get(IndexFields.TIKA_FIELDS_PREFIX + "geo:long"));
+                    document.field(IndexFields.FIELD_LOC_LONGITUDE, longitude + "");
+                } else if (tikaMetadata.containsKey(IndexFields.TIKA_FIELDS_PREFIX + "GPS Longitude")) {
+                    //in this case try to get the value from tika and parse it ourselves 
                     try {
                         longitude = GeoMetadataConverter.extractAndConvertGeoCoordinates(tikaMetadata
                                 .get(IndexFields.TIKA_FIELDS_PREFIX + "GPS Longitude"));
@@ -214,6 +224,16 @@ public class ElasticSearchIndexer {
                 if (metainfo.getCreated() != null) {
                     creationDate = metainfo.getCreated();
                     document.field(IndexFields.FIELD_DOC_CREATION_DATE, creationDate.getTime());
+                } else if (tikaMetadata.containsKey(IndexFields.TIKA_FIELDS_PREFIX + "meta:creation-date")) {
+                    //format is something like "2015-08-23T13:15:50"
+                    try {
+                        String dateFormat = "YYYY-MM-DD'T'HH:mm:ss";
+                        final SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+                        creationDate = formatter.parse(tikaMetadata.get(IndexFields.TIKA_FIELDS_PREFIX
+                                + "meta:creation-date"));
+                        document.field(IndexFields.FIELD_DOC_CREATION_DATE, creationDate.getTime());
+                    } catch (ParseException e) {
+                    }
                 } else if (tikaMetadata.containsKey(IndexFields.TIKA_FIELDS_PREFIX + "Creation-Date")) {
                     //format is something like "2015-08-23T13:15:50"
                     try {
