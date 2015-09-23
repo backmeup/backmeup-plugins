@@ -9,7 +9,6 @@ import org.backmeup.index.api.IndexDocumentUploadClient;
 import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.client.IndexClientFactory;
 import org.backmeup.model.dto.PluginProfileDTO;
-import org.backmeup.model.dto.UserDTO;
 import org.backmeup.plugin.api.Action;
 import org.backmeup.plugin.api.ActionException;
 import org.backmeup.plugin.api.PluginContext;
@@ -51,8 +50,8 @@ public class IndexAction implements Action {
     private static final String ERROR_SKIPPING_ITEM = "Error indexing data object, skipping object ";
 
     @Override
-    public void doAction(PluginProfileDTO pluginProfile, PluginContext pluginContext,
-            Storage storage, Progressable progressor) throws ActionException {
+    public void doAction(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage,
+            Progressable progressor) throws ActionException {
 
         int indexedItems_OK = 0;
         int indexedItems_SKIPPED_TIKA_ANALYSIS = 0;
@@ -95,8 +94,8 @@ public class IndexAction implements Action {
                     progressor.progress(INDEXING_OBJECT_STARTED + dob.getPath());
                     //init index client for user
                     // TODO: data to initialize index client should be stored in auth data
-                    UserDTO user = pluginContext.getAttribute("org.backmeup.user", UserDTO.class);
-                    initIndexClient(user.getUserId());
+                    Long userId = Long.valueOf(pluginContext.getAttribute("org.backmeup.userid", String.class));
+                    initIndexClient(userId);
                     ElasticSearchIndexer indexer = new ElasticSearchIndexer(this.client);
 
                     if (needsESIndexing(dob)) {
