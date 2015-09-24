@@ -36,15 +36,14 @@ public class ZipAction implements Action {
     public void doAction(PluginProfileDTO profile, PluginContext context, Storage storage, Progressable progressor)
             throws ActionException, StorageException {
 
-        String tempDir = PropertiesUtil.getInstance().getProperty(Constants.PROPERTY_TEMP_DIR);
-        String tempFileName = UUID.randomUUID() + ZIP_FILE_EXTENSION + ".tmp";
-        String tempFilePath = tempDir + "/" + tempFileName;
         
-        File temp = new File(tempDir);
-        if (!temp.exists()) {
-            if (!temp.mkdirs()) {
-                throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Unable to create directory " + temp);
-            }
+        String tempOutDir = getTempDirectoryPath(context);
+        String tempOutFileName = UUID.randomUUID() + ZIP_FILE_EXTENSION + ".tmp";
+        String tempOutFilePath = tempOutDir + "/" + tempOutFileName;
+        
+        File temp = new File(tempOutDir);
+        if (!temp.exists() && !temp.mkdirs()) {
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Unable to create directory " + temp);
         }
 
         String tmpDirName = context.getAttribute("org.backmeup.tmpdir", String.class);
@@ -54,11 +53,36 @@ public class ZipAction implements Action {
                     "Error: org.backmeup.tmpdir property has not been set!");
         }
 
-        String zipFile = tmpDirName + "_" + new Date().getTime() + ZIP_FILE_EXTENSION;
-        String zipFilePath = "/" + zipFile;
-        LOGGER.info("Creating zip backup file: " + zipFile);
+        String zipFileName = tmpDirName + "_" + new Date().getTime() + ZIP_FILE_EXTENSION;
+        String zipFilePath = "/" + zipFileName;
+        LOGGER.info("Creating zip backup file: " + zipFileName);
 
         // Create and write temporary zip file
+        File zipFile = createZipFile(storage, tempOutFilePath);
+
+        // Put newly created zip file in storage
+        LOGGER.info("Add zip file to local storage.");
+        try (FileInputStream fis = new FileInputStream(zipFile)) {
+            MetainfoContainer metaContainer = new MetainfoContainer();
+            Metainfo meta = new Metainfo();
+            meta.setBackupDate(new Date());
+            meta.setCreated(new Date());
+            metaContainer.addMetainfo(meta);
+
+            storage.addFile(fis, zipFilePath, metaContainer);
+        } catch (FileNotFoundException e) {
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not find created zip file", e);
+        } catch (IOException e) {
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not read created zip file", e);
+        }
+        
+        // Delete temporary zip file
+        if(!zipFile.delete()){
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not delete temp zip file");
+        }
+    }
+
+    private File createZipFile(Storage storage, String tempFilePath) throws StorageException {
         try (FileOutputStream fos = new FileOutputStream(tempFilePath);
                 BufferedOutputStream bos = new BufferedOutputStream(fos);
                 ZipOutputStream zos = new ZipOutputStream(bos);) {
@@ -85,30 +109,22 @@ public class ZipAction implements Action {
             }
 
             LOGGER.info("Zip file created.");
+            return new File(tempFilePath);
         } catch (IOException ex) {
             throw new PluginException(Constants.BACKMEUP_ZIP_ID, "An exception occurred during zip creation!", ex);
         }
-
-        // Put newly created zip file in storage
-        LOGGER.info("Add zip file to local storage.");
-        try (FileInputStream fis = new FileInputStream(tempFilePath)) {
-            MetainfoContainer metaContainer = new MetainfoContainer();
-            Metainfo meta = new Metainfo();
-            meta.setBackupDate(new Date());
-            meta.setCreated(new Date());
-            metaContainer.addMetainfo(meta);
-
-            storage.addFile(fis, zipFilePath, metaContainer);
-        } catch (FileNotFoundException e) {
-            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not find created zip file", e);
-        } catch (IOException e) {
-            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not read created zip file", e);
+    }
+    
+    private String getTempDirectoryPath(PluginContext context) {
+        String path = context.getAttribute("org.backmeup.zip.tempDir", String.class);
+        if (path == null) {
+            path = PropertiesUtil.getInstance().getProperty(Constants.PROPERTY_TEMP_DIR);
+        }
+        if(path == null) {
+            throw new PluginException(Constants.BACKMEUP_ZIP_ID,
+                    "Cannot find temporary output directory");
         }
         
-        // Delete temporary zip file
-        File file = new File(tempFilePath);
-        if(!file.delete()){
-            throw new PluginException(Constants.BACKMEUP_ZIP_ID, "Could not delete temp zip file");
-        }
+        return path;
     }
 }
