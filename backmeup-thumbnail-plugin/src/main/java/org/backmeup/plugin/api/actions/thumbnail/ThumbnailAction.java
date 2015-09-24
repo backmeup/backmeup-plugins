@@ -82,9 +82,8 @@ public class ThumbnailAction implements Action {
             dataobject.setMetainfo(container);
             progressor.progress("created thumbnail for object: " + thumbPath);
         } catch (Exception ex) {
+            LOGGER.error("Failed to render thumbnail for " + dataobject.getPath(), ex);
             progressor.progress("skipping " + ex.toString());
-            LOGGER.debug("Failed to render thumbnail for: " + dataobject.getPath());
-            LOGGER.debug(ex.getClass().getName() + ": " + ex.getMessage());
         }
     }
     
@@ -175,10 +174,8 @@ public class ThumbnailAction implements Action {
         }
 
         File tempDir = new File(path);
-        if (!tempDir.exists()) {
-            if (!tempDir.mkdirs()) {
-                throw new PluginException("", "Unable to create directory " + tempDir);
-            }
+        if (!tempDir.exists() && !tempDir.mkdirs()) {
+            throw new PluginException("", "Unable to create directory " + tempDir);
         }
         return tempDir;
     }
@@ -186,8 +183,9 @@ public class ThumbnailAction implements Action {
     private boolean isSupportedFileType(String fileName) {
         boolean supported = true;
         for (String format : UNSUPPORTED_TYPES) {
-            if (fileName.toLowerCase().endsWith(format))
+            if (fileName.toLowerCase().endsWith(format)) {
                 supported = false;
+            }
         }
         return supported;
     }
