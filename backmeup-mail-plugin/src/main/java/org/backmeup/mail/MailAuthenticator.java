@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
 
@@ -18,7 +17,7 @@ import org.backmeup.model.spi.ValidationExceptionType;
 import org.backmeup.plugin.api.InputBasedAuthorizable;
 
 public class MailAuthenticator implements InputBasedAuthorizable {
-	private static final String PROP_SSL = "SSL";
+    private static final String PROP_SSL = "SSL";
 	private static final String PROP_SSL_DEFAULT = "true";
 	private static final String PROP_SSL_DESC = "Use SSL (encrypted connection)";
 	private static final String PROP_PORT = "Port";
@@ -36,6 +35,12 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 	private static final String PROP_TYPE = "Type";
 	private static final String PROP_TYPE_DEFAULT = "imap,pop3";
 	private static final String PROP_TYPE_DESC = "IMAP or POP3";
+	
+	private static final String AUTHPROP_MAIL_HOST = "mail.host";
+    private static final String AUTHPROP_MAIL_PASSWORD = "mail.password";
+    private static final String AUTHPROP_MAIL_USER = "mail.user";
+	
+	
  
 	@Override
 	public AuthorizationType getAuthType() {
@@ -49,22 +54,19 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 		try {
 			Session session = Session.getInstance(authProps);
 			Store store = session.getStore();
-			store.connect(authProps.getProperty("mail.host"),
-					authProps.getProperty("mail.user"),
-					authProps.getProperty("mail.password"));
+			store.connect(authProps.getProperty(AUTHPROP_MAIL_HOST),
+					authProps.getProperty(AUTHPROP_MAIL_USER),
+					authProps.getProperty(AUTHPROP_MAIL_PASSWORD));
 			store.close();
-		} catch (NoSuchProviderException e) {
-			throw new ValidationException(ValidationExceptionType.AuthException, "Cannot authorize mail provider", e);
 		} catch (MessagingException e) {
 			throw new ValidationException(ValidationExceptionType.AuthException, "Cannot authorize mail provider", e);
 		}
-		
-//		inputProperties.clear();
+
         for (final String name : authProps.stringPropertyNames()) {
             authData.put(name, authProps.getProperty(name));
         }
 		
-		return authData.get("mail.user");
+		return authData.get(AUTHPROP_MAIL_USER);
 	}
 
 	@Override
@@ -111,14 +113,14 @@ public class MailAuthenticator implements InputBasedAuthorizable {
 		Properties authProperties = new Properties();
 		String storeType = inputs.get(PROP_TYPE);
 		String prefix = "mail." + storeType + ".";
-		if (inputs.get(PROP_SSL) != null && inputs.get(PROP_SSL).toString().equalsIgnoreCase("true")) {
+		if (inputs.get(PROP_SSL) != null && "true".equalsIgnoreCase(inputs.get(PROP_SSL).toString())) {
 			authProperties.put(prefix + "socketFactory.class","javax.net.ssl.SSLSocketFactory");
 			authProperties.put(prefix + "socketFactory.fallback", "false");
 		}
 		authProperties.put(prefix + "port", inputs.get(PROP_PORT));
-		authProperties.put("mail.user", inputs.get(PROP_USERNAME));
-		authProperties.put("mail.password", inputs.get(PROP_PASSWORD));
-		authProperties.put("mail.host", inputs.get(PROP_HOST));
+		authProperties.put(AUTHPROP_MAIL_USER, inputs.get(PROP_USERNAME));
+		authProperties.put(AUTHPROP_MAIL_PASSWORD, inputs.get(PROP_PASSWORD));
+		authProperties.put(AUTHPROP_MAIL_HOST, inputs.get(PROP_HOST));
 		authProperties.put(prefix + "connectiontimeout", "5000");
 		authProperties.put(prefix + "timeout", "5000");
 		authProperties.put("mail.store.protocol", storeType);
