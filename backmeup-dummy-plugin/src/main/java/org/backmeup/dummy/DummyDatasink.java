@@ -17,19 +17,19 @@ public class DummyDatasink implements Datasink {
     @Override
     public String upload(PluginProfileDTO pluginProfile, PluginContext context, Storage storage, Progressable progressor) throws StorageException {
 
-        System.out.println("Uploading to StorageReader");
+        progressor.progress("Uploading to StorageReader");
 
         Iterator<DataObject> it = storage.getDataObjects();
         while (it.hasNext()) {
             DataObject obj = it.next();
             Iterator<Metainfo> infos = obj.getMetainfo().iterator();
             if (infos.hasNext()) {
-                System.out.println("=============================================");
-                System.out.println("Metainfos of object:\t\t" + obj.getPath());
+                progressor.progress("=============================================");
+                progressor.progress("Metainfos of object:\t\t" + obj.getPath());
                 while (infos.hasNext()) {
                     Metainfo info = infos.next();
                     for (Entry<Object, Object> entry : info.getAttributes().entrySet()) {
-                        System.out.println(entry.getKey() + ":\t\t" + entry.getValue());
+                        progressor.progress(entry.getKey() + ":\t\t" + entry.getValue());
                     }
                 }
             }

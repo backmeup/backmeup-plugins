@@ -24,22 +24,23 @@ import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
 public class DummyDatasource implements Datasource, Validationable {
+    private static final String OPTION_FAIL_VALIDATION = "fail validation";
+    private static final String OPTION_FAIL_HARD = "fail hard";
     
     private static final List<String> BACKUP_OPTIONS = new ArrayList<>();
     
     static {
         BACKUP_OPTIONS.add("option1");
         BACKUP_OPTIONS.add("option2");
-        BACKUP_OPTIONS.add("fail validation");
-        BACKUP_OPTIONS.add("fail hard");
+        BACKUP_OPTIONS.add(OPTION_FAIL_VALIDATION);
+        BACKUP_OPTIONS.add(OPTION_FAIL_HARD);
     }
 
     private InputStream stringToStream(String input) {
         try {
-            InputStream is = new ByteArrayInputStream(input.getBytes("UTF-8"));
-            return is;
+            return new ByteArrayInputStream(input.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("UTF8 is not available?");
+            throw new IllegalArgumentException("UTF8 is not available?", e);
         }
     }
 
@@ -80,7 +81,7 @@ public class DummyDatasource implements Datasource, Validationable {
 
     @Override
     public List<RequiredInputField> getRequiredProperties() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -106,10 +107,10 @@ public class DummyDatasource implements Datasource, Validationable {
                 notes.addValidationEntry(ValidationExceptionType.ConfigException, DummyDescriptor.DUMMY_ID, "Option \""+option+"\" not available");
             }
         }
-        if (options.contains("fail validation")) {
+        if (options.contains(OPTION_FAIL_VALIDATION)) {
             notes.addValidationEntry(ValidationExceptionType.ConfigException, DummyDescriptor.DUMMY_ID, "Option fail selected -> failing");
         }
-        if (options.contains("fail hard")) {
+        if (options.contains(OPTION_FAIL_HARD)) {
             throw new PluginException(DummyDescriptor.DUMMY_ID, "forced to fail hard!");
         }
         return notes;
