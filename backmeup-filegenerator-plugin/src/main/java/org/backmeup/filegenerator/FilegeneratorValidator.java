@@ -13,7 +13,9 @@ import org.backmeup.model.spi.Validationable;
 
 public class FilegeneratorValidator implements Validationable {
 
-	@Override
+	private static final String ERROR_MISSING_INPUT = "Required input field missing: ";
+
+    @Override
 	public boolean hasRequiredProperties() {
 		return true;
 	}
@@ -48,22 +50,22 @@ public class FilegeneratorValidator implements Validationable {
 		// 2: check if values match required types (and bounds?)
 		if(!properties.containsKey(Constants.PROP_TEXT)){
 			notes.addValidationEntry(ValidationExceptionType.ConfigException, FilegeneratorDescriptor.FILEGENERATOR_ID, 
-					                 "Required input field missing: " + Constants.PROP_TEXT);
+					                 ERROR_MISSING_INPUT + Constants.PROP_TEXT);
 		}
 		
 		if(!properties.containsKey(Constants.PROP_IMAGE)){
 			notes.addValidationEntry(ValidationExceptionType.ConfigException, FilegeneratorDescriptor.FILEGENERATOR_ID,
-					                 "Required input field missing: " + Constants.PROP_IMAGE);
+					                 ERROR_MISSING_INPUT + Constants.PROP_IMAGE);
 		} 
 		
 		if(!properties.containsKey(Constants.PROP_PDF)){
 			notes.addValidationEntry(ValidationExceptionType.ConfigException, FilegeneratorDescriptor.FILEGENERATOR_ID,
-					                 "Required input field missing: " + Constants.PROP_PDF);
+					                 ERROR_MISSING_INPUT + Constants.PROP_PDF);
 		} 
 		
 		if(!properties.containsKey(Constants.PROP_BINARY)){
 			notes.addValidationEntry(ValidationExceptionType.ConfigException, FilegeneratorDescriptor.FILEGENERATOR_ID,
-					                 "Required input field missing: " + Constants.PROP_BINARY);
+					                 ERROR_MISSING_INPUT + Constants.PROP_BINARY);
 		} 
 				
 		return notes;
@@ -76,7 +78,7 @@ public class FilegeneratorValidator implements Validationable {
 
 	@Override
 	public List<String> getAvailableOptions(Map<String, String> accessData) {
-		return null;
+		return new ArrayList<String>();
 	}
 
 	@Override

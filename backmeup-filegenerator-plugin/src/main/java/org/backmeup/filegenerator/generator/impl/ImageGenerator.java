@@ -11,8 +11,10 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
+import org.backmeup.filegenerator.FilegeneratorDescriptor;
 import org.backmeup.filegenerator.constants.Constants;
 import org.backmeup.filegenerator.generator.Generator;
+import org.backmeup.model.exceptions.PluginException;
 
 public class ImageGenerator implements Generator {
 	private final int sizeX;
@@ -40,7 +42,7 @@ public class ImageGenerator implements Generator {
 			ImageIO.write(image, "jpg", os);
 			return new ByteArrayInputStream(os.toByteArray());
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+		    throw new PluginException(FilegeneratorDescriptor.FILEGENERATOR_ID, "Failed to generate image", e);
 		}
 	}
 

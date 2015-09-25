@@ -33,4 +33,7 @@ public class Constants {
 	public static final String PROP_BINARY_SIZE_DEFAULT = "1024";
 	public static final String PROP_BINARY_SIZE_DESC = "Size (in bytes) of the allocated file";
 	
+    private Constants() {
+        // Utility classes should hide public constructor
+    }
 }
