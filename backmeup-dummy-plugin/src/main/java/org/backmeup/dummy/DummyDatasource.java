@@ -24,6 +24,8 @@ import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
 public class DummyDatasource implements Datasource, Validationable {
+    private static final String MIME_TYPE_TEXT_HTML = "text/html";
+    private static final String MIME_TYPE_TEXT_PLAIN = "text/plain";
     private static final String OPTION_FAIL_VALIDATION = "fail validation";
     private static final String OPTION_FAIL_HARD = "fail hard";
     
@@ -57,12 +59,12 @@ public class DummyDatasource implements Datasource, Validationable {
     @Override
     public void downloadAll(PluginProfileDTO pluginProfile, PluginContext context, Storage storage, Progressable progressor) throws StorageException {
         MetainfoContainer cont = new MetainfoContainer();
-        cont.addMetainfo(create("1", "text/plain", "/plain.txt"));
+        cont.addMetainfo(create("1", MIME_TYPE_TEXT_PLAIN, "/plain.txt"));
         InputStream is = stringToStream("This is an important text file.\nPlease create a backup with this file");
         storage.addFile(is, "/plain.txt", cont);
 
         cont = new MetainfoContainer();
-        cont.addMetainfo(create("2", "text/html", "/html.txt"));
+        cont.addMetainfo(create("2", MIME_TYPE_TEXT_HTML, "/html.txt"));
         is = stringToStream("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\""
             + "http://www.w3.org/TR/html4/strict.dtd\">"
             + "<html>"
