@@ -1,59 +1,59 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
-    <parent>
+
+	<parent>
 		<artifactId>plugins</artifactId>
 		<groupId>org.backmeup</groupId>
 		<version>2.0.0-SNAPSHOT</version>
 	</parent>
-    
+
 	<artifactId>mail</artifactId>
 	<packaging>bundle</packaging>
-	
-    <dependencies>
+
+	<dependencies>
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>com.springsource.javax.mail</artifactId>
 			<version>1.4.5</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.activation</groupId>
 			<artifactId>com.springsource.javax.activation</artifactId>
 			<version>1.1.1</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.backmeup</groupId>
 			<artifactId>localfsstorage</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.icegreen</groupId>
 			<artifactId>greenmail</artifactId>
 			<version>1.4.1</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>${version.ch.qos.logback}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
-    
+
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<version>2.3.7</version>
-				<!--<version>2.4.0</version>-->
+				<!--<version>2.4.0</version> -->
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
@@ -61,9 +61,18 @@
 						<Bundle-Name>${project.name}</Bundle-Name>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Import-Package>
-							!sun.security*, javax.net, javax.net.ssl, javax.security.auth.callback, 
-							javax.security.sasl, javax.sql, javax.xml.bind.annotation, javax.crypto, javax.crypto.spec, 
-							javax.security.auth.x500, javax.xml.transform, javax.xml.transform.stream, 
+							!sun.security*, 
+							javax.net, 
+							javax.net.ssl,
+							javax.security.auth.callback,
+							javax.security.sasl, 
+							javax.sql, 
+							javax.xml.bind.annotation, 
+							javax.crypto,
+							javax.crypto.spec,
+							javax.security.auth.x500, 
+							javax.xml.transform, 
+							javax.xml.transform.stream,
 							org.slf4j.impl
 						</Import-Package>
 						<Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
