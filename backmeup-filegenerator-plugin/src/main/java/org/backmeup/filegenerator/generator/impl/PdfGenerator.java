@@ -4,7 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+import org.backmeup.filegenerator.FilegeneratorDescriptor;
 import org.backmeup.filegenerator.generator.Generator;
+import org.backmeup.model.exceptions.PluginException;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -58,7 +60,7 @@ public class PdfGenerator implements Generator {
 			
 			return new ByteArrayInputStream(osPdf.toByteArray());
 		} catch (DocumentException e) {
-			throw new RuntimeException(e);
+			throw new PluginException(FilegeneratorDescriptor.FILEGENERATOR_ID, "Failed to generate pdf document", e);
 		}
 	}
 }
