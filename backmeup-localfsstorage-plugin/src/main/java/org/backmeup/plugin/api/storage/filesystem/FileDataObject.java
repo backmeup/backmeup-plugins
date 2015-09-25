@@ -10,11 +10,8 @@ import org.backmeup.plugin.api.MetainfoContainer;
 import org.backmeup.plugin.api.storage.DataObject;
 
 public class FileDataObject extends DataObject {
-
-	private final File file;
-	
+	private final File file;	
 	private final File metaFile;
-
 	private String path;
 
 	public FileDataObject(String path) {
@@ -41,7 +38,9 @@ public class FileDataObject extends DataObject {
 	    fis = new FileInputStream(file);
   		return IOUtils.toByteArray(fis);
 	  } finally {
+	      if(fis != null) {
 	    fis.close();
+	      }
 	  }
 	}
 	

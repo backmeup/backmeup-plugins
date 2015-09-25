@@ -16,14 +16,15 @@ import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
 public class LocalFilesystemStorage implements Storage {
-	private File rootDir;
+    private File rootDir;
 	private long totalStorageSize = 0;
 
 	@Override
 	public void open(String rootPath) {
 		this.rootDir = new File(rootPath);
-		if (!this.rootDir.exists()) 
-			this.rootDir.mkdirs();				
+		if (!this.rootDir.exists() && !rootDir.mkdirs()) {
+		    throw new RuntimeException("Unable to create storage directory " + rootDir);
+		}
 	}
 
 	@Override
@@ -61,7 +62,6 @@ public class LocalFilesystemStorage implements Storage {
 		addToList(rootDir, "/", flatList);
 		
 		return new Iterator<DataObject>() {
-			
 			private int idx = 0;
 			
 			@Override
@@ -78,9 +78,8 @@ public class LocalFilesystemStorage implements Storage {
 
 			@Override
             public void remove() {
-				// Do nothing				
+				// Do nothing
 			}
-			
 		};
 	}
 	
@@ -91,11 +90,13 @@ public class LocalFilesystemStorage implements Storage {
 			}
 		} else {
 		  // don't add meta.json files!
-		  if (file.getName().endsWith("meta.json"))
+		  if (file.getName().endsWith("meta.json")) {
         return;
+		  }
 		  
-		  if (path.startsWith("/")||path.startsWith("\\"))
+		  if (path.startsWith("/")||path.startsWith("\\")) {
 				path = path.substring(1);
+		  }
 			
 			objects.add(new FileDataObject(file, path + "/" + file.getName()));
 		}
@@ -103,8 +104,9 @@ public class LocalFilesystemStorage implements Storage {
 	
 	@Override
 	public boolean existsPath(String path) {
-		if (path.startsWith("/")||path.startsWith("\\"))
+		if (path.startsWith("/")||path.startsWith("\\")) {
 			path = path.substring(1);
+		}
 		
 		return new File(rootDir, path).exists();
 	}
@@ -116,10 +118,10 @@ public class LocalFilesystemStorage implements Storage {
 		try {
 			File out = new File(rootDir, path);
 			out.getParentFile().mkdirs();
-				
+			
 			OutputStream os = new FileOutputStream(out);
 			long totalSize = 0;
-			byte buf[] = new byte[1024 * 1024];
+			byte[] buf = new byte[1024 * 1024];
 			int len;
 			while((len = is.read(buf)) > 0) {
 				os.write(buf, 0, len);
@@ -147,17 +149,13 @@ public class LocalFilesystemStorage implements Storage {
 			File from = new File(rootDir, fromPath);
 			File to = new File(rootDir, toPath);
 			
-//			logger.debug("Move File from: " + from.getPath ());
-//			logger.debug("Move File from absolute path: " + from.getAbsolutePath ());
-//			logger.debug("Move File to: " + to.getPath ());
-//			logger.debug("Move File to absolute path: " + to.getAbsolutePath ());
-			
-			
-			if (!from.exists())
+			if (!from.exists()) {
 				throw new StorageException("Cannot move " + fromPath + " - does not exist");
+			}
 			
-			if (to.exists())
+			if (to.exists()) {
 				throw new StorageException("Cannot move to " + toPath + " - already exists");
+			}
 			
 			if (from.isDirectory()) {
 				// Move directories
@@ -167,8 +165,9 @@ public class LocalFilesystemStorage implements Storage {
 	 			FileUtils.moveFile(from, to);
 	 			
 	 			File fromMeta = new File(rootDir, fromPath + ".meta.json");
-	 			if (fromMeta.exists())
+	 			if (fromMeta.exists()) {
 	 				FileUtils.moveFile(fromMeta, new File(rootDir, toPath + ".meta.json"));
+	 			}
 			}
 		} catch (IOException e) {
 			throw new StorageException(e);
@@ -178,29 +177,32 @@ public class LocalFilesystemStorage implements Storage {
 	@Override
 	public void removeFile(String path) throws StorageException {
 		File file = new File(rootDir, path);
-		if (!file.exists())
+		if (!file.exists()) {
 			throw new StorageException("Cannot remove " + path + " - does not exist");
+		}
 		
-		if (file.isFile())
+		if (file.isFile()) {
 		  totalStorageSize -= file.length();
+		}
 		
 		file.delete();
 		
 		File meta = new File(rootDir, path + ".meta.json");
-		if (meta.exists())
+		if (meta.exists()) {
 			meta.delete();
+		}
 	}
 	
 	@Override
 	public void removeDir (String path) throws StorageException
 	{
 		File folder = new File(rootDir, path);
-		if (folder.exists() == false)
+		if (!folder.exists())
 		{
 			throw new StorageException("Cannot remove " + path + " - does not exist");
 		}
 		
-		if (folder.isDirectory () == false)
+		if (!folder.isDirectory ())
 		{
 			throw new StorageException("Cannot remove " + path + " - is not an directory");
 		}
@@ -209,12 +211,12 @@ public class LocalFilesystemStorage implements Storage {
 		for (File file : folder.listFiles ())
 		{
 			// ignore meta files (removeFile deletes them)
-			if (file.getName ().endsWith (".meta.json") == true)
+			if (file.getName ().endsWith (".meta.json"))
 			{
 				continue;
 			}
 			
-			if (file.isFile () == true)
+			if (file.isFile ())
 			{
 				removeFile (file.getPath ().replaceAll (rootDir.getPath (), ""));
 			}
@@ -225,7 +227,7 @@ public class LocalFilesystemStorage implements Storage {
 		}
 		
 		// make sure the root dir gets not deleted
-		if (folder.getPath ().matches (rootDir.getPath ()) == false)
+		if (!folder.getPath ().matches (rootDir.getPath ()))
 		{
 			// delete the folder
 			folder.delete ();
