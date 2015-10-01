@@ -79,6 +79,7 @@
 						<Embed-Transitive>true</Embed-Transitive>
 						<Embed-Directory>lib</Embed-Directory>
 						<Export-Package>org.backmeup.mail</Export-Package>
+						<Private-Package>org.backmeup.mail.*</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>
