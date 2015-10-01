@@ -2,13 +2,12 @@ package org.backmeup.mail;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javax.mail.internet.MimeMessage;
 
+import org.backmeup.mail.test.TestDataManager;
 import org.backmeup.model.dto.AuthDataDTO;
 import org.backmeup.model.dto.PluginProfileDTO;
-import org.backmeup.model.spi.PluginDescribable.PluginType;
 import org.backmeup.plugin.api.PluginContext;
 import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
@@ -48,7 +47,7 @@ public class MailDatasourceTest {
         pluginContext = new PluginContext();
         pluginContext.setAttribute("org.backmeup.tmpdir", "test");
 
-        PluginProfileDTO mailProfile = getProfileEmail();
+        PluginProfileDTO mailProfile = TestDataManager.getProfileEmail();
         AuthDataDTO mailAuthData = mailProfile.getAuthData();
         String username = mailAuthData.getProperties().get("Username");
         String password = mailAuthData.getProperties().get("Password");
@@ -65,7 +64,7 @@ public class MailDatasourceTest {
         user.deliver(getSimpleMessage());
         user.deliver(getSimpleMessage());
         
-        PluginProfileDTO mailProfile = getProfileEmail();
+        PluginProfileDTO mailProfile = TestDataManager.getProfileEmail();
         MailAuthenticator authenticator = new MailAuthenticator();
         Assert.assertTrue(authenticator.isValid(mailProfile.getAuthData().getProperties()));
         authenticator.authorize(mailProfile.getAuthData().getProperties());
@@ -75,34 +74,6 @@ public class MailDatasourceTest {
         
     }
 
-    private PluginProfileDTO getProfileEmail() {
-        String pluginId = "org.backmeup.mail";
-        PluginType profileType = PluginType.Source;
-        AuthDataDTO authData = getAuthDataEmail();
-
-        PluginProfileDTO pluginProfile = new PluginProfileDTO();
-        pluginProfile.setPluginId(pluginId);
-        pluginProfile.setProfileType(profileType);
-        pluginProfile.setAuthData(authData);
-        pluginProfile.setOptions(new ArrayList<String>());
-
-        return pluginProfile;
-    }
-
-    public AuthDataDTO getAuthDataEmail() {
-        String authName = "EmailWork";
-
-        AuthDataDTO authData = new AuthDataDTO();
-        authData.setName(authName);
-        authData.addProperty("Username", "max");
-        authData.addProperty("Password", "password123");
-        authData.addProperty("Type", "imap");
-        authData.addProperty("Host", "localhost");
-        authData.addProperty("Port", "3143");
-        authData.addProperty("SSL", "false");
-
-        return authData;
-    }
     
     public MimeMessage getSimpleMessage() {
         final String subject = GreenMailUtil.random();
