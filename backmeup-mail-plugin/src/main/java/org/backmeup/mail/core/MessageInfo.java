@@ -16,7 +16,7 @@ public class MessageInfo {
         this.from = from;
         this.to = to;
         this.sentAt = sentAt;
-        this.receivedAt = receivedAt;
+        this.receivedAt = (Date) receivedAt.clone();
     }
 
     public String getFileName() {
@@ -60,10 +60,10 @@ public class MessageInfo {
     }
 
     public Date getReceivedAt() {
-        return this.receivedAt;
+        return (Date) this.receivedAt.clone();
     }
 
     public void setReceivedAt(Date receivedAt) {
-        this.receivedAt = receivedAt;
+        this.receivedAt = (Date) receivedAt.clone();
     }
 }
