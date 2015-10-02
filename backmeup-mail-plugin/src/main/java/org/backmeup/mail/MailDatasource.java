@@ -416,9 +416,10 @@ public class MailDatasource implements Datasource, Validationable {
             
             Session session = Session.getInstance(mailProps);
             Store store = session.getStore();
-            progressor.progress("Connecting to mail provider " + accessData.get("mail.host"));
-            store.connect(accessData.get("mail.host"), accessData.get("mail.user"),
-                    accessData.get("mail.password"));
+            progressor.progress("Connecting to mail provider " + accessData.get(MailAuthenticator.AUTHPROP_MAIL_HOST));
+            store.connect(accessData.get(MailAuthenticator.AUTHPROP_MAIL_HOST),
+                    accessData.get(MailAuthenticator.AUTHPROP_MAIL_USER),
+                    accessData.get(MailAuthenticator.AUTHPROP_MAIL_PASSWORD));
             progressor.progress("Connection successfull");
 
             Set<String> alreadyInspected = new HashSet<>();
@@ -461,15 +462,11 @@ public class MailDatasource implements Datasource, Validationable {
             progressor.progress(e.toString());
             progressor.progress(e.getMessage());
             throw new PluginException(MailDescriptor.MAIL_ID, "No such provider", e);
-        } catch (MessagingException e) {
+        } catch (MessagingException | IOException e) {
             progressor.progress(e.toString());
             progressor.progress(e.getMessage());
             throw new PluginException(MailDescriptor.MAIL_ID, "An error occured during the backup", e);
-        } catch (IOException e) {
-            progressor.progress(e.toString());
-            progressor.progress(e.getMessage());
-            throw new PluginException(MailDescriptor.MAIL_ID, "An error occured during the backup", e);
-        }
+        } 
     }
 
     @Override
@@ -511,7 +508,9 @@ public class MailDatasource implements Datasource, Validationable {
             
             Session session = Session.getInstance(mailProps);
             Store store = session.getStore();
-            store.connect(accessData.get("mail.host"), accessData.get("mail.user"), accessData.get("mail.password"));
+            store.connect(accessData.get(MailAuthenticator.AUTHPROP_MAIL_HOST),
+                    accessData.get(MailAuthenticator.AUTHPROP_MAIL_USER),
+                    accessData.get(MailAuthenticator.AUTHPROP_MAIL_PASSWORD));
             Folder[] folders = store.getDefaultFolder().list("*");
             for (Folder folder : folders) {
                 String folderName = folder.getFullName();
@@ -519,9 +518,6 @@ public class MailDatasource implements Datasource, Validationable {
             }
 
             store.close();
-        } catch (NoSuchProviderException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (MessagingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

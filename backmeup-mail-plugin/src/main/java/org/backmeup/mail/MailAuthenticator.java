@@ -36,9 +36,9 @@ public class MailAuthenticator implements InputBasedAuthorizable {
     private static final String PROP_TYPE_DEFAULT = "imap,pop3";
     private static final String PROP_TYPE_DESC = "IMAP or POP3";
 
-    private static final String AUTHPROP_MAIL_HOST = "mail.host";
-    private static final String AUTHPROP_MAIL_PASSWORD = "mail.password";
-    private static final String AUTHPROP_MAIL_USER = "mail.user";
+    public static final String AUTHPROP_MAIL_HOST = "mail.host";
+    public static final String AUTHPROP_MAIL_PASSWORD = "mail.password";
+    public static final String AUTHPROP_MAIL_USER = "mail.user";
 
     @Override
     public AuthorizationType getAuthType() {
