@@ -22,19 +22,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The indexer must be handed an ElasticSearch client in order to work. (This must be done by the class orchestrating
- * the backup workflow!) Cf. IndexActionTest for an example on how to create a client talking to an ad-hoc embedded
- * ElasticSearch node.
  * 
- * To talk to an existing ElasticSearch cluster, I recommend using a TransportClient, like so:
+ * The ElasticSearchIndexer takes data created by other plugins and transforms it into a ElasticSearch specific data
+ * representation Interaction with ElasticSearch: The indexer must be handed an ElasticSearch Client in order to
+ * communicate. In Themis every user is provided with a custom ElasticSearch instance for security reasons. This is
+ * assigned by the framework and mounted within Truecrypt.
  * 
- * Client client = new TransportClient() .addTransportAddress(new InetSocketTransportAddress("host1", 9300))
- * .addTransportAddress(new InetSocketTransportAddress("host2", 9300));
- * 
- * It is possible to add arbitrary numbers of transport addresses - the client will communicate with them in round-robin
- * fashion.
- * 
- * @author Rainer Simon <rainer.simon@ait.ac.at>
+ * For manually talking to an existing ElasticSearch cluster, I recommend using a TransportClient, like so: Client
+ * client = new TransportClient() .addTransportAddress(new InetSocketTransportAddress("host1", 9300))
+ * .addTransportAddress(new InetSocketTransportAddress("host2", 9300)); It is possible to add arbitrary numbers of
+ * transport addresses - the client will communicate with them in round-robin fashion.
  */
 public class ElasticSearchIndexer {
 
@@ -47,8 +44,7 @@ public class ElasticSearchIndexer {
         this.client = client;
     }
 
-    public void doIndexing(PluginContext pluginContext, DataObject dataObject, Map<String, String> meta, Date timestamp)
-            throws IOException {
+    public void doIndexing(PluginContext pluginContext, DataObject dataObject, Map<String, String> meta, Date timestamp) throws IOException {
         // Build the index object
         IndexDocument document = new IndexDocument();
 
@@ -97,10 +93,8 @@ public class ElasticSearchIndexer {
 
         if (pluginContext != null) {
             //check if download access is supported by the sink plugin
-            if (pluginContext.hasAttribute(Metadata.STORAGE_ALWAYS_ACCESSIBLE)
-                    && pluginContext.hasAttribute(Metadata.DOWNLOAD_BASE)) {
-                boolean alwaysAccess = Boolean.parseBoolean(pluginContext.getAttribute(
-                        Metadata.STORAGE_ALWAYS_ACCESSIBLE, String.class));
+            if (pluginContext.hasAttribute(Metadata.STORAGE_ALWAYS_ACCESSIBLE) && pluginContext.hasAttribute(Metadata.DOWNLOAD_BASE)) {
+                boolean alwaysAccess = Boolean.parseBoolean(pluginContext.getAttribute(Metadata.STORAGE_ALWAYS_ACCESSIBLE, String.class));
                 String downloadBase = pluginContext.getAttribute(Metadata.DOWNLOAD_BASE, String.class);
                 //we're having a file sink like the themis central storage with permanent access
                 if (alwaysAccess) {
@@ -138,8 +132,8 @@ public class ElasticSearchIndexer {
      * Takes specific geo + temporal elements coming from either the Metainfo container by the plugins or Tika (if not
      * all values are set by the plugins. e.g. document analysis vs. facebook plugin) and adds them to the Index
      */
-    private void setStandardizedGeoAndTemporalMetadata(Map<String, String> tikaMetadata,
-            MetainfoContainer pluginMetadataContainer, IndexDocument document) {
+    private void setStandardizedGeoAndTemporalMetadata(Map<String, String> tikaMetadata, MetainfoContainer pluginMetadataContainer,
+            IndexDocument document) {
 
         StandardizedMetadataExtractor stMeta = new StandardizedMetadataExtractor(tikaMetadata, pluginMetadataContainer);
 
