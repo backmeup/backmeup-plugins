@@ -63,13 +63,13 @@ public class Serializer {
     private Serializer() {
     }
 
-    public static void generateAll(FacebookClient fbc, File coreFile, List<String> skipAlbums, long maxAlbumpics,
-            Progressable progress) throws IOException {
+    public static void generateAll(FacebookClient fbc, File coreFile, List<String> skipAlbums, long maxAlbumpics, Progressable progress)
+            throws IOException {
         generateAll(fbc, new Facebook(fbc), coreFile, skipAlbums, maxAlbumpics, progress);
     }
 
-    public static void generateAll(FacebookClient fbc, Facebook facebook, File dir, List<String> skipAlbums,
-            long maxAlbumpics, Progressable progress) throws IOException {
+    public static void generateAll(FacebookClient fbc, Facebook facebook, File dir, List<String> skipAlbums, long maxAlbumpics,
+            Progressable progress) throws IOException {
         CustomStringBuilder builder = new CustomStringBuilder("|");
         Properties listProps = new Properties();
 
@@ -81,12 +81,10 @@ public class Serializer {
         // the Graph API only returns friends who are using this app, so it is
         // useless to fetch them
 
-        Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class,
-                MasterParameter.getParameterByClass(Album.class));
+        Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class, MasterParameter.getParameterByClass(Album.class));
         List<Album> albumList = new ArrayList<>(albums.getData());
 
-        Connection<Photo> photos = fbc.fetchConnection("me/photos", Photo.class,
-                MasterParameter.getParameterByClass(Photo.class));
+        Connection<Photo> photos = fbc.fetchConnection("me/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
         Album lonelyAlbum = new Album();
         lonelyAlbum.setName("Einzelbilder");
         lonelyAlbum.setDescription("Fotos ohne Album");
@@ -100,15 +98,13 @@ public class Serializer {
             if (!skipAlbums.contains(album.getName())) {
                 path = "albums" + File.separator + album.getId() + File.separator + "albuminfo.xml";
                 builder.append(path);
-                albumInfo(album, fbc, new File(dir, path), maxAlbumpics,
-                        LONELY_ALBUM_ID.equalsIgnoreCase(album.getId()), photos, progress);
+                albumInfo(album, fbc, new File(dir, path), maxAlbumpics, LONELY_ALBUM_ID.equalsIgnoreCase(album.getId()), photos, progress);
             }
         }
         listProps.put(PropertyFile.ALBUMS.toString(), builder.toString());
         builder.empty();
 
-        Connection<Post> posts = fbc.fetchConnection("me/posts", Post.class,
-                MasterParameter.getParameterByClass(Post.class));
+        Connection<Post> posts = fbc.fetchConnection("me/posts", Post.class, MasterParameter.getParameterByClass(Post.class));
         for (Post post : posts.getData()) {
             path = "posts" + File.separator + post.getId() + File.separator + "postinfo.xml";
             builder.append(path);
@@ -127,8 +123,7 @@ public class Serializer {
         listProps.put(PropertyFile.PAGES.toString(), builder.toString());
         builder.empty();
 
-        Connection<Group> groups = fbc.fetchConnection("me/groups", Group.class,
-                MasterParameter.getParameterByClass(Group.class));
+        Connection<Group> groups = fbc.fetchConnection("me/groups", Group.class, MasterParameter.getParameterByClass(Group.class));
         for (Group group : groups.getData()) {
             path = "groups" + File.separator + group.getId() + File.separator + "groupinfo.xml";
             builder.append(path);
@@ -139,8 +134,7 @@ public class Serializer {
         writeProperties(listProps, new File(dir, "core.xml"), "list of all xml files");
     }
 
-    public static Map<SerializerKey, Object> userInfo(User user, boolean thisIsMe, boolean makeDirs, File userXml)
-            throws IOException {
+    public static Map<SerializerKey, Object> userInfo(User user, boolean thisIsMe, boolean makeDirs, File userXml) throws IOException {
         Map<SerializerKey, Object> infos = new HashMap<SerializerKey, Object>();
         if (user == null) {
             return infos;
@@ -218,8 +212,7 @@ public class Serializer {
         File photoXml = null;
         if (post.getObjectId() != null) {
             try {
-                Photo photo = fbc.fetchObject(post.getObjectId(), Photo.class,
-                        MasterParameter.getParameterByClass(Photo.class));
+                Photo photo = fbc.fetchObject(post.getObjectId(), Photo.class, MasterParameter.getParameterByClass(Photo.class));
                 String photoXmlPath = "object" + File.separator + "photoinfo.xml";
                 photoXml = new File(postXml.getParentFile(), photoXmlPath);
                 photoInfo(photo, photoXml, fbc);
@@ -235,8 +228,8 @@ public class Serializer {
                 MasterParameter.getByClass(Comment.class).getParameter());
         for (List<Comment> comments : commentConnection) {
             for (Comment comment : comments) {
-                commentInfo(comment, new File(postXml.getParentFile(), "comments" + File.separator + comment.getId()
-                        + File.separator + "commentinfo.xml"), fbc);
+                commentInfo(comment, new File(postXml.getParentFile(), "comments" + File.separator + comment.getId() + File.separator
+                        + "commentinfo.xml"), fbc);
             }
         }
 
@@ -273,8 +266,8 @@ public class Serializer {
         return infos;
     }
 
-    public static Map<SerializerKey, Object> albumInfo(Album album, FacebookClient fcb, File albumXml, long maxPics,
-            boolean fakeAlbum, Connection<Photo> fakePhotos, Progressable progress) throws IOException {
+    public static Map<SerializerKey, Object> albumInfo(Album album, FacebookClient fcb, File albumXml, long maxPics, boolean fakeAlbum,
+            Connection<Photo> fakePhotos, Progressable progress) throws IOException {
         Map<SerializerKey, Object> infos = new HashMap<>();
         if (album == null) {
             return infos;
@@ -299,12 +292,10 @@ public class Serializer {
         if (fakeAlbum && fakePhotos != null) {
             photosConn = fakePhotos;
         } else {
-            photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class,
-                    MasterParameter.getParameterByClass(Photo.class));
+            photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
         }
         if (progress != null) {
-            progress.progress("Fetching "
-                    + (album.getCount() != null && (maxPics > album.getCount()) ? album.getCount() : maxPics)
+            progress.progress("Fetching " + (album.getCount() != null && (maxPics > album.getCount()) ? album.getCount() : maxPics)
                     + " photos from " + album.getName() + ". This may take a while...");
         }
 
@@ -313,8 +304,7 @@ public class Serializer {
         if (!albumXml.getParentFile().exists()) {
             albumXml.getParentFile().mkdirs();
         }
-        File albumPhotos = FileUtils.resolveRelativePath(albumXml.getParentFile(), infos.get(AlbumInfoKey.PHOTO_DIR)
-                .toString());
+        File albumPhotos = FileUtils.resolveRelativePath(albumXml.getParentFile(), infos.get(AlbumInfoKey.PHOTO_DIR).toString());
         outer: while (it.hasNext()) {
             List<Photo> photos = it.next();
             for (Photo photo : photos) {
@@ -339,8 +329,7 @@ public class Serializer {
         return infos;
     }
 
-    public static Map<SerializerKey, Object> photoInfo(Photo photo, File photoXml, FacebookClient fbc)
-            throws IOException {
+    public static Map<SerializerKey, Object> photoInfo(Photo photo, File photoXml, FacebookClient fbc) throws IOException {
         Map<SerializerKey, Object> infos = new HashMap<>();
         if (photo == null) {
             return infos;
@@ -368,21 +357,17 @@ public class Serializer {
         infos.put(PhotoInfoKey.WIDTH, photo.getWidth());
         writeInfos(infos, photoXml, "Represents a photo");
 
-        File commentsDir = FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.COMMENT_DIR)
-                .toString());
+        File commentsDir = FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.COMMENT_DIR).toString());
         for (Comment cmt : photo.getComments()) {
 
-            Comment comment = fbc.fetchObject(cmt.getId(), Comment.class,
-                    MasterParameter.getParameterByClass(Comment.class));
+            Comment comment = fbc.fetchObject(cmt.getId(), Comment.class, MasterParameter.getParameterByClass(Comment.class));
             File commentDir = new File(commentsDir, comment.getId());
             commentDir.mkdirs();
-            File commentXml = FileUtils.resolveRelativePath(commentDir, infos.get(PhotoInfoKey.COMMENT_INFO_FILENAME)
-                    .toString());
+            File commentXml = FileUtils.resolveRelativePath(commentDir, infos.get(PhotoInfoKey.COMMENT_INFO_FILENAME).toString());
             commentInfo(comment, commentXml, fbc);
         }
 
-        downloadPhoto(photo,
-                FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.FILE).toString()));
+        downloadPhoto(photo, FileUtils.resolveRelativePath(photoXml.getParentFile(), infos.get(PhotoInfoKey.FILE).toString()));
         return infos;
     }
 
@@ -513,7 +498,8 @@ public class Serializer {
         Map<SerializerKey, Object> infos = new HashMap<>();
 
         File photoJpg = null;
-        if (comment.getAttachment() != null) {
+        if ((comment.getAttachment() != null) && (comment.getAttachment().getMedia() != null)
+                && (comment.getAttachment().getMedia().getImage() != null)) {
             Comment.Image cimg = comment.getAttachment().getMedia().getImage();
             Photo photo = new Photo();
             photo.setId("attachment");
@@ -588,7 +574,7 @@ public class Serializer {
                 }
                 case LIST: {
                     if (value instanceof List<?>) {
-                        stringValue = packList((List<?>) value);
+                        stringValue = packList(value);
                     }
                     break;
                 }
