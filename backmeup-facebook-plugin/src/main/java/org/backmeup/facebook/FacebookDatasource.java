@@ -10,6 +10,7 @@ import org.backmeup.facebook.storage.Serializer;
 import org.backmeup.facebook.utils.FileUtils;
 import org.backmeup.model.dto.AuthDataDTO;
 import org.backmeup.model.dto.PluginProfileDTO;
+import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.plugin.api.Datasource;
 import org.backmeup.plugin.api.DatasourceException;
 import org.backmeup.plugin.api.Metainfo;
@@ -26,7 +27,7 @@ import com.restfb.Version;
 public class FacebookDatasource implements Datasource {
 
     @Override
-    public void downloadAll(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage, Progressable progressor) 
+    public void downloadAll(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage, Progressable progressor)
             throws DatasourceException, StorageException {
         String currentAccessToken = null;
         AuthDataDTO authData = pluginProfile.getAuthData();
@@ -38,16 +39,13 @@ public class FacebookDatasource implements Datasource {
             currentAccessToken = FacebookHelper.getProperty(FacebookHelper.RT_PROPERTY_ACCESS_TOKEN);
         }
 
-        //TODO: use backmeup-worker tempdir
-        String tempDir = System.getProperty("java.io.tmpdir") + File.separator + "facebook_"
-                + System.currentTimeMillis();
+        String tempDir = getTempDirectoryPath(pluginProfile, pluginContext) + File.separator + "facebook_" + System.currentTimeMillis();
         File dataDir = new File(tempDir, FacebookHelper.getProperty(FacebookHelper.PROPERTY_DATA_DIR));
         File htmlDir = new File(tempDir, FacebookHelper.getProperty(FacebookHelper.PROPERTY_HTML_DIR));
 
         try {
             FacebookClient fbc = new DefaultFacebookClient(currentAccessToken, Version.VERSION_2_3);
-            Serializer.generateAll(fbc, dataDir, FacebookHelper.getDebugSkipAlbums(), FacebookHelper.getDebugMaxPics(),
-                    progressor);
+            Serializer.generateAll(fbc, dataDir, FacebookHelper.getDebugSkipAlbums(), FacebookHelper.getDebugMaxPics(), progressor);
 
             HTMLGenerator mainGen = new HTMLGenerator(htmlDir, dataDir);
             mainGen.genOverview();
@@ -75,5 +73,17 @@ public class FacebookDatasource implements Datasource {
         // add this file to the storage
         String path = FileUtils.getWayTo(root.getParentFile(), file);
         storage.addFile(new FileInputStream(file), path, metaInfoContainer);
+    }
+
+    private String getTempDirectoryPath(PluginProfileDTO pluginProfile, PluginContext context) {
+        String path = context.getAttribute("org.backmeup.fb.tempDir", String.class);
+        if (path == null) {
+            path = FacebookHelper.getProperty(FacebookHelper.PROPERTY_FB_TMP_DIR_ROOT);
+        }
+        if (path == null) {
+            throw new PluginException(pluginProfile.getPluginId(), "Cannot find temporary output directory");
+        }
+
+        return path;
     }
 }

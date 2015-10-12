@@ -27,7 +27,7 @@ public class DownloadAndSerializeTester {
 
     @AfterClass
     public static void afterClass() throws IOException {
-        //org.apache.commons.io.FileUtils.deleteDirectory(tempDir);
+        org.apache.commons.io.FileUtils.deleteDirectory(tempDir);
     }
 
     @Test

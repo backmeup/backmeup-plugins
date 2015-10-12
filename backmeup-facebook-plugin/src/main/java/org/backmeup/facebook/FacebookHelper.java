@@ -21,6 +21,7 @@ public class FacebookHelper {
     public static final String PROPERTY_VERBOSE = "debug.verbose";
     public static final String PROPERTY_DATA_DIR = "output.data_dir";
     public static final String PROPERTY_HTML_DIR = "output.html_dir";
+    public static final String PROPERTY_FB_TMP_DIR_ROOT = "fb.tempDir";
 
     private static final Map<String, String> DEFAULTS = new HashMap<>();
     static {
@@ -30,6 +31,7 @@ public class FacebookHelper {
 
         DEFAULTS.put(PROPERTY_DATA_DIR, "xmldata");
         DEFAULTS.put(PROPERTY_HTML_DIR, "html");
+        DEFAULTS.put(PROPERTY_FB_TMP_DIR_ROOT, System.getProperty("java.io.tmpdir"));
     }
 
     /* only used at runtime/with service */
