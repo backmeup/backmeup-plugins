@@ -38,8 +38,7 @@ public class TikaServerStub {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final String SERVER_AND_PORT = "http://localhost:9998/";
     // set the connection timeout value to 10 seconds (10000 milliseconds)
-    RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(10 * 1000).setSocketTimeout(10 * 1000)
-            .build();
+    RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(10 * 1000).setSocketTimeout(10 * 1000).build();
 
     public boolean isTikaAlive() {
 
@@ -74,6 +73,7 @@ public class TikaServerStub {
     private HttpResponse addPayloadAndExecuteCall(CloseableHttpClient httpclient, HttpPut httpput, DataObject dob,
             boolean useInputStreamBody) throws IOException {
         ByteArrayInputStream is = null;
+        File fileToUse = null;
         try {
             //add an InputStreamBody to httpput entity
             is = new ByteArrayInputStream(dob.getBytes());
@@ -84,7 +84,7 @@ public class TikaServerStub {
                 httpput.setEntity(multipartEntity.build());
             } else {
                 //add a file body - as some Tika JAX-RS endpoints can't handle streaming
-                File fileToUse = stream2file(is);
+                fileToUse = stream2file(is);
                 //HTTP PUT can't cope with MultipartEntities or Strings. Must be delivered as binary using FileEntity
                 FileEntity fe = new FileEntity(fileToUse);
                 httpput.setEntity(fe);
@@ -103,6 +103,13 @@ public class TikaServerStub {
                 try {
                     is.close();
                 } catch (IOException e) {
+                }
+            }
+            //clean up the temporary file
+            if (fileToUse != null) {
+                try {
+                    fileToUse.delete();
+                } catch (Exception e) {
                 }
             }
         }
@@ -280,8 +287,7 @@ public class TikaServerStub {
             //check on status code
             if (response.getStatusLine().getStatusCode() == 200) {
                 String responseBody = EntityUtils.toString(response.getEntity());
-                this.log.debug("Extracted Metadata for " + dob.getPath() + " and content-type: " + contentType
-                        + " was: " + responseBody);
+                this.log.debug("Extracted Metadata for " + dob.getPath() + " and content-type: " + contentType + " was: " + responseBody);
                 httpclient.close();
                 return convertCSV2Map(responseBody);
             } else {
