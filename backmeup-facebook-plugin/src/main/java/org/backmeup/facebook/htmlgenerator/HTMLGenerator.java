@@ -163,11 +163,23 @@ public class HTMLGenerator {
             Div singlePost = new Div();
             String picturePath = props.getProperty(PostInfoKey.PICTURE.toString());
             if (picturePath != null) {
+                //add the posts picture
                 File photoXml = FileUtils.resolveRelativePath(postXml.getParentFile(), picturePath);
                 Properties picProps = loadProperties(photoXml);
                 File picFile = FileUtils.resolveRelativePath(photoXml.getParentFile(), picProps.getProperty(PhotoInfoKey.FILE.toString()));
                 Img pic = new Img("Photo", FileUtils.getWayTo(out, picFile));
                 singlePost.appendChild(pic);
+
+                //and the picture's comments if any
+                /************ STARTED TESTING HERE ********************
+                List<Node> commentNodes = new ArrayList<>();
+                File comments = new File(postXml.getParentFile(), picProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
+                if (comments.exists()) {
+                    for (File f : comments.listFiles()) {
+                        commentNodes.add(genComment(f, photoHtml));
+                    }
+                }
+                *********** END TESTING HERE ************************/
             }
             singlePost.setCSSClass("comment");
             singlePost.appendChild(wrapInfos(PostInfoKey.values(), props, true));
@@ -349,9 +361,16 @@ public class HTMLGenerator {
         container.appendChild(wrapInfos(CommentKey.values(), props, true));
 
         for (File f : dir.listFiles()) {
-            if (!"attachment".equalsIgnoreCase(f.getName()) && f.isDirectory()) {
-                container.appendChild(genComment(f, html));
+            //look for all sub-comments in this directory
+            if (f.isDirectory()) {
+                if ("attachment".equalsIgnoreCase(f.getName())) {
+                    //ignore - pulled in with comment
+                } else {
+                    //in this case we found a subcomment to include
+                    container.appendChild(genComment(f, html));
+                }
             }
+
         }
 
         return container;
@@ -428,6 +447,14 @@ public class HTMLGenerator {
                     String message = comment.substring(comment.indexOf("message=") + 8, comment.lastIndexOf("metadata=") - 1);
                     ret += message;
                     ret += "</br>";
+                }
+                if (comment.indexOf("likeCount=") != -1) {
+                    String likes = comment.substring(comment.indexOf("likeCount=") + 10, comment.lastIndexOf("likes=") - 1);
+                    int iLikes = Integer.valueOf(likes);
+                    if (iLikes > 0) {
+                        ret += "likes: " + likes;
+                        ret += "</br>";
+                    }
                 }
                 ret += "</br>";
             }

@@ -38,6 +38,7 @@ import com.hp.gagawa.java.elements.A;
 import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
+import com.restfb.Parameter;
 import com.restfb.Version;
 import com.restfb.exception.FacebookOAuthException;
 import com.restfb.experimental.api.Facebook;
@@ -226,6 +227,7 @@ public class Serializer {
         // from the Graph API Explorer
         Connection<Comment> commentConnection = fbc.fetchConnection(post.getId() + "/comments", Comment.class,
                 MasterParameter.getByClass(Comment.class).getParameter());
+
         for (List<Comment> comments : commentConnection) {
             for (Comment comment : comments) {
                 commentInfo(comment, new File(postXml.getParentFile(), "comments" + File.separator + comment.getId() + File.separator
@@ -525,9 +527,15 @@ public class Serializer {
         infos.put(CommentKey.METADATA, comment.getMetadata());
 
         writeInfos(infos, commentXml, "Represents a comment");
-        if (comment.getComments() != null) {
-            for (Comment c : comment.getComments().getData()) {
-                commentInfo(c, new File(commentXml, c.getId()), fbc);
+
+        //check for sub-comments
+        Connection<Comment> subCommentsConnection = fbc.fetchConnection(comment.getId() + "/comments", Comment.class,
+                Parameter.with("limit", 10));
+        if (subCommentsConnection != null) {
+            for (List<Comment> subcomments : subCommentsConnection) {
+                for (Comment subcomment : subcomments) {
+                    commentInfo(subcomment, new File(commentXml.getParentFile(), subcomment.getId() + "/commentinfo.xml"), fbc);
+                }
             }
         }
     }
