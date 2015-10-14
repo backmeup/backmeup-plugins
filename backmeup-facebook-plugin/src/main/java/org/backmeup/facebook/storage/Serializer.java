@@ -79,13 +79,14 @@ public class Serializer {
         userInfo(user, true, true, new File(dir, path));
         listProps.put(PropertyFile.USER.toString(), path);
 
-        // the Graph API only returns friends who are using this app, so it is
-        // useless to fetch them
+        // the Graph API only returns friends who are using this app, so it is useless to fetch them
 
-        Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class, MasterParameter.getParameterByClass(Album.class));
+        Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class, MasterParameter.getParameterByClass(Album.class),
+                Parameter.with("limit", 200));
         List<Album> albumList = new ArrayList<>(albums.getData());
 
-        Connection<Photo> photos = fbc.fetchConnection("me/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
+        Connection<Photo> photos = fbc.fetchConnection("me/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class),
+                Parameter.with("limit", 200));
         Album lonelyAlbum = new Album();
         lonelyAlbum.setName("Einzelbilder");
         lonelyAlbum.setDescription("Fotos ohne Album");
@@ -105,7 +106,9 @@ public class Serializer {
         listProps.put(PropertyFile.ALBUMS.toString(), builder.toString());
         builder.empty();
 
-        Connection<Post> posts = fbc.fetchConnection("me/posts", Post.class, MasterParameter.getParameterByClass(Post.class));
+        Connection<Post> posts = fbc.fetchConnection("me/posts", Post.class, MasterParameter.getParameterByClass(Post.class),
+                Parameter.with("limit", 200));
+        //Info: RestFB supports paging, everytime 25 elements are requested with a cursor where to receive the next ones
         for (Post post : posts.getData()) {
             path = "posts" + File.separator + post.getId() + File.separator + "postinfo.xml";
             builder.append(path);
@@ -219,16 +222,17 @@ public class Serializer {
                 photoInfo(photo, photoXml, fbc);
                 infos.put(PostInfoKey.PICTURE, photoXmlPath);
             } catch (FacebookOAuthException e) {
-                LOGGER.error("Facebook sent you some bullshit", e);
+                LOGGER.error("error getting photo object to post with id:" + post.getObjectId(), e);
             }
         }
 
-        // In my case, it does not send any comments, but i also get no comments
-        // from the Graph API Explorer
+        // this is the proper way of requesting comments + sub-comments
         Connection<Comment> commentConnection = fbc.fetchConnection(post.getId() + "/comments", Comment.class,
-                MasterParameter.getByClass(Comment.class).getParameter());
+                MasterParameter.getByClass(Comment.class).getParameter(), Parameter.with("limit", 200));
 
         for (List<Comment> comments : commentConnection) {
+            //update the nr of received comments
+            infos.put(PostInfoKey.COMMENTS_COUNT, comments.size());
             for (Comment comment : comments) {
                 commentInfo(comment, new File(postXml.getParentFile(), "comments" + File.separator + comment.getId() + File.separator
                         + "commentinfo.xml"), fbc);
@@ -294,7 +298,8 @@ public class Serializer {
         if (fakeAlbum && fakePhotos != null) {
             photosConn = fakePhotos;
         } else {
-            photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
+            photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class),
+                    Parameter.with("limit", 200));
         }
         if (progress != null) {
             progress.progress("Fetching " + (album.getCount() != null && (maxPics > album.getCount()) ? album.getCount() : maxPics)
@@ -523,16 +528,17 @@ public class Serializer {
         infos.put(CommentKey.ID, comment.getId());
         infos.put(CommentKey.LIKE_COUNT, comment.getLikeCount());
         infos.put(CommentKey.MESSAGE, comment.getMessage());
-        infos.put(CommentKey.REPLIES_COUNT, comment.getCommentCount());
+        infos.put(CommentKey.REPLIES_COUNT, comment.getCommentCount()); //always zero
         infos.put(CommentKey.METADATA, comment.getMetadata());
 
         writeInfos(infos, commentXml, "Represents a comment");
 
         //check for sub-comments
         Connection<Comment> subCommentsConnection = fbc.fetchConnection(comment.getId() + "/comments", Comment.class,
-                Parameter.with("limit", 10));
+                Parameter.with("limit", 50));
         if (subCommentsConnection != null) {
             for (List<Comment> subcomments : subCommentsConnection) {
+                infos.put(CommentKey.REPLIES_COUNT, subcomments.size());
                 for (Comment subcomment : subcomments) {
                     commentInfo(subcomment, new File(commentXml.getParentFile(), subcomment.getId() + "/commentinfo.xml"), fbc);
                 }

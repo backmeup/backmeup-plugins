@@ -40,8 +40,9 @@ public class DownloadAndSerializeTester {
         String currentAccessToken = FacebookHelper.getProperty(FacebookHelper.RT_PROPERTY_ACCESS_TOKEN);
         if (currentAccessToken != null) {
             FacebookClient fbc = new DefaultFacebookClient(currentAccessToken, Version.VERSION_2_3);
+            //downlaod all information as xml
             Serializer.generateAll(fbc, dataDir, FacebookHelper.getDebugSkipAlbums(), FacebookHelper.getDebugMaxPics(), null);
-
+            //create html output from xml
             HTMLGenerator mainGen = new HTMLGenerator(htmlDir, dataDir);
             mainGen.genOverview();
         }

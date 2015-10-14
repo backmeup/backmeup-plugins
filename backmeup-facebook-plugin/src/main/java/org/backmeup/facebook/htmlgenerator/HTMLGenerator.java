@@ -169,17 +169,6 @@ public class HTMLGenerator {
                 File picFile = FileUtils.resolveRelativePath(photoXml.getParentFile(), picProps.getProperty(PhotoInfoKey.FILE.toString()));
                 Img pic = new Img("Photo", FileUtils.getWayTo(out, picFile));
                 singlePost.appendChild(pic);
-
-                //and the picture's comments if any
-                /************ STARTED TESTING HERE ********************
-                List<Node> commentNodes = new ArrayList<>();
-                File comments = new File(postXml.getParentFile(), picProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
-                if (comments.exists()) {
-                    for (File f : comments.listFiles()) {
-                        commentNodes.add(genComment(f, photoHtml));
-                    }
-                }
-                *********** END TESTING HERE ************************/
             }
             singlePost.setCSSClass("comment");
             singlePost.appendChild(wrapInfos(PostInfoKey.values(), props, true));
