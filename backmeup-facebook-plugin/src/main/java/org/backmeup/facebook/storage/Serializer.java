@@ -80,13 +80,11 @@ public class Serializer {
         listProps.put(PropertyFile.USER.toString(), path);
 
         // the Graph API only returns friends who are using this app, so it is useless to fetch them
-
         Connection<Album> albums = fbc.fetchConnection("me/albums", Album.class, MasterParameter.getParameterByClass(Album.class),
                 Parameter.with("limit", 200));
         List<Album> albumList = new ArrayList<>(albums.getData());
 
-        Connection<Photo> photos = fbc.fetchConnection("me/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class),
-                Parameter.with("limit", 200));
+        Connection<Photo> photos = fbc.fetchConnection("me/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
         Album lonelyAlbum = new Album();
         lonelyAlbum.setName("Einzelbilder");
         lonelyAlbum.setDescription("Fotos ohne Album");
@@ -298,8 +296,7 @@ public class Serializer {
         if (fakeAlbum && fakePhotos != null) {
             photosConn = fakePhotos;
         } else {
-            photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class),
-                    Parameter.with("limit", 200));
+            photosConn = fcb.fetchConnection(album.getId() + "/photos", Photo.class, MasterParameter.getParameterByClass(Photo.class));
         }
         if (progress != null) {
             progress.progress("Fetching " + (album.getCount() != null && (maxPics > album.getCount()) ? album.getCount() : maxPics)
