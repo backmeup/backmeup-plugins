@@ -170,12 +170,37 @@ public class HTMLGenerator {
                 Img pic = new Img("Photo", FileUtils.getWayTo(out, picFile));
                 singlePost.appendChild(pic);
             }
-            singlePost.setCSSClass("comment");
+            //get the comments (and sub comments + pictures contained in them) and attach them as HTML elements
+            List<Node> commentNodes = getCommentNodes(postXml.getParentFile(), out);
+            singlePost.setCSSClass("comment"); //we're misusing the comment css for general post layout purposes 
             singlePost.appendChild(wrapInfos(PostInfoKey.values(), props, true));
+            for (Node n : commentNodes) {
+                singlePost.appendChild(n);
+            }
             postsDoc.body.appendChild(singlePost);
         }
 
         writeDocument(postsDoc, out);
+    }
+
+    /**
+     * Extracts the information provided within a commentinfo.xml file, resolves attached images and returns a HTML Node
+     * element which can be added to a HTML Document Node
+     * 
+     * @param postOrPhotoXMLRootDir
+     * @param photoOrPostHTMLFile
+     * @return
+     * @throws IOException
+     */
+    private List<Node> getCommentNodes(File postOrPhotoXMLRootDir, File photoOrPostHTMLFile) throws IOException {
+        List<Node> commentNodes = new ArrayList<>();
+        File comments = new File(postOrPhotoXMLRootDir, "comments");
+        if (comments.exists()) {
+            for (File f : comments.listFiles()) {
+                commentNodes.add(genComment(f, photoOrPostHTMLFile));
+            }
+        }
+        return commentNodes;
     }
 
     private void genAlbum(Properties albumProps, File albumXml, File albumHtml, File coverPhoto) throws IOException {
@@ -212,14 +237,8 @@ public class HTMLGenerator {
                 photoItem.appendChild(photoLink);
                 photoList.appendChild(photoItem);
 
-                List<Node> commentNodes = new ArrayList<>();
-                File comments = new File(photoXml.getParentFile(), photoProps.getProperty(PhotoInfoKey.COMMENT_DIR.toString()));
-                if (comments.exists()) {
-                    for (File f : comments.listFiles()) {
-                        commentNodes.add(genComment(f, photoHtml));
-                    }
-                }
-
+                //get the comments and attach them as HTML elements
+                List<Node> commentNodes = getCommentNodes(photoXml.getParentFile(), photoHtml);
                 genPhotoFile(photoProps, photoHtml, photoXml, this.htmlDir, commentNodes.toArray(new Node[commentNodes.size()]));
             }
         }
@@ -396,12 +415,15 @@ public class HTMLGenerator {
                     value = unpackList(Arrays.asList(value.split(";")));
                 }
                 if (key.getType().equals(Datatype.OTHER) && key.getLabel().equals("Kommentare")) {
-                    value = unpackComments(value);
+                    //comments are now extracted from the commentInfo.xml instead of the files's properties
+                } else {
+                    //in all other cases take the information provided from the properties file
+                    Tr row = new Tr();
+                    row.appendChild(new Td().appendText(key.getLabel()));
+                    row.appendChild(new Td().appendText(value));
+                    table.appendChild(row);
+
                 }
-                Tr row = new Tr();
-                row.appendChild(new Td().appendText(key.getLabel()));
-                row.appendChild(new Td().appendText(value));
-                table.appendChild(row);
             }
         }
         return table;
@@ -409,11 +431,12 @@ public class HTMLGenerator {
 
     /**
      * Helper to tokenize Comments and extract human readable information Required as Comments aren't handled as data
-     * type TODO add comments as proper datatype, and remove post-parsing
+     * type. No longer required as comments are provided as proper datatype and we're able to remove post-parsing
      * 
      * @param s
      * @return
      */
+    @Deprecated
     private String unpackComments(String s) {
         String ret = "";
         String token1 = "Comments[data=[";
