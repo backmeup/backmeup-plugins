@@ -2,13 +2,13 @@ package org.backmeup.dummy;
 
 import java.util.Map;
 
-import org.backmeup.plugin.spi.OAuthBasedAuthorizable;
+import org.backmeup.plugin.api.OAuthBasedAuthorizable;
 
 public class DummyAuthenticator implements OAuthBasedAuthorizable {
 
     @Override
     public AuthorizationType getAuthType() {
-        return AuthorizationType.OAuth;
+        return AuthorizationType.OAUTH;
     }
 
     @Override

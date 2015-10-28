@@ -3,8 +3,8 @@ package org.backmeup.dummy;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.backmeup.plugin.api.BaseSourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
-import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 public class DummyDescriptor extends BaseSourceSinkDescribable {
 

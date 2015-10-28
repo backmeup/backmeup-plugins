@@ -3,8 +3,8 @@ package org.backmeup.plugin.storage;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.backmeup.plugin.api.BaseSourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
-import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 import org.backmeup.plugin.storage.constants.Constants;
 import org.backmeup.plugin.storage.utils.PropertiesUtil;
 

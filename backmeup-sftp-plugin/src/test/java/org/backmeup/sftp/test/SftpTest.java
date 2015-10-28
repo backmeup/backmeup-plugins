@@ -1,22 +1,23 @@
 package org.backmeup.sftp.test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.model.dto.AuthDataDTO;
+import org.backmeup.model.dto.PluginProfileDTO;
+import org.backmeup.model.spi.PluginDescribable.PluginType;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.filesystem.LocalFilesystemStorage;
 import org.backmeup.sftp.SftpDatasource;
+import org.backmeup.sftp.SftpDescriptor;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,9 +40,12 @@ public class SftpTest {
     
     @Test
 	public void testDownloadAll() {
-		// Use the properties saved during DropboxAuthenticate to download all
-		// files from Dropbox
-		Map<String, String> authProps = new HashMap<String, String>();
+        PluginProfileDTO pluginProfile = new PluginProfileDTO();
+        pluginProfile.setPluginId(SftpDescriptor.SFTP_ID);
+        pluginProfile.setProfileType(PluginType.Source);
+        pluginProfile.setAuthData(new AuthDataDTO());
+        pluginProfile.setProperties(new HashMap<String, String>());
+        pluginProfile.setOptions(new ArrayList<String>());
 		
 		Properties tmp = new Properties();
 		try {
@@ -51,17 +55,14 @@ public class SftpTest {
 		}
 		
 		for (Entry<Object, Object> entry : tmp.entrySet()) {
-			authProps.put((String)entry.getKey(), (String)entry.getValue());
+			pluginProfile.getAuthData().addProperty((String)entry.getKey(), (String)entry.getValue());
 		}
-
-		Map<String, String> props = new HashMap<String, String>();
-		List<String> options = new ArrayList<>();
 
 		SftpDatasource source = new SftpDatasource();
 		Storage storage = new LocalFilesystemStorage();
 		try {
 			storage.open("C:/TEMP/TEST/");
-			source.downloadAll(authProps, props, options, storage,
+			source.downloadAll(pluginProfile, new PluginContext(), storage,
 					new Progressable() {
 						@Override
 						public void progress(String message) {

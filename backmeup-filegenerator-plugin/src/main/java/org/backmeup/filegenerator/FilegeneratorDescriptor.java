@@ -3,11 +3,11 @@ package org.backmeup.filegenerator;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.backmeup.plugin.api.BaseSourceSinkDescribable;
 import org.backmeup.plugin.api.Metadata;
-import org.backmeup.plugin.api.connectors.BaseSourceSinkDescribable;
 
 public class FilegeneratorDescriptor extends BaseSourceSinkDescribable {
-  static final String FILEGENERATOR_ID = "org.backmeup.filegenerator";
+  public static final String FILEGENERATOR_ID = "org.backmeup.filegenerator";
   
   @Override
   public String getId() {

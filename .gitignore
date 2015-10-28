@@ -1,8 +1,6 @@
 */autodeploy/*
 build/*
 */osgiTmp/*
-.metadata
-RemoteSystemsTempFiles
 
 # Maven
 target/
@@ -12,9 +10,13 @@ target/
 *.iml
 
 # Eclipse
+.metadata
 .classpath
 .project
+.pydevproject
 .settings/
+RemoteSystemsTempFiles/
+.recommenders
 
 # Mac OS X
 .DS_Store

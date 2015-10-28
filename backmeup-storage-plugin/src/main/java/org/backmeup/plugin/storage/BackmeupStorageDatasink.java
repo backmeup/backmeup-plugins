@@ -5,21 +5,24 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.exceptions.PluginException;
+import org.backmeup.plugin.api.Datasink;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.connectors.Datasink;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 import org.backmeup.plugin.storage.constants.Constants;
 import org.backmeup.storage.api.StorageClient;
 import org.backmeup.storage.client.BackmeupStorageClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The BackmeupStorageDatasink class uploads all elements from the StorageReader up to the Backmeup-Storage service
@@ -27,21 +30,23 @@ import org.backmeup.storage.client.BackmeupStorageClient;
  * 
  */
 public class BackmeupStorageDatasink implements Datasink {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(BackmeupStorageDatasink.class);
+    
     private static final String FIELD_THUMBNAIL_PATH = "thumbnail_path";
 
     @Override
-    public String upload(Map<String, String> authData, Map<String, String> properties, List<String> options, Storage storage,
+    public String upload(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage,
             Progressable progressor) throws StorageException {
         progressor.progress("Start backmeup-storage-plugin");
 
-        String tmpDir = authData.get("org.backmeup.tmpdir");
+        String tmpDir = pluginContext.getAttribute("org.backmeup.tmpdir", String.class);
         if (tmpDir == null) {
             tmpDir = "";
         }
 
         progressor.progress("Get connection string");
         progressor.progress("AuthData:");
+        Map<String, String> authData = pluginProfile.getAuthData().getProperties();
         for (Entry<String,String> entry : authData.entrySet()) {
             progressor.progress(entry.getKey() + ": " + entry.getValue());
         }
@@ -82,6 +87,7 @@ public class BackmeupStorageDatasink implements Datasink {
                 //check if we've got a thumbnail for this data object
                 String thumbnailLocalLocation = extractThumbnailFileLocation(dataObj.getMetainfo());
                 if (thumbnailLocalLocation != null) {
+                    thumbnailLocalLocation = normalizeThumbnailPath(thumbnailLocalLocation);
                     String destPath = buildThumnailStorageDestinationPath(filepath, thumbnailLocalLocation);
                     uploadThumbnail(client, accessToken, thumbnailLocalLocation, destPath, progressor);
                 }
@@ -102,16 +108,20 @@ public class BackmeupStorageDatasink implements Datasink {
      * @return relative path of thumbnail on storage to ingest into elasticsearch
      */
     private String buildThumnailStorageDestinationPath(String parentOjbectPath, String thumbnailLocalLocation) {
-
-        if (thumbnailLocalLocation.indexOf('\\') > -1) {
-            thumbnailLocalLocation = thumbnailLocalLocation.replace('\\', '/');
-        }
         String fileName = getFilename(thumbnailLocalLocation);
         String pathPrefix = "";
         if (thumbnailLocalLocation.indexOf('/') > -1) {
             pathPrefix = parentOjbectPath.substring(0, parentOjbectPath.lastIndexOf('/'));
         }
         return pathPrefix + "/thumbs/" + fileName;
+    }
+    
+    private String normalizeThumbnailPath(String thumbnailLocalLocation) {
+        String normalizedPath = thumbnailLocalLocation;
+        if (normalizedPath.indexOf('\\') > -1) {
+            normalizedPath = normalizedPath.replace('\\', '/');
+        }
+        return normalizedPath;
     }
 
     private String getFilename(String path) {
@@ -134,11 +144,12 @@ public class BackmeupStorageDatasink implements Datasink {
     private void uploadThumbnail(StorageClient client, String accessToken, String thumbLocalStorageLocation,
             String thumbStorageDestinationPath, Progressable progressor) {
 
-        if ((thumbStorageDestinationPath != null)) {
+        if (thumbStorageDestinationPath != null) {
             progressor.progress("Uploading thumbnail to: " + thumbStorageDestinationPath);
             try (InputStream is = new FileInputStream(thumbLocalStorageLocation)) {
                 client.saveFile(accessToken, thumbStorageDestinationPath, true, is.available(), is);
             } catch (PluginException | IOException e) {
+                LOGGER.error("", e);
                 progressor.progress("Error handing over thumbnail to storage");
             }
         }

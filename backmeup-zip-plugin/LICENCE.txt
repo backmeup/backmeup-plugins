@@ -1,5 +1,5 @@
 BackMeUp ZIP Plugin
-Copyright 2010-2012 FH OÖ Forschungs & Entwicklungs GmbH
+Copyright 2010-2015 FH OÖ Forschungs & Entwicklungs GmbH
 
 Limitation: The licence terms stated below only apply to the BackMeUp ZIP 
 plugin, neither to other parts of the BackMeUp suite (Core, Keyserver, other 

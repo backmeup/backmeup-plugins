@@ -1,5 +1,6 @@
 package org.backmeup.plugin.storage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,7 @@ import org.backmeup.model.api.RequiredInputField;
 import org.backmeup.model.api.RequiredInputField.Type;
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.model.spi.ValidationExceptionType;
-import org.backmeup.plugin.spi.InputBasedAuthorizable;
+import org.backmeup.plugin.api.InputBasedAuthorizable;
 import org.backmeup.plugin.storage.constants.Constants;
 import org.backmeup.plugin.storage.utils.PropertiesUtil;
 import org.backmeup.storage.api.StorageClient;
@@ -19,7 +20,7 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
 
     @Override
     public AuthorizationType getAuthType() {
-        return AuthorizationType.InputBased;
+        return AuthorizationType.INPUTBASED;
     }
 
     @Override
@@ -35,9 +36,9 @@ public class BackmeupStorageAuthenticator implements InputBasedAuthorizable {
             authData.put(Constants.PROP_STORAGE_URL, storageUrl);
             
             return username;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new PluginException(BackmeupStorageDescriptor.BACKMEUP_STORAGE_ID, 
-                    "An error occurred during authorization: " + e.getMessage());
+                    "An error occurred during authorization", e);
         }
     }
 

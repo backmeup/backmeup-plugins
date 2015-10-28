@@ -11,9 +11,14 @@
 			<entry key="name" value="org.backmeup.facebook"/>
 		</service-properties>
 	</service>
-	<service id="facebookDatasourceService" ref="facebookDatasource" auto-export="interfaces">
+	<service id="facebookValidatorService" ref="facebookValidator" auto-export="interfaces">
 		<service-properties>
 			<entry key="name" value="org.backmeup.facebook"/>
 		</service-properties>
 	</service>
+	<service id="facebookDatasourceService" ref="facebookDatasource" auto-export="interfaces">
+		<service-properties>
+			<entry key="name" value="org.backmeup.facebook"/>
+		</service-properties>
+	</service>	
 </blueprint>

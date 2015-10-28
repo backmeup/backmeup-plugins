@@ -34,14 +34,21 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.MimeUtility;
 
+import org.backmeup.mail.core.Attachment;
+import org.backmeup.mail.core.Content;
+import org.backmeup.mail.core.MediaType;
+import org.backmeup.mail.core.MessageInfo;
+import org.backmeup.mail.core.TextContent;
 import org.backmeup.model.ValidationNotes;
 import org.backmeup.model.api.RequiredInputField;
+import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.model.exceptions.PluginException;
 import org.backmeup.model.spi.Validationable;
+import org.backmeup.plugin.api.Datasource;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
-import org.backmeup.plugin.api.connectors.Datasource;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.Storage;
 import org.backmeup.plugin.api.storage.StorageException;
 
@@ -52,81 +59,7 @@ import org.backmeup.plugin.api.storage.StorageException;
  * @author fschoeppl
  */
 public class MailDatasource implements Datasource, Validationable {
-
-    private static class Content {
-        public String contentId;
-        public String filename;
-        public InputStream content;
-    }
-
-    private static class MessageInfo {
-        private String fileName;
-        private String subject;
-        private String from;
-        private String to;
-        private String sentAt;
-        private Date receivedAt;
-
-        public MessageInfo(String fileName, String subject, String from, String to, String sentAt, Date receivedAt) {
-            this.fileName = fileName;
-            this.subject = subject;
-            this.from = from;
-            this.to = to;
-            this.sentAt = sentAt;
-            this.receivedAt = receivedAt;
-        }
-
-        public String getFileName() {
-            return this.fileName;
-        }
-
-        public void setFileName(String fileName) {
-            this.fileName = fileName;
-        }
-
-        public String getSubject() {
-            return this.subject;
-        }
-
-        public void setSubject(String subject) {
-            this.subject = subject;
-        }
-
-        public String getFrom() {
-            return this.from;
-        }
-
-        public void setFrom(String from) {
-            this.from = from;
-        }
-
-        public String getTo() {
-            return this.to;
-        }
-
-        public void setTo(String to) {
-            this.to = to;
-        }
-
-        public String getSentAt() {
-            return this.sentAt;
-        }
-
-        public void setSentAt(String sentAt) {
-            this.sentAt = sentAt;
-        }
-
-        public Date getReceivedAt() {
-            return this.receivedAt;
-        }
-
-        public void setReceivedAt(Date receivedAt) {
-            this.receivedAt = receivedAt;
-        }
-    }
-
-    private final SimpleDateFormat folderFormat;
-
+    private static final String ENCODING_UTF_8 = "UTF-8";
     private static final String MESSAGE_FOLDER_FORMAT = "org.backmeup.mail.MailDatasource.MESSAGE_FOLDER_FORMAT";
     private static final String MESSAGE_HTML_WRAP = "org.backmeup.mail.MailDatasource.MESSAGE_HTML_WRAP";
     private static final String MESSAGE_HTML_ATTACHMENT_ENTRY = "org.backmeup.mail.MailDatasource.MESSAGE_HTML_ATTACHMENT_ENTRY";
@@ -135,6 +68,8 @@ public class MailDatasource implements Datasource, Validationable {
     private static final String INDEX_HTML_ENTRY = "org.backmeup.mail.MailDatasource.INDEX_HTML_ENTRY";
 
     private final ResourceBundle textBundle = ResourceBundle.getBundle(MailDatasource.class.getSimpleName());
+    
+    private final SimpleDateFormat folderFormat;
 
     private final Pattern bodyRegex = Pattern.compile("<body.*?>(.*?)</body>", Pattern.DOTALL);
     private final Pattern headRegex = Pattern.compile("<head.*?>(.*?)</head>", Pattern.DOTALL);
@@ -149,69 +84,62 @@ public class MailDatasource implements Datasource, Validationable {
         Matcher matcher = pattern.matcher(bp.getContentType());
         if (matcher.find()) {
             String result = matcher.group(1).toUpperCase();
-            if (result.contains(";"))
+            if (result.contains(";")) {
                 result = result.split(";")[0];
+            }
             return result;
         }
-        return "UTF-8";
-    }
-
-    private static class Attachment {
-        public InputStream stream;
-        public String filename;
-    }
-
-    private static class TextContent {
-        public String text;
-        public boolean isHtml;
-        public String charset;
+        return ENCODING_UTF_8;
     }
 
     private TextContent getText(Part part) throws MessagingException, IOException {
         String charset = getCharset(part);
-        if (part.isMimeType("text/*")) {
+        if (part.isMimeType(MediaType.TEXT)) {
             Object o = part.getContent();
             TextContent tc = new TextContent();
             if (o instanceof String) {
-                tc.isHtml = part.isMimeType("text/html");
-                tc.charset = charset;
-                tc.text = (String) o;
+                tc.setHtml(part.isMimeType(MediaType.TEXT_HTML));
+                tc.setCharset(charset);
+                tc.setText((String) o);
                 return tc;
             } else if (o instanceof InputStream) {
                 InputStream i = (InputStream) o;
                 try {
-                    tc.text = new Scanner(i, getCharset(part)).useDelimiter("\\A").next();
-                    tc.charset = charset;
-                    tc.isHtml = part.isMimeType("text/html");
+                    tc.setText(new Scanner(i, getCharset(part)).useDelimiter("\\A").next());
+                    tc.setCharset(charset);
+                    tc.setHtml(part.isMimeType(MediaType.TEXT_HTML));
                     return tc;
                 } catch (NoSuchElementException nee) {
                     return null;
                 }
             }
-        } else if (part.isMimeType("multipart/alternative")) {
+        } else if (part.isMimeType(MediaType.MULTIPART_ALTERNATIVE)) {
             Multipart mp = (Multipart) part.getContent();
             TextContent text = new TextContent();
             for (int i = 0; i < mp.getCount(); i++) {
                 Part bp = mp.getBodyPart(i);
-                if (bp.isMimeType("text/plain")) {
-                    if (text == null)
+                if (bp.isMimeType(MediaType.TEXT_PLAIN)) {
+                    if (text == null) {
                         text = getText(bp);
+                    }
                     continue;
-                } else if (bp.isMimeType("text/html")) {
+                } else if (bp.isMimeType(MediaType.TEXT_HTML)) {
                     TextContent s = getText(bp);
-                    if (s != null)
+                    if (s != null) {
                         return s;
+                    }
                 } else {
                     return getText(bp);
                 }
             }
             return text;
-        } else if (part.isMimeType("multipart/*")) {
+        } else if (part.isMimeType(MediaType.MULTIPART)) {
             Multipart mp = (Multipart) part.getContent();
             for (int i = 0; i < mp.getCount(); i++) {
                 TextContent s = getText(mp.getBodyPart(i));
-                if (s != null)
+                if (s != null) {
                     return s;
+                }
             }
         }
         return null;
@@ -221,10 +149,10 @@ public class MailDatasource implements Datasource, Validationable {
         List<Attachment> attachments = new ArrayList<>();
         if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
             Attachment a = new Attachment();
-            a.filename = MimeUtility.decodeText(part.getFileName());
-            a.stream = part.getInputStream();
+            a.setFilename(MimeUtility.decodeText(part.getFileName()));
+            a.setStream(part.getInputStream());
             attachments.add(a);
-        } else if (part.isMimeType("multipart/*")) {
+        } else if (part.isMimeType(MediaType.MULTIPART)) {
             Multipart mp = (Multipart) part.getContent();
             for (int i = 0; i < mp.getCount(); i++) {
                 attachments.addAll(getAttachments(mp.getBodyPart(i)));
@@ -235,20 +163,22 @@ public class MailDatasource implements Datasource, Validationable {
 
     public List<Part> getNestedMessages(Part p) throws MessagingException, IOException {
         List<Part> nested = new ArrayList<>();
-        if (p.isMimeType("multipart/*")) {
+        if (p.isMimeType(MediaType.MULTIPART)) {
             Multipart mp = (Multipart) p.getContent();
             int count = mp.getCount();
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++) {
                 nested.addAll(getNestedMessages(mp.getBodyPart(i)));
-        } else if (p.isMimeType("message/rfc822")) {
+            }
+        } else if (p.isMimeType(MediaType.MESSAGE_RFC822)) {
             nested.add(p);
         }
         return nested;
     }
 
     private String join(Object[] arr, String pattern) {
-        if (arr == null)
+        if (arr == null) {
             return "";
+        }
 
         StringBuilder sb = new StringBuilder();
         for (Object element : arr) {
@@ -275,11 +205,13 @@ public class MailDatasource implements Datasource, Validationable {
 
         if (m instanceof Message) {
             Message mesg = (Message) m;
-            if (mesg.getFrom() != null)
+            if (mesg.getFrom() != null) {
                 from = join(mesg.getFrom(), ", ");
+            }
 
-            if (mesg.getRecipients(Message.RecipientType.TO) != null)
+            if (mesg.getRecipients(Message.RecipientType.TO) != null) {
                 to = join(mesg.getAllRecipients(), ", ");
+            }
             msgNmbr = mesg.getMessageNumber();
             subject = mesg.getSubject();
             sentAt = mesg.getSentDate().toString();
@@ -289,38 +221,40 @@ public class MailDatasource implements Datasource, Validationable {
 
         String destinationFileName = folderName + "content" + msgNmbr + ".html";
 
-        if (alreadyInspected.contains(destinationFileName))
+        if (alreadyInspected.contains(destinationFileName)) {
             return;
+        }
 
         TextContent text = getText(m);
         // nothing to do; message is empty
-        if (text == null)
+        if (text == null) {
             return;
+        }
 
         String appendToHead = "";
         String appendToBody = "";
 
-        if (text.isHtml) {
-            Matcher matcher = this.headRegex.matcher(text.text);
+        if (text.isHtml()) {
+            Matcher matcher = this.headRegex.matcher(text.getText());
             if (matcher.find()) {
                 appendToHead = matcher.group(1);
             }
-            matcher = this.bodyRegex.matcher(text.text);
+            matcher = this.bodyRegex.matcher(text.getText());
             if (matcher.find()) {
                 appendToBody = matcher.group(1);
             } else {
-                matcher = this.htmlRegex.matcher(text.text);
+                matcher = this.htmlRegex.matcher(text.getText());
                 if (matcher.find()) {
                     appendToBody = matcher.group(1);
                 } else {
                     progressor.progress("Couldn't find html element / falling back to content of string");
-                    appendToBody = text.text;
+                    appendToBody = text.getText();
                 }
             }
         }
 
-        if (!text.isHtml) {
-            appendToBody = text.text;
+        if (!text.isHtml()) {
+            appendToBody = text.getText();
         }
 
         String attachmentFolder = folderName + "attachments" + msgNmbr + "/";
@@ -329,26 +263,22 @@ public class MailDatasource implements Datasource, Validationable {
 
         for (Attachment a : attachments) {
             attachmentLinks.append(MessageFormat.format(this.textBundle.getString(MESSAGE_HTML_ATTACHMENT_ENTRY),
-                    "attachments" + msgNmbr + "/" + a.filename, a.filename));
-            //      progressor.progress("Downloading attachment " + a.filename);
-            storage.addFile(a.stream, attachmentFolder + a.filename, new MetainfoContainer());
-            //      progressor.progress("Done.");
+                    "attachments" + msgNmbr + "/" + a.getFilename(), a.getFilename()));
+            storage.addFile(a.getStream(), attachmentFolder + a.getFilename(), new MetainfoContainer());
         }
 
         // get embedded images
         List<Content> contentIds = getContentIds(m);
         for (Content c : contentIds) {
-            //      progressor.progress("Downloading embedded resources " + c.filename);
-            appendToBody = appendToBody.replace("cid:" + c.contentId, "attachments" + msgNmbr + "/" + c.filename);
-            storage.addFile(c.content, attachmentFolder + c.filename, new MetainfoContainer());
-            //      progressor.progress("Done.");
+            appendToBody = appendToBody.replace("cid:" + c.getContentId(), "attachments" + msgNmbr + "/" + c.getFilename());
+            storage.addFile(c.getContent(), attachmentFolder + c.getFilename(), new MetainfoContainer());
         }
 
         String attachmentString = attachmentLinks.length() == 0 ? "" : MessageFormat.format(
                 this.textBundle.getString(MESSAGE_HTML_ATTACHMENT_WRAP), attachmentLinks.toString());
 
         String htmlText = MessageFormat.format(this.textBundle.getString(MESSAGE_HTML_WRAP), appendToHead,
-                appendToBody, subject, from, sentAt, receivedAt, to, attachmentString, text.charset);
+                appendToBody, subject, from, sentAt, receivedAt, to, attachmentString, text.getCharset());
 
         alreadyInspected.add(destinationFileName);
         indexDetails.add(new MessageInfo(destinationFileName, subject, from, to, sentAt, receivedAt));
@@ -363,7 +293,7 @@ public class MailDatasource implements Datasource, Validationable {
         metaData.setModified(modified);
         metaData.setAttribute("subject", subject);
         infos.addMetainfo(metaData);
-        storage.addFile(new ByteArrayInputStream(htmlText.toString().getBytes(text.charset)), destinationFileName,
+        storage.addFile(new ByteArrayInputStream(htmlText.getBytes(text.getCharset())), destinationFileName,
                 infos);
 
         // handle nested messages
@@ -384,18 +314,20 @@ public class MailDatasource implements Datasource, Validationable {
             String[] header = current.getHeader("Content-ID");
             if (header != null && header.length > 0) {
                 Content c = new Content();
-                c.contentId = header[0];
-                if (c.contentId.startsWith("<"))
-                    c.contentId = c.contentId.substring(1);
-                if (c.contentId.endsWith(">"))
-                    c.contentId = c.contentId.substring(0, c.contentId.length() - 1);
-                c.filename = current.getFileName();
-                c.content = (InputStream) current.getDataHandler().getContent();
+                c.setContentId(header[0]);
+                if (c.getContentId().startsWith("<")) {
+                    c.setContentId(c.getContentId().substring(1));
+                }
+                if (c.getContentId().endsWith(">")) {
+                    c.setContentId(c.getContentId().substring(0, c.getContentId().length() - 1));
+                }
+                c.setFilename(current.getFileName());
+                c.setContent((InputStream) current.getDataHandler().getContent());
                 contentIds.add(c);
             }
 
             // push children on stack
-            if (current.isMimeType("multipart/*")) {
+            if (current.isMimeType(MediaType.MULTIPART)) {
                 Multipart mp = (Multipart) current.getContent();
                 int count = mp.getCount();
                 for (int i = 0; i < count; i++) {
@@ -442,8 +374,9 @@ public class MailDatasource implements Datasource, Validationable {
     public void handleDownloadAll(Folder current, Map<String, String> accessData, Storage storage, Set<String> alreadyInspected,
             List<MessageInfo> indexDetails, Progressable progressor) throws IOException, MessagingException,
             StorageException {
-        if (alreadyInspected.contains(current.getFullName()))
+        if (alreadyInspected.contains(current.getFullName())) {
             return;
+        }
         int retryCount = 0;
         handleFolder(current, storage, alreadyInspected, indexDetails, retryCount, progressor);
         alreadyInspected.add(current.getFullName());
@@ -470,21 +403,23 @@ public class MailDatasource implements Datasource, Validationable {
         }
         String indexHtml = MessageFormat.format(this.textBundle.getString(INDEX_HTML_WRAP), sb.toString());
 
-        storage.addFile(new ByteArrayInputStream(indexHtml.getBytes("UTF-8")), "index.html", new MetainfoContainer());
+        storage.addFile(new ByteArrayInputStream(indexHtml.getBytes(ENCODING_UTF_8)), "index.html", new MetainfoContainer());
     }
 
     @Override
-    public void downloadAll(Map<String, String> accessData, Map<String, String> properties, List<String> options, Storage storage,
+    public void downloadAll(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage,
             Progressable progressor) throws StorageException {
         try {
+            Map<String, String> accessData = pluginProfile.getAuthData().getProperties();
             Properties mailProps = new Properties();
             mailProps.putAll(accessData);
             
             Session session = Session.getInstance(mailProps);
             Store store = session.getStore();
-            progressor.progress("Connecting to mail provider " + accessData.get("mail.host"));
-            store.connect(accessData.get("mail.host"), accessData.get("mail.user"),
-                    accessData.get("mail.password"));
+            progressor.progress("Connecting to mail provider " + accessData.get(MailAuthenticator.AUTHPROP_MAIL_HOST));
+            store.connect(accessData.get(MailAuthenticator.AUTHPROP_MAIL_HOST),
+                    accessData.get(MailAuthenticator.AUTHPROP_MAIL_USER),
+                    accessData.get(MailAuthenticator.AUTHPROP_MAIL_PASSWORD));
             progressor.progress("Connection successfull");
 
             Set<String> alreadyInspected = new HashSet<>();
@@ -494,7 +429,8 @@ public class MailDatasource implements Datasource, Validationable {
             progressor.progress("No. of folders retrieved: " + folders.length);
 
             List<MessageInfo> indexDetails = new ArrayList<>();
-            if (options.size() > 0) {
+            List<String> options = pluginProfile.getOptions();
+            if (!options.isEmpty()) {
                 List<Folder> toVisit = new ArrayList<>();
                 for (Folder f : folders) {
                     if (options.contains(f.getFullName())) {
@@ -526,15 +462,11 @@ public class MailDatasource implements Datasource, Validationable {
             progressor.progress(e.toString());
             progressor.progress(e.getMessage());
             throw new PluginException(MailDescriptor.MAIL_ID, "No such provider", e);
-        } catch (MessagingException e) {
+        } catch (MessagingException | IOException e) {
             progressor.progress(e.toString());
             progressor.progress(e.getMessage());
             throw new PluginException(MailDescriptor.MAIL_ID, "An error occured during the backup", e);
-        } catch (IOException e) {
-            progressor.progress(e.toString());
-            progressor.progress(e.getMessage());
-            throw new PluginException(MailDescriptor.MAIL_ID, "An error occured during the backup", e);
-        }
+        } 
     }
 
     @Override
@@ -576,7 +508,9 @@ public class MailDatasource implements Datasource, Validationable {
             
             Session session = Session.getInstance(mailProps);
             Store store = session.getStore();
-            store.connect(accessData.get("mail.host"), accessData.get("mail.user"), accessData.get("mail.password"));
+            store.connect(accessData.get(MailAuthenticator.AUTHPROP_MAIL_HOST),
+                    accessData.get(MailAuthenticator.AUTHPROP_MAIL_USER),
+                    accessData.get(MailAuthenticator.AUTHPROP_MAIL_PASSWORD));
             Folder[] folders = store.getDefaultFolder().list("*");
             for (Folder folder : folders) {
                 String folderName = folder.getFullName();
@@ -584,9 +518,6 @@ public class MailDatasource implements Datasource, Validationable {
             }
 
             store.close();
-        } catch (NoSuchProviderException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (MessagingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

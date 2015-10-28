@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.backmeup.index.api.IndexFields;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

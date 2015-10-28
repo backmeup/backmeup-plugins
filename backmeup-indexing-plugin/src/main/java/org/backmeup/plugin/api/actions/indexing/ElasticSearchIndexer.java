@@ -16,24 +16,22 @@ import org.backmeup.model.dto.PluginProfileDTO;
 import org.backmeup.plugin.api.Metadata;
 import org.backmeup.plugin.api.Metainfo;
 import org.backmeup.plugin.api.MetainfoContainer;
+import org.backmeup.plugin.api.PluginContext;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The indexer must be handed an ElasticSearch client in order to work. (This must be done by the class orchestrating
- * the backup workflow!) Cf. IndexActionTest for an example on how to create a client talking to an ad-hoc embedded
- * ElasticSearch node.
  * 
- * To talk to an existing ElasticSearch cluster, I recommend using a TransportClient, like so:
+ * The ElasticSearchIndexer takes data created by other plugins and transforms it into a ElasticSearch specific data
+ * representation Interaction with ElasticSearch: The indexer must be handed an ElasticSearch Client in order to
+ * communicate. In Themis every user is provided with a custom ElasticSearch instance for security reasons. This is
+ * assigned by the framework and mounted within Truecrypt.
  * 
- * Client client = new TransportClient() .addTransportAddress(new InetSocketTransportAddress("host1", 9300))
- * .addTransportAddress(new InetSocketTransportAddress("host2", 9300));
- * 
- * It is possible to add arbitrary numbers of transport addresses - the client will communicate with them in round-robin
- * fashion.
- * 
- * @author Rainer Simon <rainer.simon@ait.ac.at>
+ * For manually talking to an existing ElasticSearch cluster, I recommend using a TransportClient, like so: Client
+ * client = new TransportClient() .addTransportAddress(new InetSocketTransportAddress("host1", 9300))
+ * .addTransportAddress(new InetSocketTransportAddress("host2", 9300)); It is possible to add arbitrary numbers of
+ * transport addresses - the client will communicate with them in round-robin fashion.
  */
 public class ElasticSearchIndexer {
 
@@ -46,18 +44,22 @@ public class ElasticSearchIndexer {
         this.client = client;
     }
 
-    public void doIndexing(Map<String, String> externalProps, BackupJobExecutionDTO job, DataObject dataObject,
-            Map<String, String> meta, Date timestamp) throws IOException {
+    public void doIndexing(PluginContext pluginContext, DataObject dataObject, Map<String, String> meta, Date timestamp) throws IOException {
         // Build the index object
         IndexDocument document = new IndexDocument();
 
-        //add the metadata provided by Tika 
+        //get the standardized geo + temporal metadata from the plugins or tika and add it to the index
+        MetainfoContainer metaInfoContainer = dataObject.getMetainfo();
+        setStandardizedGeoAndTemporalMetadata(meta, metaInfoContainer, document);
+
+        //add all metadata provided by Tika 
         for (String metaKey : meta.keySet()) {
             document.field(metaKey, meta.get(metaKey));
         }
 
-        String relObjectPathOnStorage = getBMULocation(externalProps) + dataObject.getPath();
+        String relObjectPathOnStorage = getBMULocation(pluginContext) + dataObject.getPath();
 
+        BackupJobExecutionDTO job = pluginContext.getAttribute("org.backmeup.job", BackupJobExecutionDTO.class);
         document.field(IndexFields.FIELD_OWNER_ID, job.getUser().getUserId());
         document.field(IndexFields.FIELD_OWNER_NAME, job.getUser().getUsername());
         document.field(IndexFields.FIELD_FILENAME, getFilename(dataObject.getPath()));
@@ -89,12 +91,11 @@ public class ElasticSearchIndexer {
             }
         }
 
-        if (externalProps != null) {
+        if (pluginContext != null) {
             //check if download access is supported by the sink plugin
-            if (externalProps.containsKey(Metadata.STORAGE_ALWAYS_ACCESSIBLE)
-                    && externalProps.containsKey(Metadata.DOWNLOAD_BASE)) {
-                boolean alwaysAccess = Boolean.parseBoolean(externalProps.get(Metadata.STORAGE_ALWAYS_ACCESSIBLE));
-                String downloadBase = externalProps.get(Metadata.DOWNLOAD_BASE);
+            if (pluginContext.hasAttribute(Metadata.STORAGE_ALWAYS_ACCESSIBLE) && pluginContext.hasAttribute(Metadata.DOWNLOAD_BASE)) {
+                boolean alwaysAccess = Boolean.parseBoolean(pluginContext.getAttribute(Metadata.STORAGE_ALWAYS_ACCESSIBLE, String.class));
+                String downloadBase = pluginContext.getAttribute(Metadata.DOWNLOAD_BASE, String.class);
                 //we're having a file sink like the themis central storage with permanent access
                 if (alwaysAccess) {
                     document.field(IndexFields.FIELD_SINK_DOWNLOAD_BASE, downloadBase);
@@ -125,8 +126,45 @@ public class ElasticSearchIndexer {
         // no direct indexing within the plugin anymore -> upload to drop-of queue for further distribution
         String message = this.client.uploadForSharing(document);
         this.log.debug("Completed uploading IndexDocument to queue from Indexing Plugin: " + message);
+    }
 
-        //TODO AL Persist document for later ingestion instead pushing to ES.
+    /**
+     * Takes specific geo + temporal elements coming from either the Metainfo container by the plugins or Tika (if not
+     * all values are set by the plugins. e.g. document analysis vs. facebook plugin) and adds them to the Index
+     */
+    private void setStandardizedGeoAndTemporalMetadata(Map<String, String> tikaMetadata, MetainfoContainer pluginMetadataContainer,
+            IndexDocument document) {
+
+        StandardizedMetadataExtractor stMeta = new StandardizedMetadataExtractor(tikaMetadata, pluginMetadataContainer);
+
+        //populate location name
+        if (stMeta.getLocationName() != null) {
+            document.field(IndexFields.FIELD_LOC_NAME, stMeta.getLocationName());
+        }
+        //populate location country
+        if (stMeta.getCountry() != null) {
+            document.field(IndexFields.FIELD_LOC_COUNTRY, stMeta.getCountry());
+        }
+        //populate location city
+        if (stMeta.getCity() != null) {
+            document.field(IndexFields.FIELD_LOC_CITY, stMeta.getCity());
+        }
+        //populate latitude geo coordinate
+        if (stMeta.getLatitude() != null) {
+            document.field(IndexFields.FIELD_LOC_LATITUDE, stMeta.getLatitude() + "");
+        }
+        //populate longitude geo coordinate
+        if (stMeta.getLongitude() != null) {
+            document.field(IndexFields.FIELD_LOC_LONGITUDE, stMeta.getLongitude() + "");
+        }
+        //populate author name
+        if (stMeta.getAuthor() != null) {
+            document.field(IndexFields.FIELD_DOC_AUTHOR, stMeta.getAuthor());
+        }
+        //populate document creation date
+        if (stMeta.getCreationDate() != null) {
+            document.field(IndexFields.FIELD_DOC_CREATION_DATE, stMeta.getCreationDate().getTime());
+        }
     }
 
     private String getFilename(String path) {
@@ -142,9 +180,9 @@ public class ElasticSearchIndexer {
      * @param accessData
      * @return
      */
-    private String getBMULocation(Map<String, String> p) {
-        if (p.containsKey("org.backmeup.bmuprefix")) {
-            return p.get("org.backmeup.bmuprefix");
+    private String getBMULocation(PluginContext context) {
+        if (context.hasAttribute("org.backmeup.bmuprefix")) {
+            return context.getAttribute("org.backmeup.bmuprefix", String.class);
         } else {
             return "";
         }

@@ -3,16 +3,16 @@ package org.backmeup.plugin.api.actions.indexing;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.backmeup.index.api.IndexDocumentUploadClient;
 import org.backmeup.index.api.IndexFields;
 import org.backmeup.index.client.IndexClientFactory;
-import org.backmeup.model.dto.BackupJobExecutionDTO;
-import org.backmeup.plugin.api.connectors.Action;
-import org.backmeup.plugin.api.connectors.ActionException;
-import org.backmeup.plugin.api.connectors.Progressable;
+import org.backmeup.model.dto.PluginProfileDTO;
+import org.backmeup.plugin.api.Action;
+import org.backmeup.plugin.api.ActionException;
+import org.backmeup.plugin.api.PluginContext;
+import org.backmeup.plugin.api.Progressable;
 import org.backmeup.plugin.api.storage.DataObject;
 import org.backmeup.plugin.api.storage.Storage;
 import org.slf4j.Logger;
@@ -50,8 +50,8 @@ public class IndexAction implements Action {
     private static final String ERROR_SKIPPING_ITEM = "Error indexing data object, skipping object ";
 
     @Override
-    public void doAction(Map<String, String> authData, Map<String, String> properties, List<String> options,
-            Storage storage, BackupJobExecutionDTO job, Progressable progressor) throws ActionException {
+    public void doAction(PluginProfileDTO pluginProfile, PluginContext pluginContext, Storage storage,
+            Progressable progressor) throws ActionException {
 
         int indexedItems_OK = 0;
         int indexedItems_SKIPPED_TIKA_ANALYSIS = 0;
@@ -93,13 +93,15 @@ public class IndexAction implements Action {
 
                     progressor.progress(INDEXING_OBJECT_STARTED + dob.getPath());
                     //init index client for user
-                    initIndexClient(job.getUser().getUserId());
+                    // TODO: data to initialize index client should be stored in auth data
+                    Long userId = Long.valueOf(pluginContext.getAttribute("org.backmeup.userid", String.class));
+                    initIndexClient(userId);
                     ElasticSearchIndexer indexer = new ElasticSearchIndexer(this.client);
 
                     if (needsESIndexing(dob)) {
                         this.logger.debug("Indexing " + dob.getPath());
                         //extract information to ElasticSearch compatible format and upload to queue
-                        indexer.doIndexing(properties, job, dob, meta, indexingTimestamp);
+                        indexer.doIndexing(pluginContext, dob, meta, indexingTimestamp);
                         indexedItems_OK++;
                         progressor.progress(INDEXING_OBJECT_COMPLETED + dob.getPath());
                     } else {
