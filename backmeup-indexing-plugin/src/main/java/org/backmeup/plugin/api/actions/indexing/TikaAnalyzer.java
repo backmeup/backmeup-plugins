@@ -75,6 +75,9 @@ public class TikaAnalyzer {
             this.log.debug("Error calling tika server on fulltext for " + dob.getPath() + " :" + e.toString());
         }
         //Tika returns empty String for certain types as Images
+        if (fulltext == null) {
+            return null;
+        }
         if (fulltext.equals("")) {
             fulltext = null;
         }
